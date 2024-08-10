@@ -1,0 +1,37 @@
+[3.338s] Invoking command in '/home/plantroid/plantroid_ws/src/plantroid_gui': PYTHONPATH=/home/plantroid/plantroid_ws/src/plantroid_gui/install/plantroid_gui/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base build/plantroid_gui build --build-base /home/plantroid/plantroid_ws/src/plantroid_gui/build/plantroid_gui/build install --prefix /home/plantroid/plantroid_ws/src/plantroid_gui/install/plantroid_gui --record /home/plantroid/plantroid_ws/src/plantroid_gui/build/plantroid_gui/install.log --single-version-externally-managed
+[4.416s] running egg_info
+[4.418s] creating build/plantroid_gui/plantroid_gui.egg-info
+[4.419s] writing build/plantroid_gui/plantroid_gui.egg-info/PKG-INFO
+[4.420s] writing dependency_links to build/plantroid_gui/plantroid_gui.egg-info/dependency_links.txt
+[4.421s] writing entry points to build/plantroid_gui/plantroid_gui.egg-info/entry_points.txt
+[4.421s] writing requirements to build/plantroid_gui/plantroid_gui.egg-info/requires.txt
+[4.422s] writing top-level names to build/plantroid_gui/plantroid_gui.egg-info/top_level.txt
+[4.433s] writing manifest file 'build/plantroid_gui/plantroid_gui.egg-info/SOURCES.txt'
+[4.576s] reading manifest file 'build/plantroid_gui/plantroid_gui.egg-info/SOURCES.txt'
+[4.579s] writing manifest file 'build/plantroid_gui/plantroid_gui.egg-info/SOURCES.txt'
+[4.580s] running build
+[4.580s] running build_py
+[4.581s] creating /home/plantroid/plantroid_ws/src/plantroid_gui/build/plantroid_gui/build
+[4.581s] creating /home/plantroid/plantroid_ws/src/plantroid_gui/build/plantroid_gui/build/lib
+[4.582s] creating /home/plantroid/plantroid_ws/src/plantroid_gui/build/plantroid_gui/build/lib/plantroid_gui
+[4.582s] copying plantroid_gui/__init__.py -> /home/plantroid/plantroid_ws/src/plantroid_gui/build/plantroid_gui/build/lib/plantroid_gui
+[4.582s] copying plantroid_gui/GUI_MEGA.py -> /home/plantroid/plantroid_ws/src/plantroid_gui/build/plantroid_gui/build/lib/plantroid_gui
+[4.583s] running install
+[4.586s] running install_lib
+[4.590s] creating /home/plantroid/plantroid_ws/src/plantroid_gui/install/plantroid_gui/lib/python3.8/site-packages/plantroid_gui
+[4.591s] copying /home/plantroid/plantroid_ws/src/plantroid_gui/build/plantroid_gui/build/lib/plantroid_gui/__init__.py -> /home/plantroid/plantroid_ws/src/plantroid_gui/install/plantroid_gui/lib/python3.8/site-packages/plantroid_gui
+[4.591s] copying /home/plantroid/plantroid_ws/src/plantroid_gui/build/plantroid_gui/build/lib/plantroid_gui/GUI_MEGA.py -> /home/plantroid/plantroid_ws/src/plantroid_gui/install/plantroid_gui/lib/python3.8/site-packages/plantroid_gui
+[4.594s] byte-compiling /home/plantroid/plantroid_ws/src/plantroid_gui/install/plantroid_gui/lib/python3.8/site-packages/plantroid_gui/__init__.py to __init__.cpython-38.pyc
+[4.598s] byte-compiling /home/plantroid/plantroid_ws/src/plantroid_gui/install/plantroid_gui/lib/python3.8/site-packages/plantroid_gui/GUI_MEGA.py to GUI_MEGA.cpython-38.pyc
+[4.606s] running install_data
+[4.608s] creating /home/plantroid/plantroid_ws/src/plantroid_gui/install/plantroid_gui/share/ament_index
+[4.609s] creating /home/plantroid/plantroid_ws/src/plantroid_gui/install/plantroid_gui/share/ament_index/resource_index
+[4.609s] creating /home/plantroid/plantroid_ws/src/plantroid_gui/install/plantroid_gui/share/ament_index/resource_index/packages
+[4.610s] copying resource/plantroid_gui -> /home/plantroid/plantroid_ws/src/plantroid_gui/install/plantroid_gui/share/ament_index/resource_index/packages
+[4.610s] copying package.xml -> /home/plantroid/plantroid_ws/src/plantroid_gui/install/plantroid_gui/share/plantroid_gui
+[4.610s] running install_egg_info
+[4.618s] Copying build/plantroid_gui/plantroid_gui.egg-info to /home/plantroid/plantroid_ws/src/plantroid_gui/install/plantroid_gui/lib/python3.8/site-packages/plantroid_gui-0.0.0-py3.8.egg-info
+[4.623s] running install_scripts
+[4.687s] Installing gui script to /home/plantroid/plantroid_ws/src/plantroid_gui/install/plantroid_gui/lib/plantroid_gui
+[4.689s] writing list of installed files to '/home/plantroid/plantroid_ws/src/plantroid_gui/build/plantroid_gui/install.log'
+[4.786s] Invoked command in '/home/plantroid/plantroid_ws/src/plantroid_gui' returned '0': PYTHONPATH=/home/plantroid/plantroid_ws/src/plantroid_gui/install/plantroid_gui/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base build/plantroid_gui build --build-base /home/plantroid/plantroid_ws/src/plantroid_gui/build/plantroid_gui/build install --prefix /home/plantroid/plantroid_ws/src/plantroid_gui/install/plantroid_gui --record /home/plantroid/plantroid_ws/src/plantroid_gui/build/plantroid_gui/install.log --single-version-externally-managed
