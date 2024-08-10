@@ -1,0 +1,15 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from plantroid_msgs/srv/Sensors.srv
+// generated code does not contain a copyright notice
+
+
+module plantroid_msgs {
+  module srv {
+    struct Sensors_Request {
+      int8 sensor_number;
+    };
+    struct Sensors_Response {
+      string sensor_reading;
+    };
+  };
+};

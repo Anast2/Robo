@@ -1,0 +1,9 @@
+CMake Error: The current CMakeCache.txt directory /home/antoniogaliza/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/CMakeCache.txt is different than the directory /home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs where CMakeCache.txt was created. This may result in binaries being created in the wrong place. If you are not sure, reedit the CMakeCache.txt
+/bin/sh: 1: cd: can't cd to /home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs
+make[2]: *** [CMakeFiles/plantroid_msgs__cpp.dir/build.make:256: CMakeFiles/plantroid_msgs__cpp.dir/depend] Error 2
+make[1]: *** [CMakeFiles/Makefile2:302: CMakeFiles/plantroid_msgs__cpp.dir/all] Error 2
+make[1]: *** Waiting for unfinished jobs....
+/bin/sh: 1: cd: can't cd to /home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs
+make[2]: *** [CMakeFiles/plantroid_msgs__rosidl_generator_c.dir/build.make:383: CMakeFiles/plantroid_msgs__rosidl_generator_c.dir/depend] Error 2
+make[1]: *** [CMakeFiles/Makefile2:356: CMakeFiles/plantroid_msgs__rosidl_generator_c.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

@@ -1,0 +1,2 @@
+
+string sensor_reading

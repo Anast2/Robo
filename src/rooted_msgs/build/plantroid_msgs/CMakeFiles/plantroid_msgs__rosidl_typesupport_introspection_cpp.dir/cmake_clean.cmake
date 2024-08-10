@@ -1,0 +1,33 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/plantroid_msgs/msg/detail/pose__type_support.cpp.o"
+  "CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/plantroid_msgs/msg/detail/speed__type_support.cpp.o"
+  "CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/plantroid_msgs/msg/detail/state__type_support.cpp.o"
+  "CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/camera__type_support.cpp.o"
+  "CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/command__type_support.cpp.o"
+  "CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/gesture__type_support.cpp.o"
+  "CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/neck_servo__type_support.cpp.o"
+  "CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/sensors__type_support.cpp.o"
+  "libplantroid_msgs__rosidl_typesupport_introspection_cpp.pdb"
+  "libplantroid_msgs__rosidl_typesupport_introspection_cpp.so"
+  "rosidl_typesupport_introspection_cpp/plantroid_msgs/msg/detail/pose__rosidl_typesupport_introspection_cpp.hpp"
+  "rosidl_typesupport_introspection_cpp/plantroid_msgs/msg/detail/pose__type_support.cpp"
+  "rosidl_typesupport_introspection_cpp/plantroid_msgs/msg/detail/speed__rosidl_typesupport_introspection_cpp.hpp"
+  "rosidl_typesupport_introspection_cpp/plantroid_msgs/msg/detail/speed__type_support.cpp"
+  "rosidl_typesupport_introspection_cpp/plantroid_msgs/msg/detail/state__rosidl_typesupport_introspection_cpp.hpp"
+  "rosidl_typesupport_introspection_cpp/plantroid_msgs/msg/detail/state__type_support.cpp"
+  "rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/camera__rosidl_typesupport_introspection_cpp.hpp"
+  "rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/camera__type_support.cpp"
+  "rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/command__rosidl_typesupport_introspection_cpp.hpp"
+  "rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/command__type_support.cpp"
+  "rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/gesture__rosidl_typesupport_introspection_cpp.hpp"
+  "rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/gesture__type_support.cpp"
+  "rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/neck_servo__rosidl_typesupport_introspection_cpp.hpp"
+  "rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/neck_servo__type_support.cpp"
+  "rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/sensors__rosidl_typesupport_introspection_cpp.hpp"
+  "rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/sensors__type_support.cpp"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

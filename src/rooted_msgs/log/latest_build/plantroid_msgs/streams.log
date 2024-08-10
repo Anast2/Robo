@@ -1,0 +1,434 @@
+[0.054s] Invoking command in '/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/plantroid/plantroid_ws/install/plantroid_gui:/opt/ros/foxy /usr/bin/cmake /home/plantroid/plantroid_ws/src/plantroid_msgs -DCMAKE_INSTALL_PREFIX=/home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs
+[0.317s] -- The C compiler identification is GNU 9.4.0
+[0.556s] -- The CXX compiler identification is GNU 9.4.0
+[0.576s] -- Check for working C compiler: /usr/bin/cc
+[0.885s] -- Check for working C compiler: /usr/bin/cc -- works
+[0.888s] -- Detecting C compiler ABI info
+[1.204s] -- Detecting C compiler ABI info - done
+[1.246s] -- Detecting C compile features
+[1.247s] -- Detecting C compile features - done
+[1.257s] -- Check for working CXX compiler: /usr/bin/c++
+[1.598s] -- Check for working CXX compiler: /usr/bin/c++ -- works
+[1.602s] -- Detecting CXX compiler ABI info
+[1.957s] -- Detecting CXX compiler ABI info - done
+[2.001s] -- Detecting CXX compile features
+[2.002s] -- Detecting CXX compile features - done
+[2.023s] -- Found ament_cmake: 0.9.9 (/opt/ros/foxy/share/ament_cmake/cmake)
+[2.157s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") 
+[2.158s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[3.280s] -- Found geometry_msgs: 2.0.5 (/opt/ros/foxy/share/geometry_msgs/cmake)
+[3.509s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[3.559s] -- Found rosidl_adapter: 1.2.1 (/opt/ros/foxy/share/rosidl_adapter/cmake)
+[4.037s] -- Found OpenSSL: /usr/lib/aarch64-linux-gnu/libcrypto.so (found version "1.1.1f")  
+[4.239s] -- Found FastRTPS: /opt/ros/foxy/include  
+[4.745s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[5.114s] -- Found rosidl_default_generators: 1.0.1 (/opt/ros/foxy/share/rosidl_default_generators/cmake)
+[5.282s] -- Found PythonInterp: /usr/bin/python3 (found version "3.8.10") 
+[6.032s] -- Found ament_cmake_ros: 0.9.2 (/opt/ros/foxy/share/ament_cmake_ros/cmake)
+[6.777s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[6.822s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[6.937s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3.5") 
+[6.954s] -- Found python_cmake_module: 0.8.1 (/opt/ros/foxy/share/python_cmake_module/cmake)
+[7.081s] -- Found PythonLibs: /usr/lib/aarch64-linux-gnu/libpython3.8.so (found suitable version "3.8.10", minimum required is "3.5") 
+[7.081s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[7.082s] -- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.8
+[7.082s] -- Using PYTHON_LIBRARIES: /usr/lib/aarch64-linux-gnu/libpython3.8.so
+[7.188s] -- Found PythonExtra: .so  
+[7.394s] -- Found ament_lint_auto: 0.9.6 (/opt/ros/foxy/share/ament_lint_auto/cmake)
+[7.628s] -- Added test 'cppcheck' to perform static code analysis on C / C++ code
+[7.635s] -- Configured cppcheck include dirs: $<BUILD_INTERFACE:/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_generator_c>;/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_generator_c;/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_generator_cpp;/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_typesupport_fastrtps_c;/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_typesupport_fastrtps_cpp;$<BUILD_INTERFACE:/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_typesupport_introspection_c>;$<BUILD_INTERFACE:/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_typesupport_c>;$<BUILD_INTERFACE:/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_generator_cpp>;/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_generator_py
+[7.635s] -- Configured cppcheck exclude dirs and/or files: 
+[7.651s] -- Added test 'flake8' to check Python code syntax and style conventions
+[7.679s] -- Added test 'lint_cmake' to check CMake code style
+[7.695s] -- Added test 'pep257' to check Python code against some of the style conventions in PEP 257
+[7.804s] -- Added test 'uncrustify' to check C / C++ code style
+[7.804s] -- Configured uncrustify additional arguments: 
+[7.820s] -- Added test 'xmllint' to check XML markup files
+[7.857s] -- Configuring done
+[8.090s] -- Generating done
+[8.105s] -- Build files have been written to: /home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs
+[8.140s] Invoked command in '/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/plantroid/plantroid_ws/install/plantroid_gui:/opt/ros/foxy /usr/bin/cmake /home/plantroid/plantroid_ws/src/plantroid_msgs -DCMAKE_INSTALL_PREFIX=/home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs
+[8.151s] Invoking command in '/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/plantroid/plantroid_ws/install/plantroid_gui:/opt/ros/foxy /usr/bin/cmake --build /home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs -- -j4 -l4
+[8.347s] [35m[1mScanning dependencies of target plantroid_msgs__cpp[0m
+[8.348s] [  1%] [34m[1mGenerating C code for ROS interfaces[0m
+[8.396s] [  2%] [34m[1mGenerating C++ code for ROS interfaces[0m
+[11.429s] [  2%] Built target plantroid_msgs__cpp
+[11.484s] [  3%] [34m[1mGenerating C++ introspection for ROS interfaces[0m
+[11.499s] [  4%] [34m[1mGenerating C++ type support dispatch for ROS interfaces[0m
+[11.526s] [  5%] [34m[1mGenerating C++ type support for eProsima Fast-RTPS[0m
+[12.284s] [35m[1mScanning dependencies of target plantroid_msgs__rosidl_generator_c[0m
+[12.356s] [  6%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_generator_c.dir/rosidl_generator_c/plantroid_msgs/msg/detail/pose__functions.c.o[0m
+[12.557s] [  8%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_generator_c.dir/rosidl_generator_c/plantroid_msgs/msg/detail/speed__functions.c.o[0m
+[12.758s] [  9%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_generator_c.dir/rosidl_generator_c/plantroid_msgs/msg/detail/state__functions.c.o[0m
+[12.965s] [ 10%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_generator_c.dir/rosidl_generator_c/plantroid_msgs/srv/detail/camera__functions.c.o[0m
+[13.203s] [ 11%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_generator_c.dir/rosidl_generator_c/plantroid_msgs/srv/detail/neck_servo__functions.c.o[0m
+[13.463s] [ 12%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_generator_c.dir/rosidl_generator_c/plantroid_msgs/srv/detail/sensors__functions.c.o[0m
+[13.709s] [ 13%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_generator_c.dir/rosidl_generator_c/plantroid_msgs/srv/detail/command__functions.c.o[0m
+[13.780s] [35m[1mScanning dependencies of target plantroid_msgs__rosidl_typesupport_cpp[0m
+[13.885s] [ 14%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/plantroid_msgs/msg/pose__type_support.cpp.o[0m
+[13.992s] [ 16%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_generator_c.dir/rosidl_generator_c/plantroid_msgs/srv/detail/gesture__functions.c.o[0m
+[14.239s] [ 17%] [32m[1mLinking C shared library libplantroid_msgs__rosidl_generator_c.so[0m
+[14.473s] [ 17%] Built target plantroid_msgs__rosidl_generator_c
+[14.543s] [ 18%] [34m[1mGenerating C introspection for ROS interfaces[0m
+[14.575s] [35m[1mScanning dependencies of target plantroid_msgs__rosidl_typesupport_introspection_cpp[0m
+[14.669s] [ 19%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/plantroid_msgs/msg/detail/pose__type_support.cpp.o[0m
+[15.162s] [35m[1mScanning dependencies of target plantroid_msgs__rosidl_typesupport_fastrtps_cpp[0m
+[15.303s] [ 20%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/plantroid_msgs/msg/detail/dds_fastrtps/pose__type_support.cpp.o[0m
+[15.788s] [ 21%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/plantroid_msgs/msg/speed__type_support.cpp.o[0m
+[16.346s] [ 22%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/plantroid_msgs/msg/detail/speed__type_support.cpp.o[0m
+[17.542s] [ 24%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/plantroid_msgs/msg/state__type_support.cpp.o[0m
+[17.834s] [ 25%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/plantroid_msgs/msg/detail/dds_fastrtps/speed__type_support.cpp.o[0m
+[18.028s] [35m[1mScanning dependencies of target plantroid_msgs__rosidl_typesupport_introspection_c[0m
+[18.129s] [ 27%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/plantroid_msgs/msg/detail/state__type_support.cpp.o[0m
+[18.131s] [ 27%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/plantroid_msgs/msg/detail/pose__type_support.c.o[0m
+[18.311s] [ 28%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/plantroid_msgs/msg/detail/speed__type_support.c.o[0m
+[18.501s] [ 29%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/plantroid_msgs/msg/detail/state__type_support.c.o[0m
+[18.696s] [ 31%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/plantroid_msgs/srv/detail/camera__type_support.c.o[0m
+[18.913s] [ 32%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/plantroid_msgs/srv/detail/neck_servo__type_support.c.o[0m
+[19.122s] [ 33%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/plantroid_msgs/srv/detail/sensors__type_support.c.o[0m
+[19.337s] [ 34%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/plantroid_msgs/srv/detail/command__type_support.c.o[0m
+[19.356s] [ 35%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/plantroid_msgs/srv/camera__type_support.cpp.o[0m
+[19.550s] [ 36%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/plantroid_msgs/srv/detail/gesture__type_support.c.o[0m
+[19.768s] [ 37%] [32m[1mLinking C shared library libplantroid_msgs__rosidl_typesupport_introspection_c.so[0m
+[19.915s] [ 39%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/camera__type_support.cpp.o[0m
+[19.958s] [ 39%] Built target plantroid_msgs__rosidl_typesupport_introspection_c
+[20.013s] [ 40%] [34m[1mGenerating C type support dispatch for ROS interfaces[0m
+[20.414s] [ 41%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/plantroid_msgs/msg/detail/dds_fastrtps/state__type_support.cpp.o[0m
+[21.174s] [ 42%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/plantroid_msgs/srv/neck_servo__type_support.cpp.o[0m
+[21.664s] [ 43%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/neck_servo__type_support.cpp.o[0m
+[22.500s] [35m[1mScanning dependencies of target plantroid_msgs__rosidl_typesupport_c[0m
+[22.587s] [ 44%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/plantroid_msgs/msg/pose__type_support.cpp.o[0m
+[22.752s] [ 45%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/plantroid_msgs/msg/speed__type_support.cpp.o[0m
+[22.937s] [ 47%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/plantroid_msgs/msg/state__type_support.cpp.o[0m
+[22.949s] [ 48%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/plantroid_msgs/srv/detail/dds_fastrtps/camera__type_support.cpp.o[0m
+[22.988s] [ 49%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/plantroid_msgs/srv/sensors__type_support.cpp.o[0m
+[23.104s] [ 50%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/plantroid_msgs/srv/camera__type_support.cpp.o[0m
+[23.281s] [ 51%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/plantroid_msgs/srv/neck_servo__type_support.cpp.o[0m
+[23.470s] [ 52%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/plantroid_msgs/srv/sensors__type_support.cpp.o[0m
+[23.511s] [ 54%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/sensors__type_support.cpp.o[0m
+[23.647s] [ 55%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/plantroid_msgs/srv/command__type_support.cpp.o[0m
+[23.834s] [ 56%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/plantroid_msgs/srv/gesture__type_support.cpp.o[0m
+[24.024s] [ 57%] [32m[1mLinking CXX shared library libplantroid_msgs__rosidl_typesupport_c.so[0m
+[24.244s] [ 57%] Built target plantroid_msgs__rosidl_typesupport_c
+[24.298s] [ 58%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/command__type_support.cpp.o[0m
+[24.764s] [ 59%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/plantroid_msgs/srv/command__type_support.cpp.o[0m
+[25.274s] [ 60%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/plantroid_msgs/srv/detail/gesture__type_support.cpp.o[0m
+[25.556s] [ 62%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/plantroid_msgs/srv/detail/dds_fastrtps/neck_servo__type_support.cpp.o[0m
+[26.039s] [ 63%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/plantroid_msgs/srv/detail/dds_fastrtps/sensors__type_support.cpp.o[0m
+[26.510s] [ 64%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/plantroid_msgs/srv/gesture__type_support.cpp.o[0m
+[26.978s] [ 65%] [32m[1mLinking CXX shared library libplantroid_msgs__rosidl_typesupport_introspection_cpp.so[0m
+[27.335s] [ 65%] Built target plantroid_msgs__rosidl_typesupport_introspection_cpp
+[27.386s] [ 66%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/plantroid_msgs/srv/detail/dds_fastrtps/command__type_support.cpp.o[0m
+[28.245s] [ 67%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/plantroid_msgs/srv/detail/dds_fastrtps/gesture__type_support.cpp.o[0m
+[28.320s] [ 68%] [32m[1mLinking CXX shared library libplantroid_msgs__rosidl_typesupport_cpp.so[0m
+[28.532s] [ 68%] Built target plantroid_msgs__rosidl_typesupport_cpp
+[30.310s] [ 70%] [32m[1mLinking CXX shared library libplantroid_msgs__rosidl_typesupport_fastrtps_cpp.so[0m
+[30.653s] [ 70%] Built target plantroid_msgs__rosidl_typesupport_fastrtps_cpp
+[30.703s] [ 71%] [34m[1mGenerating C type support for eProsima Fast-RTPS[0m
+[33.075s] [35m[1mScanning dependencies of target plantroid_msgs__rosidl_typesupport_fastrtps_c[0m
+[33.202s] [ 72%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/plantroid_msgs/msg/detail/pose__type_support_c.cpp.o[0m
+[33.204s] [ 74%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/plantroid_msgs/msg/detail/state__type_support_c.cpp.o[0m
+[33.206s] [ 74%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/plantroid_msgs/msg/detail/speed__type_support_c.cpp.o[0m
+[33.214s] [ 75%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/plantroid_msgs/srv/detail/camera__type_support_c.cpp.o[0m
+[35.255s] [ 77%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/plantroid_msgs/srv/detail/neck_servo__type_support_c.cpp.o[0m
+[35.268s] [ 78%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/plantroid_msgs/srv/detail/sensors__type_support_c.cpp.o[0m
+[35.297s] [ 79%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/plantroid_msgs/srv/detail/command__type_support_c.cpp.o[0m
+[35.459s] [ 80%] [32mBuilding CXX object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/plantroid_msgs/srv/detail/gesture__type_support_c.cpp.o[0m
+[37.649s] [ 81%] [32m[1mLinking CXX shared library libplantroid_msgs__rosidl_typesupport_fastrtps_c.so[0m
+[37.990s] [ 81%] Built target plantroid_msgs__rosidl_typesupport_fastrtps_c
+[38.035s] [35m[1mScanning dependencies of target plantroid_msgs[0m
+[38.084s] [ 81%] Built target plantroid_msgs
+[38.132s] [35m[1mScanning dependencies of target plantroid_msgs__py[0m
+[38.181s] [ 82%] [34m[1mGenerating Python code for ROS interfaces[0m
+[43.247s] [ 82%] Built target plantroid_msgs__py
+[43.293s] [35m[1mScanning dependencies of target plantroid_msgs__python[0m
+[43.475s] [ 85%] [32mBuilding C object CMakeFiles/plantroid_msgs__python.dir/rosidl_generator_py/plantroid_msgs/msg/_speed_s.c.o[0m
+[43.477s] [ 85%] [32mBuilding C object CMakeFiles/plantroid_msgs__python.dir/rosidl_generator_py/plantroid_msgs/msg/_pose_s.c.o[0m
+[43.478s] [ 86%] [32mBuilding C object CMakeFiles/plantroid_msgs__python.dir/rosidl_generator_py/plantroid_msgs/msg/_state_s.c.o[0m
+[43.482s] [ 87%] [32mBuilding C object CMakeFiles/plantroid_msgs__python.dir/rosidl_generator_py/plantroid_msgs/srv/_camera_s.c.o[0m
+[43.978s] [ 88%] [32mBuilding C object CMakeFiles/plantroid_msgs__python.dir/rosidl_generator_py/plantroid_msgs/srv/_sensors_s.c.o[0m
+[43.983s] [ 89%] [32mBuilding C object CMakeFiles/plantroid_msgs__python.dir/rosidl_generator_py/plantroid_msgs/srv/_neck_servo_s.c.o[0m
+[43.988s] [ 90%] [32mBuilding C object CMakeFiles/plantroid_msgs__python.dir/rosidl_generator_py/plantroid_msgs/srv/_command_s.c.o[0m
+[44.074s] [ 91%] [32mBuilding C object CMakeFiles/plantroid_msgs__python.dir/rosidl_generator_py/plantroid_msgs/srv/_gesture_s.c.o[0m
+[44.607s] [ 93%] [32m[1mLinking C shared library rosidl_generator_py/plantroid_msgs/libplantroid_msgs__python.so[0m
+[44.795s] [ 93%] Built target plantroid_msgs__python
+[44.847s] [35m[1mScanning dependencies of target plantroid_msgs__rosidl_typesupport_c__pyext[0m
+[44.848s] [35m[1mScanning dependencies of target plantroid_msgs__rosidl_typesupport_fastrtps_c__pyext[0m
+[44.855s] [35m[1mScanning dependencies of target plantroid_msgs__rosidl_typesupport_introspection_c__pyext[0m
+[44.950s] [ 94%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/plantroid_msgs/_plantroid_msgs_s.ep.rosidl_typesupport_c.c.o[0m
+[44.971s] [ 95%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/plantroid_msgs/_plantroid_msgs_s.ep.rosidl_typesupport_introspection_c.c.o[0m
+[44.974s] [ 96%] [32mBuilding C object CMakeFiles/plantroid_msgs__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/plantroid_msgs/_plantroid_msgs_s.ep.rosidl_typesupport_fastrtps_c.c.o[0m
+[45.569s] [ 97%] [32m[1mLinking C shared library rosidl_generator_py/plantroid_msgs/plantroid_msgs_s__rosidl_typesupport_c.cpython-38-aarch64-linux-gnu.so[0m
+[45.596s] [ 98%] [32m[1mLinking C shared library rosidl_generator_py/plantroid_msgs/plantroid_msgs_s__rosidl_typesupport_introspection_c.cpython-38-aarch64-linux-gnu.so[0m
+[45.623s] [100%] [32m[1mLinking CXX shared library rosidl_generator_py/plantroid_msgs/plantroid_msgs_s__rosidl_typesupport_fastrtps_c.cpython-38-aarch64-linux-gnu.so[0m
+[45.770s] [100%] Built target plantroid_msgs__rosidl_typesupport_c__pyext
+[45.804s] [100%] Built target plantroid_msgs__rosidl_typesupport_introspection_c__pyext
+[45.935s] [100%] Built target plantroid_msgs__rosidl_typesupport_fastrtps_c__pyext
+[45.987s] Invoked command in '/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/plantroid/plantroid_ws/install/plantroid_gui:/opt/ros/foxy /usr/bin/cmake --build /home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs -- -j4 -l4
+[46.929s] Invoking command in '/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/plantroid/plantroid_ws/install/plantroid_gui:/opt/ros/foxy /usr/bin/cmake --install /home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs
+[46.968s] -- Install configuration: ""
+[46.969s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/ament_index/resource_index/rosidl_interfaces/plantroid_msgs
+[46.970s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs
+[46.971s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg
+[46.972s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/rosidl_generator_c__visibility_control.h
+[46.973s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/pose.h
+[46.974s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/state.h
+[46.975s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/speed.h
+[46.976s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail
+[46.976s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/pose__functions.h
+[46.978s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/pose__type_support.h
+[46.979s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/speed__type_support.h
+[46.980s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/pose__struct.h
+[46.981s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/state__functions.h
+[46.982s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/state__functions.c
+[46.983s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/speed__functions.c
+[46.984s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/pose__functions.c
+[46.985s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/speed__struct.h
+[46.986s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/state__type_support.h
+[46.987s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/state__struct.h
+[46.988s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/speed__functions.h
+[46.989s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv
+[46.990s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/sensors.h
+[46.991s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/command.h
+[46.992s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/neck_servo.h
+[46.993s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/gesture.h
+[46.994s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/camera.h
+[46.995s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail
+[46.996s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/camera__functions.h
+[46.997s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/neck_servo__type_support.h
+[46.998s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/command__struct.h
+[46.999s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/camera__type_support.h
+[47.000s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/camera__struct.h
+[47.001s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/gesture__struct.h
+[47.002s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/sensors__type_support.h
+[47.003s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/neck_servo__functions.c
+[47.004s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/camera__functions.c
+[47.005s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/neck_servo__struct.h
+[47.006s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/sensors__struct.h
+[47.007s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/command__functions.h
+[47.009s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/sensors__functions.h
+[47.010s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/gesture__functions.h
+[47.011s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/command__functions.c
+[47.012s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/command__type_support.h
+[47.013s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/neck_servo__functions.h
+[47.014s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/sensors__functions.c
+[47.015s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/gesture__functions.c
+[47.016s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/gesture__type_support.h
+[47.018s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/environment/library_path.sh
+[47.019s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/environment/library_path.dsv
+[47.021s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/libplantroid_msgs__rosidl_generator_c.so
+[47.024s] -- Set runtime path of "/home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/libplantroid_msgs__rosidl_generator_c.so" to ""
+[47.024s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs
+[47.025s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg
+[47.025s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/rosidl_typesupport_fastrtps_c__visibility_control.h
+[47.026s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail
+[47.027s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/speed__rosidl_typesupport_fastrtps_c.h
+[47.028s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/pose__rosidl_typesupport_fastrtps_c.h
+[47.029s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/state__rosidl_typesupport_fastrtps_c.h
+[47.030s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv
+[47.030s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail
+[47.031s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/command__rosidl_typesupport_fastrtps_c.h
+[47.032s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/gesture__rosidl_typesupport_fastrtps_c.h
+[47.033s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/sensors__rosidl_typesupport_fastrtps_c.h
+[47.035s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/camera__rosidl_typesupport_fastrtps_c.h
+[47.036s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/neck_servo__rosidl_typesupport_fastrtps_c.h
+[47.037s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/libplantroid_msgs__rosidl_typesupport_fastrtps_c.so
+[47.041s] -- Set runtime path of "/home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/libplantroid_msgs__rosidl_typesupport_fastrtps_c.so" to ""
+[47.041s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs
+[47.041s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg
+[47.042s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h
+[47.043s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail
+[47.043s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/speed__rosidl_typesupport_fastrtps_cpp.hpp
+[47.045s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/dds_fastrtps
+[47.045s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/pose__rosidl_typesupport_fastrtps_cpp.hpp
+[47.046s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/state__rosidl_typesupport_fastrtps_cpp.hpp
+[47.048s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv
+[47.048s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail
+[47.048s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/gesture__rosidl_typesupport_fastrtps_cpp.hpp
+[47.050s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/command__rosidl_typesupport_fastrtps_cpp.hpp
+[47.051s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/dds_fastrtps
+[47.052s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/camera__rosidl_typesupport_fastrtps_cpp.hpp
+[47.053s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/neck_servo__rosidl_typesupport_fastrtps_cpp.hpp
+[47.054s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/sensors__rosidl_typesupport_fastrtps_cpp.hpp
+[47.056s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/libplantroid_msgs__rosidl_typesupport_fastrtps_cpp.so
+[47.059s] -- Set runtime path of "/home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/libplantroid_msgs__rosidl_typesupport_fastrtps_cpp.so" to ""
+[47.060s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs
+[47.060s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg
+[47.060s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/rosidl_typesupport_introspection_c__visibility_control.h
+[47.061s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail
+[47.062s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/pose__type_support.c
+[47.063s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/state__rosidl_typesupport_introspection_c.h
+[47.064s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/speed__rosidl_typesupport_introspection_c.h
+[47.065s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/state__type_support.c
+[47.067s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/speed__type_support.c
+[47.068s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/pose__rosidl_typesupport_introspection_c.h
+[47.069s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv
+[47.069s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail
+[47.070s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/sensors__rosidl_typesupport_introspection_c.h
+[47.071s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/command__type_support.c
+[47.073s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/neck_servo__type_support.c
+[47.073s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/gesture__type_support.c
+[47.075s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/command__rosidl_typesupport_introspection_c.h
+[47.076s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/neck_servo__rosidl_typesupport_introspection_c.h
+[47.077s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/gesture__rosidl_typesupport_introspection_c.h
+[47.078s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/camera__rosidl_typesupport_introspection_c.h
+[47.080s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/camera__type_support.c
+[47.081s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/sensors__type_support.c
+[47.082s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/libplantroid_msgs__rosidl_typesupport_introspection_c.so
+[47.085s] -- Set runtime path of "/home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/libplantroid_msgs__rosidl_typesupport_introspection_c.so" to ""
+[47.086s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/libplantroid_msgs__rosidl_typesupport_c.so
+[47.089s] -- Set runtime path of "/home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/libplantroid_msgs__rosidl_typesupport_c.so" to ""
+[47.089s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs
+[47.089s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg
+[47.090s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/state.hpp
+[47.091s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/speed.hpp
+[47.092s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/pose.hpp
+[47.093s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail
+[47.093s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/state__builder.hpp
+[47.094s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/speed__traits.hpp
+[47.095s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/pose__builder.hpp
+[47.096s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/pose__traits.hpp
+[47.097s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/state__traits.hpp
+[47.098s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/speed__struct.hpp
+[47.099s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/state__struct.hpp
+[47.101s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/pose__struct.hpp
+[47.102s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/speed__builder.hpp
+[47.103s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv
+[47.103s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/command.hpp
+[47.104s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/gesture.hpp
+[47.105s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/camera.hpp
+[47.106s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/sensors.hpp
+[47.107s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/neck_servo.hpp
+[47.108s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail
+[47.109s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/command__struct.hpp
+[47.110s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/gesture__traits.hpp
+[47.111s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/camera__traits.hpp
+[47.112s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/camera__builder.hpp
+[47.113s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/sensors__struct.hpp
+[47.114s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/command__builder.hpp
+[47.115s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/command__traits.hpp
+[47.116s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/neck_servo__builder.hpp
+[47.117s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/neck_servo__traits.hpp
+[47.118s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/neck_servo__struct.hpp
+[47.119s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/gesture__struct.hpp
+[47.120s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/camera__struct.hpp
+[47.122s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/sensors__builder.hpp
+[47.123s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/sensors__traits.hpp
+[47.124s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/gesture__builder.hpp
+[47.125s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs
+[47.126s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg
+[47.126s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail
+[47.126s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/speed__type_support.cpp
+[47.128s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/pose__rosidl_typesupport_introspection_cpp.hpp
+[47.129s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/state__rosidl_typesupport_introspection_cpp.hpp
+[47.130s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/speed__rosidl_typesupport_introspection_cpp.hpp
+[47.131s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/state__type_support.cpp
+[47.132s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/msg/detail/pose__type_support.cpp
+[47.133s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv
+[47.134s] -- Up-to-date: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail
+[47.134s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/camera__rosidl_typesupport_introspection_cpp.hpp
+[47.136s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/gesture__type_support.cpp
+[47.137s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/neck_servo__type_support.cpp
+[47.138s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/gesture__rosidl_typesupport_introspection_cpp.hpp
+[47.139s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/sensors__type_support.cpp
+[47.141s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/sensors__rosidl_typesupport_introspection_cpp.hpp
+[47.142s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/command__rosidl_typesupport_introspection_cpp.hpp
+[47.143s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/command__type_support.cpp
+[47.144s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/camera__type_support.cpp
+[47.145s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/include/plantroid_msgs/srv/detail/neck_servo__rosidl_typesupport_introspection_cpp.hpp
+[47.147s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/libplantroid_msgs__rosidl_typesupport_introspection_cpp.so
+[47.150s] -- Set runtime path of "/home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/libplantroid_msgs__rosidl_typesupport_introspection_cpp.so" to ""
+[47.151s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/libplantroid_msgs__rosidl_typesupport_cpp.so
+[47.154s] -- Set runtime path of "/home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/libplantroid_msgs__rosidl_typesupport_cpp.so" to ""
+[47.154s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/environment/pythonpath.sh
+[47.155s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/environment/pythonpath.dsv
+[47.157s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/__init__.py
+[47.302s] Compiling '/home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/__init__.py'...
+[47.324s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/msg
+[47.325s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/msg/_pose.py
+[47.326s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/msg/_speed.py
+[47.327s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/msg/__init__.py
+[47.328s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/msg/_speed_s.c
+[47.329s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/msg/_pose_s.c
+[47.330s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/msg/_state.py
+[47.332s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/msg/_state_s.c
+[47.333s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/srv
+[47.334s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/srv/_camera_s.c
+[47.336s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/srv/_sensors_s.c
+[47.337s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/srv/_command_s.c
+[47.338s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/srv/_gesture_s.c
+[47.339s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/srv/__init__.py
+[47.341s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/srv/_camera.py
+[47.342s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/srv/_gesture.py
+[47.343s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/srv/_neck_servo.py
+[47.344s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/srv/_command.py
+[47.345s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/srv/_sensors.py
+[47.346s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/srv/_neck_servo_s.c
+[47.349s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/plantroid_msgs_s__rosidl_typesupport_fastrtps_c.cpython-38-aarch64-linux-gnu.so
+[47.352s] -- Set runtime path of "/home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/plantroid_msgs_s__rosidl_typesupport_fastrtps_c.cpython-38-aarch64-linux-gnu.so" to ""
+[47.353s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/plantroid_msgs_s__rosidl_typesupport_introspection_c.cpython-38-aarch64-linux-gnu.so
+[47.357s] -- Set runtime path of "/home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/plantroid_msgs_s__rosidl_typesupport_introspection_c.cpython-38-aarch64-linux-gnu.so" to ""
+[47.358s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/plantroid_msgs_s__rosidl_typesupport_c.cpython-38-aarch64-linux-gnu.so
+[47.361s] -- Set runtime path of "/home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/python3.8/site-packages/plantroid_msgs/plantroid_msgs_s__rosidl_typesupport_c.cpython-38-aarch64-linux-gnu.so" to ""
+[47.361s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/libplantroid_msgs__python.so
+[47.364s] -- Set runtime path of "/home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/lib/libplantroid_msgs__python.so" to ""
+[47.365s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/msg/Pose.idl
+[47.367s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/msg/Speed.idl
+[47.368s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/msg/State.idl
+[47.369s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/Camera.idl
+[47.371s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/NeckServo.idl
+[47.372s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/Sensors.idl
+[47.373s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/Command.idl
+[47.374s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/Gesture.idl
+[47.376s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/msg/Pose.msg
+[47.377s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/msg/Speed.msg
+[47.378s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/msg/State.msg
+[47.379s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/Camera.srv
+[47.380s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/Camera_Request.msg
+[47.382s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/Camera_Response.msg
+[47.383s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/NeckServo.srv
+[47.384s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/NeckServo_Request.msg
+[47.385s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/NeckServo_Response.msg
+[47.387s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/Sensors.srv
+[47.388s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/Sensors_Request.msg
+[47.389s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/Sensors_Response.msg
+[47.390s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/Command.srv
+[47.392s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/Command_Request.msg
+[47.393s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/Command_Response.msg
+[47.394s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/Gesture.srv
+[47.395s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/Gesture_Request.msg
+[47.396s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/srv/Gesture_Response.msg
+[47.398s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/ament_index/resource_index/package_run_dependencies/plantroid_msgs
+[47.400s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/ament_index/resource_index/parent_prefix_path/plantroid_msgs
+[47.401s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/environment/ament_prefix_path.sh
+[47.403s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/environment/ament_prefix_path.dsv
+[47.404s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/environment/path.sh
+[47.405s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/environment/path.dsv
+[47.406s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/local_setup.bash
+[47.408s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/local_setup.sh
+[47.409s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/local_setup.zsh
+[47.410s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/local_setup.dsv
+[47.411s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/package.dsv
+[47.413s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/ament_index/resource_index/packages/plantroid_msgs
+[47.415s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/plantroid_msgs__rosidl_generator_cExport.cmake
+[47.416s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/plantroid_msgs__rosidl_generator_cExport-noconfig.cmake
+[47.418s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/plantroid_msgs__rosidl_typesupport_introspection_cExport.cmake
+[47.420s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/plantroid_msgs__rosidl_typesupport_introspection_cExport-noconfig.cmake
+[47.421s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/plantroid_msgs__rosidl_typesupport_cExport.cmake
+[47.423s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/plantroid_msgs__rosidl_typesupport_cExport-noconfig.cmake
+[47.425s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/plantroid_msgs__rosidl_generator_cppExport.cmake
+[47.426s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/plantroid_msgs__rosidl_typesupport_introspection_cppExport.cmake
+[47.428s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/plantroid_msgs__rosidl_typesupport_introspection_cppExport-noconfig.cmake
+[47.430s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/plantroid_msgs__rosidl_typesupport_cppExport.cmake
+[47.431s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/plantroid_msgs__rosidl_typesupport_cppExport-noconfig.cmake
+[47.433s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/rosidl_cmake-extras.cmake
+[47.434s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/ament_cmake_export_dependencies-extras.cmake
+[47.436s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/ament_cmake_export_libraries-extras.cmake
+[47.437s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/ament_cmake_export_targets-extras.cmake
+[47.438s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/ament_cmake_export_include_directories-extras.cmake
+[47.440s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake
+[47.441s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake
+[47.443s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/plantroid_msgsConfig.cmake
+[47.444s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/cmake/plantroid_msgsConfig-version.cmake
+[47.445s] -- Installing: /home/plantroid/plantroid_ws/src/plantroid_msgs/install/plantroid_msgs/share/plantroid_msgs/package.xml
+[47.454s] Invoked command in '/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/plantroid/plantroid_ws/install/plantroid_gui:/opt/ros/foxy /usr/bin/cmake --install /home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs
