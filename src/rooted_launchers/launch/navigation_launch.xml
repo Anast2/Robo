@@ -1,6 +1,0 @@
-<launch>
-  <node pkg="plantroid_busy" exec="busy_server" name="busy_server" namespace="social_plantroid"/>
-  <node pkg="plantroid_vision" exec="vision_server" name="vision_server" namespace="social_plantroid"/>
-  <node pkg="plantroid_encoder" exec="encoder" name="encoder" namespace="social_plantroid"/>
-  <node pkg="plantroid_navigation" exec="navigation" name="navigation" namespace="social_plantroid"/>
-</launch>

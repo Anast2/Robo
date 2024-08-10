@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>plantroid_listener</name>
+  <name>listening_module</name>
   <version>1.0.0</version>
-  <description>Package reponsible for listening to what people tell Plantroid.</description>
+  <description>Package reponsible for listening to what people tell the robot.</description>
   <maintainer email="antonio@mizuuchi.lab.tuat.ac.jp">Antonio Galiza Cerdeira Gonzalez</maintainer>
   <license>Apache License 2.0</license>
 

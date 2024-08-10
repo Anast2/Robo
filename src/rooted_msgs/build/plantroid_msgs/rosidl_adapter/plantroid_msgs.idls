@@ -1,8 +1,0 @@
-/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_adapter/plantroid_msgs:msg/Pose.idl
-/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_adapter/plantroid_msgs:msg/Speed.idl
-/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_adapter/plantroid_msgs:msg/State.idl
-/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_adapter/plantroid_msgs:srv/Camera.idl
-/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_adapter/plantroid_msgs:srv/NeckServo.idl
-/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_adapter/plantroid_msgs:srv/Sensors.idl
-/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_adapter/plantroid_msgs:srv/Command.idl
-/home/plantroid/plantroid_ws/src/plantroid_msgs/build/plantroid_msgs/rosidl_adapter/plantroid_msgs:srv/Gesture.idl

@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'plantroid_vision'
+package_name = 'vision_module'
 
 setup(
     name=package_name,
@@ -13,13 +13,13 @@ setup(
     ],
     install_requires=['setuptools', 'python-polylabel', 'opencv-python'],
     zip_safe=True,
-    maintainer='plantroid',
+    maintainer='Antonio Galiza Cerdeira Gonzalez',
     maintainer_email='antonio@mizuuchi.lab.tuat.ac.jp',
     description='Package related to Plantroid vision, implements functions of obtaining emotion estimation, detecting sunlight and shadow and labeling what the robot sees.',
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ["vision_server = plantroid_vision.Vision:main"
+        'console_scripts': ["vision_server = vision_module.Vision:main"
         ],
     },
 )

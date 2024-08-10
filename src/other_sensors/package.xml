@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>plantroid_sensors</name>
+  <name>other_sensors</name>
   <version>1.0.0</version>
-  <description>Package related to Plantroid sensors that are not vision related. It interfaces with the Arduino Nano inside the smart PlantPot and the NPK+EC+pH integrated soil sensor.</description>
-  <maintainer email="antonio@mizuuchi.lab.tuat.ac.jp">plantroid</maintainer>
+  <description>Package related to the robot sensors that are not vision related.</description>
+  <maintainer email="antonio@mizuuchi.lab.tuat.ac.jp">Antonio Galiza Cerdeira Gonzalez</maintainer>
   <license>Apache License 2.0</license>
 
   <depend>rclpy</depend>
-  <depend>plantroid_msgs</depend>
+  <depend>rooted_msgs</depend>
   <depend>syslog</depend>
   <depend>serial</depend>
   <depend>pymodbus</depend>

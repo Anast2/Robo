@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'plantroid_sensors'
+package_name = 'other_sensors'
 
 setup(
     name=package_name,
@@ -15,12 +15,12 @@ setup(
     zip_safe=True,
     maintainer='Antonio Galiza Cerdeira Gonzalez',
     maintainer_email='antonio@mizuuchi.lab.tuat.ac.jp',
-    description='Package related to Plantroid sensors that are not vision related. It interfaces with the Arduino Nano inside the smart PlantPot and the NPK+EC+pH integrated soil sensor.',
+    description='Package related to the robot sensors that are not vision related.',
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ["sensor_server = plantroid_sensors.SensorServer:main",
-                            "fake_sensor_server = plantroid_sensors.FakeSensorServer:main"
+        'console_scripts': ["sensor_server = other_sensors.SensorServer:main",
+                            "fake_sensor_server = other_sensors.FakeSensorServer:main"
         ],
     },
 )

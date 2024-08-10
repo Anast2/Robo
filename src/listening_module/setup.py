@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'plantroid_listener'
+package_name = 'listening_module'
 
 setup(
     name=package_name,
@@ -19,7 +19,7 @@ setup(
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ["listener_server = plantroid_listener.ListenServer:main"
+        'console_scripts': ["listener_server = listening_module.ListenServer:main"
         ],
     },
 )

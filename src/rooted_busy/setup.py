@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'plantroid_busy'
+package_name = 'rooted_busy'
 
 setup(
     name=package_name,
@@ -19,7 +19,7 @@ setup(
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ["busy_server = plantroid_busy.BusyServer:main"
+        'console_scripts': ["busy_server = rooted_busy.BusyServer:main"
         ],
     },
 )

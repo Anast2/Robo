@@ -19,7 +19,7 @@ setup(
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ["encoder = plantroid_encoder.Encoder:main",
+        'console_scripts': ["encoder = rooted_encoder.Encoder:main",
         ],
     },
 )

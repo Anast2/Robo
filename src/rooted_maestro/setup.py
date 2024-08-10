@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'plantroid_social'
+package_name = 'rooted_maestro'
 
 setup(
     name=package_name,
@@ -11,15 +11,15 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
     ],
-    install_requires=['setuptools'],
+    install_requires=['setuptools', 'kivy', 'beepy'],
     zip_safe=True,
     maintainer='Antonio Galiza Cerdeira Gonzalez',
     maintainer_email='antonio@mizuuchi.lab.tuat.ac.jp',
-    description='Package responsible for managing the social interfaces of plantroid, reciving data from the listen server, using the chatbot and GPTJ interfaces and prosody generation packages to genrate responses.',
+    description="ROOTED's MAESTRO module",
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ["social_manager = plantroid_social.SocialManager:main"
+        'console_scripts': ["gui = rooted_maestro.GUI_MEGA:main"
         ],
     },
 )

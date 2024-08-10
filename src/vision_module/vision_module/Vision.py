@@ -13,7 +13,7 @@ from PIL import Image
 from socket import * 
 
 running_on_pc = False
-sys.path.append('/home/plantroid/plantroid_ws/src/plantroid_vision/plantroid_vision')
+sys.path.append('') # add the location of this package, e.g., /home/you/rooted_ws/src/vision_module/vision_module
 
 try:
     from ThermalCamera import ThermalCamera
@@ -21,7 +21,8 @@ except:
     running_on_pc = True
     print("Warning: Running on laptop PC, cannot take thermal pictures.")
 
-sys.path.append('/home/plantroid/plantroid_ws/src/plantroid_vision/plantroid_vision/OKAO')
+sys.path.append('') # add the location of the OKAO vision folder, e.g., /home/you/rooted_ws/src/vision_module/vision_module/OKAO
+
 
 from OKAO_vision_interface import get_emotions, get_image_array, detect_person
 
@@ -39,23 +40,29 @@ class CameraServer(Node):
         if req.imagetype == 0: #returns OKAO vision emotion estimate.
             print("Returning emotional analysis.")
             img = get_emotions()
+
         elif req.imagetype == 1: #returns image of the OKAO camera
             print("Returning black and white image.")
             img = get_image_array().tolist() #returns thermal image
+
         elif req.imagetype == 2 and not running_on_pc:
             print("Returning thermal image.")
             img = get_thermal_image()
+
         elif req.imagetype == 3: #returns person detection
             print("Verifying if there are persons.")
             img = detect_person()
+
         elif req.imagetype == 4: #returns sunlight position. 
             print("Returning sunlight position.")
             img = get_image_array()
             img = get_dir_sunlight(img, None)
+
         elif req.imagetype == 5: #returns shadow position. 
             print("Returning shadow position.")
             img = get_image_array()
             img = get_shadow_pos(img, None)
+
         elif req.imagetype == 6: #returns sunlight coord on real world 
             print("Returning light coordinates on real world.")
             img = get_image_array()
@@ -63,6 +70,7 @@ class CameraServer(Node):
             Dy = 0.32*344/(img[1]-160)
             Dx = Dy*(img[0]-120)/266
             img = [Dx, Dy]
+
         elif req.imagetype == 7:#returns shadow coord on real world
             print("Returning light coordinates on real world.")
             img = get_image_array()
@@ -70,6 +78,7 @@ class CameraServer(Node):
             Dy = 0.32*344/(img[1]-160)
             Dx = Dy*(img[0]-120)/266
             img = [Dx, Dy]
+
         elif req.imagetype == 8:
             try:
 	            image = get_image_array()

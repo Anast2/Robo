@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'plantroid_memory'
+package_name = 'robot_memory'
 
 setup(
     name=package_name,
@@ -13,7 +13,7 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='plantroid',
+    maintainer='Antonio Galiza Cerdeira Gonzalez',
     maintainer_email='antonio@mizuuchi.lab.tuat.ac.jp',
     description='TODO: Package description',
     license='TODO: License declaration',

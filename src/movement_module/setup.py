@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'plantroid_navigation'
+package_name = 'movement_module'
 
 setup(
     name=package_name,
@@ -19,7 +19,7 @@ setup(
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ["navigation = plantroid_navigation.Navigation:main"
+        'console_scripts': ["navigation = movement_module.Navigation:main"
         ],
     },
 )

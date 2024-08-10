@@ -1,9 +1,0 @@
-<launch>
-  <node pkg="plantroid_listener" exec="listener_server" name="listener_server" namespace="social_plantroid"/>
-  <node pkg="plantroid_gui" exec="gui" name="gui" namespace="social_plantroid"/>
-  <node pkg="plantroid_busy" exec="busy_server" name="busy_server" namespace="social_plantroid"/>
-  <node pkg="plantroid_vision" exec="vision_server" name="vision_server" namespace="social_plantroid"/>
-  <node pkg="plantroid_encoder" exec="encoder" name="encoder" namespace="social_plantroid"/>
-  <node pkg="plantroid_neck" exec="neck_server" name="neck_server" namespace="social_plantroid"/>
-  <node pkg="plantroid_gestures" exec="gesture_server" name="gesture_server" namespace="social_plantroid"/>
-</launch>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>plantroid_launch</name>
+  <name>rooted_launchers</name>
   <version>1.0.0</version>
   <description>Dummy package that collects all of the launch files for Social Plantroid</description>
   <maintainer email="antonio@mizuuchi.lab.tuat.ac.jp">Antono Galiza Cerdeira Gonzalez</maintainer>
@@ -12,17 +12,17 @@
   <depend>uuid</depend>
   <depend>opencv-python</depend>
   <depend>tensorflow</depend>
-  <depend>plantroid_busy</depend>
-  <depend>plantroid_encoder</depend>
-  <depend>plantroid_gestures</depend>
-  <depend>plantroid_gui</depend>
-  <depend>plantroid_listener</depend>
-  <depend>plantroid_msgs</depend>
-  <depend>plantroid_navigation</depend>
+  <depend>rooted_busy</depend>
+  <depend>rooted_encoder</depend>
+  <depend>rooted_gestures</depend>
+  <depend>rooted_llm</depend>
+  <depend>rooted_maestro</depend>
+  <depend>rooted_msgs</depend>
+  <depend>navigation_module</depend>
   <depend>plantroid_neck</depend>
-  <depend>plantroid_sensors</depend>
-  <depend>plantroid_social</depend>
-  <depend>plantroid_vision</depend>
+  <depend>other_sensors</depend>
+  <depend>listening_module</depend>
+  <depend>vision_module</depend>
 
   <!--depend>plant_model</depend>
   <!depend>plantroid_memory</depend-->
