@@ -1,3 +1,0 @@
-[console_scripts]
-gui = plantroid_gui.GUI_MEGA:main
-

@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'facial_expression'
+package_name = 'maestro'
 
 setup(
     name=package_name,
@@ -11,15 +11,15 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
     ],
-    install_requires=['setuptools', 'kivy', 'beepy'],
+    install_requires=['setuptools'],
     zip_safe=True,
     maintainer='Antonio Galiza Cerdeira Gonzalez',
     maintainer_email='antonio@mizuuchi.lab.tuat.ac.jp',
-    description="Facial Expression Control Module",
+    description='MAESTRO module',
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ["gui = facial_expression.GUI_MEGA:main"
+        'console_scripts': ["social_manager = plantroid_social.SocialManager:main"
         ],
     },
 )
