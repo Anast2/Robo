@@ -3,12 +3,12 @@
 <package format="3">
   <name>plantroid_encoder</name>
   <version>1.0.0</version>
-  <description>Plantroid's servomotor interface package that implements speed control and the encoder.</description>
+  <description>ROOTED's servomotor interface package that implements speed control and the encoder.</description>
   <maintainer email="antonio@mizuuchi.lab.tuat.ac.jp">plantroid</maintainer>
   <license>Apache License 2.0</license>
 
   <depend>rclpy</depend>
-  <depend>plantroid_msgs</depend>
+  <depend>rooted_msgs</depend>
   
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

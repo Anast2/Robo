@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'plantroid_encoder'
+package_name = 'rooted_encoder'
 
 setup(
     name=package_name,
@@ -15,7 +15,7 @@ setup(
     zip_safe=True,
     maintainer='Antonio Galiza Cerdeira Gonzalez',
     maintainer_email='antonio@mizuuchi.lab.tuat.ac.jp',
-    description="Plantroid's servomotor interface package that implements speed control and the encoder.",
+    description="ROOTED's servomotor interface package that implements speed control and the encoder.",
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
