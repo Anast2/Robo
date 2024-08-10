@@ -1,3 +1,0 @@
-[console_scripts]
-listener_server = plantroid_listener.ListenServer:main
-
