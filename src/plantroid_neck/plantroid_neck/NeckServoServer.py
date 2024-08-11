@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import rclpy
 from rclpy.node import Node
-from plantroid_msgs.srv import NeckServo
+from rooted_msgs.srv import NeckServo
 from time import time
 import os
 

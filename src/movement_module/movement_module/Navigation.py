@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import sys
-from plantroid_msgs.srv import *
-from plantroid_msgs.msg import *
+from rooted_msgs.srv import *
+from rooted_msgs.msg import *
 import rclpy
-from plantroid_msgs.msg import Pose, Speed, State
+from rooted_msgs.msg import Pose, Speed, State
 from rclpy.node import Node
 from math import pi, sqrt
 import numpy as np

@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import rclpy
 from rclpy.node import Node
-from plantroid_msgs.srv import Sensors
+from rooted_msgs.srv import Sensors
 
 import os
 import serial

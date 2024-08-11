@@ -2,7 +2,7 @@
 import os
 os.environ["KIVY_NO_ARGS"] = "1"
 import sys
-sys.path.append('/home/plantroid/plantroid_ws/src/plantroid_social/plantroid_social')
+sys.path.append('') #  Add the location of this package on your computer
 import utils
 from ChatBot import chatter
 #from QLearning import QLearning

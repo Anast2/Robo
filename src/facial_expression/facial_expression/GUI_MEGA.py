@@ -14,8 +14,8 @@ import rclpy
 from rclpy.node import Node
 from threading import Thread
 import time
-from plantroid_msgs.srv import *
-from plantroid_msgs.msg import *
+from rooted_msgs.srv import *
+from rooted_msgs.msg import *
 from std_msgs.msg import String
 from time import time
 import argparse

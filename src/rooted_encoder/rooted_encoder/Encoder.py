@@ -2,8 +2,8 @@
 from time import time, sleep
 import rclpy
 from rclpy.node import Node
-from plantroid_msgs.msg import Pose, Speed, State
-from plantroid_msgs.srv import Command
+from rooted_msgs.msg import Pose, Speed, State
+from rooted_msgs.srv import Command
 from threading import Thread
 
 import numpy as np

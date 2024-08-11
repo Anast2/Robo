@@ -8,7 +8,7 @@ import os
 import cv2
 import rclpy
 from rclpy.node import Node
-from plantroid_msgs.srv import *
+from rooted_msgs.srv import *
 from PIL import Image
 from socket import * 
 
@@ -81,32 +81,32 @@ class CameraServer(Node):
 
         elif req.imagetype == 8:
             try:
-	            image = get_image_array()
-	            image = Image.fromarray(image,"L")
-	            image.save("img.png","PNG")
-	            response = ""
-	            img_bytes = open("img.png", "rb")
-	            clientSocket = socket(AF_INET, SOCK_STREAM)
-	            clientSocket.connect(("165.93.125.232", 5051))
-	            while 1:
-	                data = img_bytes.read(1024)
-	                clientSocket.send(data)
-	                if not data: break
+                image = get_image_array()
+                image = Image.fromarray(image,"L")
+                image.save("img.png","PNG")
+                response = ""
+                img_bytes = open("img.png", "rb")
+                clientSocket = socket(AF_INET, SOCK_STREAM)
+                clientSocket.connect(("165.93.125.232", 5051))
+                while 1:
+                    data = img_bytes.read(1024)
+                    clientSocket.send(data)
+                    if not data: break
 
-	            while 1:
-	                print("Waiting")
-	                try:
-	                    response = clientSocket.recv(1024)
-	                except Exception as e:
-	                    if e[0]=="time out": break 
-	                if not response: pass
-	                else:
-	                    response = response.decode("utf8")
+                while 1:
+                    print("Waiting")
+                    try:
+                        response = clientSocket.recv(1024)
+                    except Exception as e:
+                        if e[0]=="time out": break 
+                    if not response: pass
+                    else:
+                        response = response.decode("utf8")
 	                    #print(response)
-	                    break
-	            clientSocket.close()
-	            os.system("rm img.png")
-	            img = response  
+                        break
+                clientSocket.close()
+                os.system("rm img.png")
+                img = response  
             except: pass   
         else:
             print("Error: unkown request")
