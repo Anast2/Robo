@@ -19,7 +19,7 @@ setup(
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ["gui = facial_expression.GUI_MEGA:main"
+        'console_scripts': ["face_expression_server = facial_expression.face_expression_server:main"
         ],
     },
 )

@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
+from random import choice, random
+import subprocess
+import soundfile as sf
+import io
+
+
 def now():
     import datetime
     now = datetime.datetime.today()
     return (now.year, now.month, now.day, now.hour, now.minute, now.second,now.microsecond)
+
 
 def write_sql(dbLoc, sql_command, values):
     import sqlite3 as sql
@@ -12,11 +19,8 @@ def write_sql(dbLoc, sql_command, values):
     db.commit()
     db.close()
 
+
 def gibberish():
-    from random import choice, random
-    import subprocess
-    import soundfile as sf
-    import io
     min_len_words=1
     max_len_words=10
     min_len_phrase=1
@@ -54,6 +58,7 @@ def gibberish():
         counter0 += 1
     return phrase
 
+
 def wikipedia_query(title):
     from wikipedia import summary, suggest
     ans = "Sorry, I don't know what "+title+" is."
@@ -65,6 +70,7 @@ def wikipedia_query(title):
     #    except:
     #        pass
     return ans
+
 
 def dictionary_query(word):
     from PyDictionary import PyDictionary

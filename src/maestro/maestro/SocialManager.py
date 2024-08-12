@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 import os
-os.environ["KIVY_NO_ARGS"] = "1"
 import sys
 sys.path.append('') #  Add the location of this package on your computer
 import utils
 from ChatBot import chatter
-#from QLearning import QLearning
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
@@ -15,12 +13,10 @@ from plantroid_msgs.srv import *
 from plantroid_msgs.msg import *
 from time import time
 import argparse
-#from GSIP import GSIP
 from beepy import beep
 import subprocess
 from random import choice
 from threading import Thread
-from GPTJinterface import GPTJ
 
 s = "s0"
 c = 0
