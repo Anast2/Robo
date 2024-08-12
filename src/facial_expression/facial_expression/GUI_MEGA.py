@@ -7,22 +7,18 @@ from kivy.core.window import Window
 from kivy.clock import Clock
 import subprocess
 from kivy.uix.image import Image
-import utils
 from ChatBot import chatter
 from QLearning import QLearning
 import rclpy
 from rclpy.node import Node
 from threading import Thread
-import time
 from rooted_msgs.srv import *
 from rooted_msgs.msg import *
 from std_msgs.msg import String
 from time import time
-import argparse
 import os
 import subprocess 
 from ast import literal_eval
-from beepy import beep 
 
 s = "s0"
 c = 0
@@ -64,25 +60,7 @@ class facialExpressionEngine:
 emotion_engine = facialExpressionEngine("joy", image_folder)
 
 
-class GestureCommander(Node):
-
-    def __init__(self):
-        super().__init__('GUI_gesture_command')
-        self.cli = self.create_client(Gesture, 'gesture')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('service not available, waiting again...')
-        self.req = Gesture.Request()
-
-    def send_request(self, gesture):
-        try:
-            self.req.gesture = str(gesture)
-            self.future = self.cli.call_async(self.req)
-        except Exception as e:
-            print("Error: {}".format(e))
-            print(usage())
-
-
-class AudioVisualController(Node):
+class FaceController(Node):
 
     def __init__(self):
         super().__init__('audiovisual_controller')
@@ -94,16 +72,16 @@ class AudioVisualController(Node):
                                                      self.cb_function_emotion,
                                                      10)
 
-        self.publisher = self.create_publisher(String, 'ListenBlockTopic', 10)
-        self.gesture_comm = GestureCommander()
-        
     def cb_function_message(self, Data):
+        global is_talking
         reply = Data.data
         reply = literal_eval(reply)
         print(reply)
-        self.speak(reply)
+        if "/silence" in reply:
+            is_talking = True
+        else:
+            is_talking = False
         
-    
     def cb_function_emotion(self, Data):
         global emotion_engine
         if Data.data in ["fear", "anger", "joy","sadness", "disgust", 
@@ -117,52 +95,6 @@ class AudioVisualController(Node):
                 emotion_engine.current_emotion = "neutral"
         else: pass
 
-    def speak(self, speech):
-        global is_talking
-        for i, s in enumerate(speech):
-            voice_engine = ['espeak']
-            gib = s[0]
-            volume, speed, pitch = s[1]
-            vlm,ptc,spd = ["-a", str(volume)], ['-p', str(pitch)], ['-s',str(speed)]
-            cmd = voice_engine+["-v","en-us+f3"]+ptc+vlm+spd+[gib]
-            self.avoidEcho()    
-            emotion_readings = list()
-            process = subprocess.Popen(["python3",
-                                        "../test/CameraTest.py", "0"],
-                                        stdout=subprocess.PIPE)
-            process.wait()
-            emotion_now = literal_eval(process.communicate()[0].decode())#self.send_camera_request(0)
-            print(emotion_now)
-            emotion_readings.append(emotion_now)
-            if "yes" in gib:
-                self.gesture_comm.send_request("yes")
-            is_talking = True      
-            c = subprocess.Popen(cmd)
-            while c.poll() is None: pass
-            is_talking = False
-            print("FINISHED SPEAKING")
-            emotion_readings = list()
-            process = subprocess.Popen(["python3",
-                                        "../test/CameraTest.py", "0"],
-                                        stdout=subprocess.PIPE)
-            process.wait()
-            emotion_now = literal_eval(process.communicate()[0].decode())#self.send_camera_request(0)
-            print(emotion_now)
-            emotion_readings.append(emotion_now)
-
-            self.avoidEcho()    
-        if 1:
-            utils.write_sql("./mem/plantroid_memory.db", """
-            INSERT INTO conversation
-            (date, human_speech_filename, human_speech, robot_speech, human_emotion_timeseries)
-            VALUES (?, ?, ?, ?, ?)
-            """, [str(utils.now()), "../mem/audio/"+str(speech), str(speech), gib, str(emotion_readings)])
-
-    def avoidEcho(self):
-        msg = String()
-        msg.data = " "
-        self.publisher.publish(msg)
-        self.get_logger().info("Changing listen blocking state.")
 
 class MyApp(App):
     Window.clearcolor = (1, 1, 1, 1)
@@ -221,13 +153,15 @@ def GUI_main():
 
 def ROS2_main():
     rclpy.init(args=None)
-    ROS_interface = AudioVisualController()
+    ROS_interface = FaceController()
     rclpy.spin(ROS_interface)
+
 
 def main():
     thread1 = Thread(target=ROS2_main)
     thread1.start()
     GUI_main()
+
 
 if __name__ == '__main__':
     main()

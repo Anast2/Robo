@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from nltk.chat.util import Chat, reflections
 
 default_pairs = [

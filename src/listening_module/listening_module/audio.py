@@ -1,7 +1,7 @@
+#!/usr/bin/env python3
 from sys import byteorder
 from array import array
 from struct import pack
-
 import pyaudio
 import wave
 

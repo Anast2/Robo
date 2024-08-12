@@ -1,4 +1,4 @@
-# echo-client.py
+#!/usr/bin/env python3
 import socket
 
 def history_add(hist, new_item):
