@@ -1,32 +1,24 @@
 #!/usr/bin/env python3
 import sys
 import os
-#if os.uname()[4][:3] == "arm":  # checks if the node is running on Rasp
-#    os.system("ln -sf ./OKAO/libSTB_ARM_x64.so ./libSTB.so")
-#else:
-#    os.system("ln -sf ./OKAO/libSTB_x64.so ./libSTB.so")
 import cv2
 import rclpy
 from rclpy.node import Node
 from rooted_msgs.srv import *
 from PIL import Image
 from socket import * 
-
+import face_recognition as fr 
 running_on_pc = False
 sys.path.append('') # add the location of this package, e.g., /home/you/rooted_ws/src/vision_module/vision_module
-
 try:
     from ThermalCamera import ThermalCamera
 except:
     running_on_pc = True
     print("Warning: Running on laptop PC, cannot take thermal pictures.")
-
 sys.path.append('') # add the location of the OKAO vision folder, e.g., /home/you/rooted_ws/src/vision_module/vision_module/OKAO
-
-
 from OKAO_vision_interface import get_emotions, get_image_array, detect_person
-
 from image_processing2 import *
+
 
 class CameraServer(Node):
 
@@ -108,14 +100,32 @@ class CameraServer(Node):
                 os.system("rm img.png")
                 img = response  
             except: pass   
+
+        elif req.imagetype == 9: # Identity recognition
+            id_match = False
+            matched_id = None
+            unknown_face = get_image_array().tolist() #  TODO: convert to a format that works with this library
+            id_face_list = []  #  TODO: grab a list with all ID, face_file pairs from memory
+            for ID,face_file in id_face_list:
+                id_face = fr.load_image_file(face_file)
+                id_face_encoding = fr.face_encodings(id_face)[0]
+                unknown_face_encoding = fr.face_encodings(unknown_face)[0]
+                id_match = fr.compare_faces([id_face_encoding], unknown_face_encoding)
+                if id_match:
+                    matched_id = ID
+            img = matched_id
+            #while match not found: perform ID check with images
+        
         else:
             print("Error: unkown request")
         resp.image = str(img)
         return resp
+        
 
 def get_thermal_image():
     tc = ThermalCamera()
     return tc.i2cRead()
+
 
 def main():
     rclpy.init(args=None)
@@ -123,6 +133,7 @@ def main():
     print("Ready to send images.")
     rclpy.spin(s)
     rclpy.shutdown()
+
 
 if __name__ == "__main__":
 #    startup_routine()

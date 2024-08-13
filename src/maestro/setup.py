@@ -19,7 +19,7 @@ setup(
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ["social_manager = plantroid_social.SocialManager:main"
+        'console_scripts': ["maestro = maestro.MAESTRO:main"
         ],
     },
 )

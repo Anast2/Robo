@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import seeed_mlx90640
-#from serial import Serial
+from serial import Serial
 import numpy as np
 import cv2
 
