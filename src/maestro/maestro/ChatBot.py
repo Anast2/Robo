@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
+import pandas as pd
+import nltk 
+from nltk.sentiment import SentimentIntensityAnalyzer
 from nltk.chat.util import Chat, reflections
+from transformers import pipeline
+
+# NOTE: if your robot has low memory, it is better to uncomment the model loading line in the sentiment_analysis function, but it will increase inference time, since the model needs to be loaded. 
+sentiment_classifier = pipeline("text-classification",model='vamossyd/emtract-distilbert-base-uncased-emotion', return_all_scores=True)
 
 default_pairs = [
 [
@@ -159,6 +166,25 @@ r"who was (.*)",
   ["wikipedia:%1"]
 ],
 ]
+
 def chatter(phrase,pairs=default_pairs, reflections=reflections):
   chat = Chat(pairs, reflections)
   return chat.respond(phrase)
+
+def sentiment_analysis(phrase):
+  """Model from @article{vamossy2023emtract,
+  title={EmTract: Extracting Emotions from Social Media},
+  author={Vamossy, Domonkos F and Skog, Rolf},
+  journal={Available at SSRN 3975884},
+  year={2023}
+  }
+  """
+  # sentiment_classifier = pipeline("text-classification",model='vamossyd/emtract-distilbert-base-uncased-emotion', return_all_scores=True) # uncomment if you need to load the model locally in order to save memory
+  prediction = sentiment_classifier(phrase)
+  # this mapping is done to adapt to the 5-emotion model adopted by the HVC-P2 camera emotion estimation
+  emotion_map = {"neutral":"neutral","happy":"happy","sad":"sad","anger":"anger","disgust":"anger","surprise":"surprise","fear":"surprise",}
+  prediction = emotion_map.get(prediction)
+  if not prediction:
+    prediction = "neutral"
+
+  return emotion_map[prediction["label"].lower()]

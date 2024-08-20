@@ -18,28 +18,77 @@ from beepy import beep
 import subprocess
 from random import choice
 from threading import Thread
+import json
 
+##########################################################################################################################
+#                                    GLOBAL VARIABLES AREA, BE CAREFUL WHILE EDITING                                     #
+##########################################################################################################################
 s = "s0"
 c = 0
 image_folder = "./IMG/"
 learning = False  # True  # True if Q-Learning is in use
 is_talking = False
-
+dialog_json = "" #  Path to the dialog for the dialog state machine
 speech_style = 0
 logging = 0
 detect_person = 0
-
 in_notebook = 0
 OKAO = 0
 
+plantroid_problem_state_machine = StateMachine("problem", 
+                                               ["OK", "Problem"],
+                                               ["problem_detected", "problem_cleared"],
+                                               {"OK":{"problem_detected":"Problem",
+                                                      "problem_cleared":"OK"},
+                                                "Problem":{"problem_detected":"Problem",
+                                                           "problem_cleared":"OK"}})
+
+plantroid_state_machine = StateMachine("plantroid",["Free","Busy"],
+                                                   ["move","finished"],
+                                                   {"Free":{"move":"Busy",
+                                                            "finished":"Free"},
+                                                    "Busy":{"move":"Busy",
+                                                            "finished":"Free"}
+                                                          })
+
+plantroid_dialogue_state_machine = StateMachine("dialogue", ["Silent","SpokeToMe", "BusyCheck", 
+                                                             "LookAtUser", "AnnounceBusy", "StartDialogue2", 
+                                                             "AnswerHuman", "WaitHumanQuestion1", "CheckProblemAndBusy",
+                                                               "StartDialogue1", "Goodbye", "AskIfHumanIsAvailable",
+                                                               "AnnounceProblem", "WaitHumanQuestion2", "ClearProblem"],
+                                                            ["alone", "dialogue_end", "saw_human", "heard_human",
+                                                             "yes","no", "no_problem", "busy", "idle", "problem_detected",
+                                                             "dialog_init", "human_question", "robot_finished", "timeout"],
+                                                            {"Silent":{"alone":"Silent",
+                                                                       "saw_human":"CheckProblemAndBusy",
+                                                                       "heard_human":"SpokeToMe",
+                                                                       },
+                                                             "SpokeToMe":{"no":"Silent",
+                                                                          "yes":"BusyCheck",
+                                                                          },
+                                                             "BusyCheck":{"idle":"LookAtUser",
+                                                                          "busy":"AnnounceBusy",}, 
+                                                             "LookAtUser":{"saw_human":"StartDialogue2",},
+                                                             "AnnounceBusy":{"robot_finished":"Goodbye",},
+                                                             "StartDialogue2":{"dialogue_init":"AnswerHuman",}, 
+                                                             "AnswerHuman":{"robot_finished":"WaitHumanQuestion2",},
+                                                             "WaitHumanQuestion1":{"human_question":"AnswerHuman",
+                                                                                   "timeout":"ClearProblem",},
+                                                             "CheckProblemAndBusy":{"busy":"Silent",
+                                                                                    "no_problem":"Silent",
+                                                                                    "problem_detected":"StartDialogue1"},
+                                                             "StartDialogue1":{"dialogue_init":"AskIfHumanIsAvailable",},
+                                                             "Goodbye":{"dialogue_end":"Silent",},
+                                                             "AskIfHumanIsAvailable":{"yes":"AnnounceProblem",
+                                                                                      "no":"Goodbye",},
+                                                             "AnnounceProblem":{"robot_finished":"WaitHumanQuestion1",},
+                                                             "WaitHumanQuestion2":{"human_question":"AnswerHuman",
+                                                                                   "timeout":"Goodbye",},
+                                                             "ClearProblem":{"robot_finished":"Goodbye",}} )
+##########################################################################################################################
+
 
 def emotion_2_prompt(emotion):
-	#neutral
-	#happiness
-	#surprise
-	#anger
-	#sadness
-	#neg_pos
     i = emotion.index(max(emotion[:-1]))
     return [" in a happy tone", "", " in a calm tone", " in a calming tone", " to cheer up",""][i]
 
@@ -94,7 +143,7 @@ class BusyChecker(Node):
         self.future = self.cli.call_async(self.req)
 
 
-class MemoryAccess(Node):
+class MemoryAccess(Node): # TODO 
 
     def __init__(self):
         super().__init__('maestro_memory_access')
@@ -107,6 +156,37 @@ class MemoryAccess(Node):
         self.req.gesture = "get"
         self.future = self.cli.call_async(self.req)
 
+
+class PersonDetector(Node):
+    def __init__(self):
+        super().__init__('person_detector')
+        self.vision_control = Cameras()
+        self.person_detect_alarm = self.create_publisher(String, 'seenTopic', 10)
+
+    def get_vision(self):
+        response = "" #get_image_array().astype(np.uint8)
+        self.vision_control.send_request(3)
+        while rclpy.ok():
+            rclpy.spin_once(self.vision_control)
+            if self.vision_control.future.done():
+                try:
+                    response = self.vision_control.future.result().image
+                except Exception as e:
+                    self.vision_control.get_logger().info(
+                        'Service call failed %r' % (e,))
+                else:
+                    return response
+                
+    def detection_routine(self):
+        global plantroid_state_machine
+        global plantroid_dialogue_state_machine
+        if (plantroid_dialogue_state_machine.current_state == "Silent" and 
+            plantroid_state_machine.current_state == "Free"):
+            result = self.get_vision()
+            if result == True or result == "True":
+                self.person_detect_alarm.publish("Seen")
+            else:
+                pass
 
 class MAESTROmainNode(Node):
 
@@ -134,47 +214,56 @@ class MAESTROmainNode(Node):
         self.busy_check = BusyChecker()
         self.sensor_reader = SensorReader()
         self.busy = self.check_busy()
-        self.last_time_seen = -10000
         self.notifications = {}
         self.time_last_seen = -float("inf")
         self.diag_state_machine = dialogue_state_machine
         self.robot_state_machine = robot_state_machine
+        self.current_emotion = "neutral"
 
     def cb_function(self, subscribedData):
-        data = subscribedData.data.split(";")[0]
-        self.get_logger().info('Subscribed: ' + data)
+        data = subscribedData.data.split(";")
+
+        speaker_voice_emotion = data[2]
+        content_emotion = sentiment_analysis(data[0])
+        face_emotion = self.get_emotion()
+        
+        final_emotion = self.emotion_fusion([speaker_voice_emotion, content_emotion, face_emotion])
+        # response_emotion = final_emotion #  Uncoment this line if you desire the robot to copy the emotion of the human, "mirror strategy". Comment line below.
+        response_emotion = {"neutral":"neutral","happy":"happy","sad":"happy","anger":"neutral","surprise":"neutral"}[final_emotion] # Uncoment this line if you want the robot to try to improve human emotional state. Comment line above
+        
+        self.get_logger().info('Subscribed: ' + data[0])
         beep(1)
-        response = str(self.assign_prosody(self.conversate(data),"neutral"))
+        response = str(self.assign_prosody(self.conversate(data[0]), response_emotion))
         msg = String()
         msg.data = response
 
         if not self.busy:
-            os.system("python /home/plantroid/plantroid_ws/src/plantroid_social/plantroid_social/PersonSeeker.py")
+            os.system("python /location/of/this/package/PersonSeeker.py") #  Change the string to the location of this package
 
         self.publisher_speech.publish(msg)
 
     def cb_function_notification(self, subscribedData):
+        global plantroid_problem_state_machine
+        plantroid_problem_state_machine.transition("problem_detected")
         data = subscribedData.data
         data_breakdown = data.split(":")
         self.notifications[data_breakdown[0]] = data_breakdown[1:]
         if "Water" in self.notifications:
-            self.set_emotion("thirsty")
+            self.set_face("thirsty")
         else:
-            self.set_emotion("sad")
+            self.set_face("sad")
         print (self.notifications)
         self.get_logger().info('Subscribed: ' + data)
 
     def cb_function_seen(self, subscribedData):
             data = subscribedData.data
-            print("Saw person!")
-            self.get_logger().info('Subscribed: ' + data)
-            a = String()
-            a.data = "Hello"
+        
             if len(self.notifications)>0:
                 self.last_time_seen = time()
                 self.cb_function(a)
                 a.data = str(self.notifications)
                 self.cb_function(a)
+                
             elif time()-self.last_time_seen>300:
                 self.last_time_seen = time()
                 self.cb_function(a)
@@ -217,7 +306,7 @@ class MAESTROmainNode(Node):
                 else:
                     return response
 
-    def set_emotion(self, emotion):
+    def set_face(self, emotion):
         msg = String()
         msg.data = emotion
         self.publisher_emotion.publish(msg)
@@ -257,9 +346,10 @@ class MAESTROmainNode(Node):
                 break
         return response
 
+    def emotion_fusion(self,emotion_list): return max(set([(i, emotion_list.count(i)) for i in set(emotion_list)]),key=lambda x:x[1])[0]
+
     def conversate(self, data):
         gib = chatter(data)
-        current_emotion = self.get_emotion()
         #human_content_emotion = GPTJ(data, port=5052)
         #print(content_emotion)
         addendum = emotion_2_prompt(current_emotion)
@@ -301,7 +391,7 @@ class MAESTROmainNode(Node):
                 gib = GPTJ(gib,IP,PORT)
                 self.notifications = {}
         robot_content_emotion = GPTJ(gib, IP, port=PORT+1)
-        self.set_emotion(robot_content_emotion)
+        self.set_face(robot_content_emotion)
         return gib
 
     def assign_prosody(self, utterance, method="random"):
@@ -323,14 +413,27 @@ class MAESTROmainNode(Node):
         else:
             return ([(i,[150,100,45]) for i in utterance])
 
-plantroid_state_machine = 0
-plantroid_dialogue_state_machine = 0
+
+def maestro():
+    ROS_interface = MAESTROmainNode()
+    rclpy.spin(ROS_interface)
+    ROS_interface.destroy_node()
+
+
+def person_detection():
+    detector = PersonDetector()
+    rclpy.spin(detector)
+    detector.destroy_node()
+
 
 def main():
     rclpy.init()
-    ROS_interface = MAESTROmainNode()
-    rclpy.spin(ROS_interface)
+    maestro_thread = Thread(target = main)
+    person_detection_thread = Thread(target = person_detection)
+    maestro_thread.start()
+    person_detection_thread.start()
+    rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()
-

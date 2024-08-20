@@ -1,0 +1,17 @@
+{
+  "Silent" : [],
+  "SpokeToMe" : [],
+  "BusyCheck" : [],
+  "LookAtUser" : [], 
+  "AnnounceBusy" : ["Sorry, I am busy now; I will talk to you in a moment", "Sorry, finishing work, talk to you soon", "Sorry, please talk to me in a moment."],
+  "StartDialogue2" : ["Hello!", "Good \u007B\u007D"],
+  "AnswerHuman" : ["\u007B\u007D"],
+  "WaitHumanQuestion1" : ["<timeout_counter>"],
+  "CheckProblemAndBusy" : [""],
+  "StartDialogue1" : ["Hello, "],
+  "Goodbye" : ["Goodbye", "Byebye", "See you later"],
+  "AskIfHumanIsAvailable" : [""],
+  "AnnounceProblem" : ["I need your help, the soil has \u007B\u007D"],
+  "WaitHumanQuestion2" : [],
+  "ClearProblem" : ["That was all", "Thanks for listening", "Counting on your help"]
+}
