@@ -7,7 +7,7 @@ from rooted_msgs.srv import Command
 from threading import Thread
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
-
+import numpy as np
 
 class MotorSpeedControlServer(Node):
 
