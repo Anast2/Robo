@@ -10,7 +10,7 @@ import subprocess
 import sys 
 sys.path.append('/home/plantroid/plantroid_ws/src/plantroid_listener/plantroid_listener')
 import VAD as vad
-from huggingsound import SpeechRecognitionModel
+from transformers import pipeline
 
 def save_audio(path, data):
     import wave
@@ -21,8 +21,8 @@ def save_audio(path, data):
         file.close()
 
 def voice_emotion_analysis(audio_file):
-  model = SpeechRecognitionModel("r-f/wav2vec-english-speech-emotion-recognition ")
-  prediction = model(audio_file)
+  model = pipeline("audio-classification", model="r-f/wav2vec-english-speech-emotion-recognition")
+  prediction = classifier("/home/antoniogaliza/Documents/test1.mp3", top_k=1)[0]
   emotion_map = {"neutral":"neutral","happy":"happy","sad":"sad","anger":"anger","disgust":"anger","surprise":"surprise","fear":"surprise",}
   return emotion_map[prediction["label"].lower()]
 

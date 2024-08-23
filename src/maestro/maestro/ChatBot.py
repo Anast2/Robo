@@ -3,7 +3,16 @@ import pandas as pd
 import nltk 
 from nltk.sentiment import SentimentIntensityAnalyzer
 from nltk.chat.util import Chat, reflections
+from nltk import pos_tag, word_tokenize
 from transformers import pipeline
+from nltk.tree import Tree
+
+# Download necessary NLTK data
+
+nltk.download('averaged_perceptron_tagger')
+nltk.download('punkt')
+nltk.download('maxent_ne_chunker')
+nltk.download('words')
 
 # NOTE: if your robot has low memory, it is better to uncomment the model loading line in the sentiment_analysis function, but it will increase inference time, since the model needs to be loaded. 
 sentiment_classifier = pipeline("text-classification",model='vamossyd/emtract-distilbert-base-uncased-emotion', return_all_scores=True)
@@ -186,5 +195,63 @@ def sentiment_analysis(phrase):
   prediction = emotion_map.get(prediction)
   if not prediction:
     prediction = "neutral"
-
   return emotion_map[prediction["label"].lower()]
+
+
+def question_detection(phrase):
+    words = word_tokenize(phrase)
+    pos_tags = pos_tag(words)
+    if phrase.strip().endswith('?'):
+        return True
+    wh_words = {'what', 'who', 'whom', 'where', 'when', 'why', 'how', 'which'}
+    aux_verbs = {'is', 'are', 'am', 'was', 'were', 'do', 'does', 'did', 'will', 'would', 'can', 'could', 'should', 'have', 'has', 'had'}
+    if words[0].lower() in wh_words or words[0].lower() in aux_verbs:
+        return True
+    # Check if the first verb comes before the subject (e.g., "Is the cat hungry?")
+    for i, (word, tag) in enumerate(pos_tags):
+        if tag.startswith('VB'):  # Verb
+            if i < len(pos_tags) - 1 and pos_tags[i+1][1].startswith('NN'):  # Noun following the verb
+                return True    
+    # If none of the conditions are met, it's likely not a question
+    return False
+
+def get_subject(phrase):
+    words = word_tokenize(phrase)
+    pos_tags = pos_tag(words)
+    subject = None
+    found_aux = False
+    for i, (word, pos) in enumerate(pos_tags):
+        # Detect auxiliary verbs (common in questions)
+        if pos in ('MD', 'VBZ', 'VBP', 'VBD', 'VB') and not found_aux:
+            found_aux = True
+            continue
+        # Identify the subject: usually follows an auxiliary verb in questions
+        if found_aux and pos.startswith('NN'):
+            subject = word
+            break
+        # Handle cases where the subject is a pronoun (e.g., "you")
+        if found_aux and pos.startswith('PRP'):
+            subject = word
+            break
+    # If no auxiliary was found, fall back to finding the first noun phrase
+    if not subject:
+        for word, pos in pos_tags:
+            if pos.startswith('NN') or pos == 'PRP':
+                subject = word
+                break
+    return subject
+
+def is_command(sentence):
+    # Tokenize and POS tag the sentence
+    words = word_tokenize(sentence)
+    pos_tags = pos_tag(words)
+    # A simple heuristic: if the first word is a verb (VB), it's likely a command
+    first_word, first_tag = pos_tags[0]
+    # Check for imperative verb at the start of the sentence
+    if first_tag == 'VB':  # 'VB' is the base form of the verb
+        return True
+    # Check for modal verbs like "should", "must", "can"
+    modal_verbs = {'should', 'must', 'can', 'could', 'would', 'may', 'might'}
+    if first_word.lower() in modal_verbs:
+        return True
+    return False

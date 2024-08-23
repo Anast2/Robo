@@ -5,7 +5,7 @@ from std_msgs.msg import String
 from ast import literal_eval
 from rooted_msgs.srv import *
 from rooted_msgs.msg import *
-import math 
+import sys
 
 sys.path.append('') #  Add the location of this package on your computer
 import LLM_interfaces as llm 
@@ -15,7 +15,7 @@ class LLMServer(Node):
 
     def __init__(self, mode="local", IP="localhost", port=11434):
         super().__init__("llm_service")
-        self.srv = self.create_service(Sensors, "llm_server",
+        self.srv = self.create_service(LLM, "llm_server",
                                        self.cb_function)
         self.mode = mode
         self.IP = IP

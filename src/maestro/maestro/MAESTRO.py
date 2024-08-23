@@ -104,7 +104,7 @@ def process_notifications(notifications):
 class SensorReader(Node):
 
     def __init__(self):
-        super().__init__('social_central_sensor_reader')
+        super().__init__('maestro_sensor_reader')
         self.cli = self.create_client(Sensors, 'sensors_server')
         while not self.cli.wait_for_service(timeout_sec=5.0):
             self.get_logger().info('Sensor service not available, waiting again...')
@@ -118,7 +118,7 @@ class SensorReader(Node):
 class Cameras(Node):
 
     def __init__(self):
-        super().__init__('social_central_camera_reader')
+        super().__init__('maestro_camera_reader')
         self.cli = self.create_client(Camera, 'camera')
         while not self.cli.wait_for_service(timeout_sec=5.0):
             self.get_logger().info('Camera service not available, waiting again...')
@@ -126,6 +126,21 @@ class Cameras(Node):
 
     def send_request(self, type):
         self.req.imagetype = type
+        self.future = self.cli.call_async(self.req)
+
+
+class LLMinterface(Node):
+    def __init__(self):
+        super().__init__('maestro_llm_interface')
+        self.cli = self.create_client(LLM, 'llm_server')
+        while not self.cli.wait_for_service(timeout_sec=5.0):
+            self.get_logger().info('LLM service not available, waiting again...')
+        self.req = LLM.Request()
+        self.req
+
+    def send_request(self, model, prompt):
+        self.req.model = model
+        self.req.prompt = prompt
         self.future = self.cli.call_async(self.req)
 
 
@@ -180,8 +195,8 @@ class PersonDetector(Node):
     def detection_routine(self):
         global plantroid_state_machine
         global plantroid_dialogue_state_machine
-        if (plantroid_dialogue_state_machine.current_state == "Silent" and 
-            plantroid_state_machine.current_state == "Free"):
+        if (plantroid_dialogue_state_machine.get_current_state() == "Silent" and 
+            plantroid_state_machine.get_current_state() == "Free"):
             result = self.get_vision()
             if result == True or result == "True":
                 self.person_detect_alarm.publish("Seen")
@@ -213,16 +228,22 @@ class MAESTROmainNode(Node):
         self.vision_control = Cameras()
         self.busy_check = BusyChecker()
         self.sensor_reader = SensorReader()
+        self.llm = LLMinterface()
         self.busy = self.check_busy()
         self.notifications = {}
         self.time_last_seen = -float("inf")
         self.diag_state_machine = dialogue_state_machine
         self.robot_state_machine = robot_state_machine
         self.current_emotion = "neutral"
+        try:
+            with open('/location/of/your/dialogue.json', 'r') as f:
+                self.dialogues = json.load(f)
+        except Exception as e:
+            self.dialogues = {}
 
     def cb_function(self, subscribedData):
+        self.diag_state_machine.transition("heard_human")
         data = subscribedData.data.split(";")
-
         speaker_voice_emotion = data[2]
         content_emotion = sentiment_analysis(data[0])
         face_emotion = self.get_emotion()
@@ -230,14 +251,14 @@ class MAESTROmainNode(Node):
         final_emotion = self.emotion_fusion([speaker_voice_emotion, content_emotion, face_emotion])
         # response_emotion = final_emotion #  Uncoment this line if you desire the robot to copy the emotion of the human, "mirror strategy". Comment line below.
         response_emotion = {"neutral":"neutral","happy":"happy","sad":"happy","anger":"neutral","surprise":"neutral"}[final_emotion] # Uncoment this line if you want the robot to try to improve human emotional state. Comment line above
-        
+        self.current_emotion = response_emotion
         self.get_logger().info('Subscribed: ' + data[0])
         beep(1)
-        response = str(self.assign_prosody(self.conversate(data[0]), response_emotion))
+        response = str(self.assign_prosody(self.conversate(data[0], response_emotion), response_emotion))
         msg = String()
         msg.data = response
 
-        if not self.busy:
+        if self.robot_state_machine.get_current_state()=="Free":
             os.system("python /location/of/this/package/PersonSeeker.py") #  Change the string to the location of this package
 
         self.publisher_speech.publish(msg)
@@ -256,17 +277,14 @@ class MAESTROmainNode(Node):
         self.get_logger().info('Subscribed: ' + data)
 
     def cb_function_seen(self, subscribedData):
+            self.diag_state_machine.transition("saw_human")
             data = subscribedData.data
-        
-            if len(self.notifications)>0:
+            if len(self.notifications)>0 and self.robot_state_machine.get_current_state()=="Free":
                 self.last_time_seen = time()
-                self.cb_function(a)
-                a.data = str(self.notifications)
-                self.cb_function(a)
-                
-            elif time()-self.last_time_seen>300:
-                self.last_time_seen = time()
-                self.cb_function(a)
+                self.cb_function(a) #  TODO: Correct this line, what is a supposed to be???
+                a.data = str(self.notifications) #  TODO: Correct this line, what is a supposed to be???
+                self.cb_function(a) #  TODO: Correct this line, what is a supposed to be???
+
 
     def avoidEcho(self):
         msg = String()
@@ -275,7 +293,6 @@ class MAESTROmainNode(Node):
         self.get_logger().info("Changing listen blocking state.")
 
     def check_busy(self):
-        self.busy = 0
         self.busy_check.send_request("get")
         while rclpy.ok():
             rclpy.spin_once(self.busy_check)
@@ -283,13 +300,16 @@ class MAESTROmainNode(Node):
                 try:
                     response = self.busy_check.future.result().result
                 except Exception as e:
-                    self.busy = True
+                    self.robot_state_machine.transition("move")
                     self.busy_check.get_logger().info(
                         'Service call failed %r' % (e,))
                 else:
                     print(response)
                     response = literal_eval(response)
-                    self.busy = response
+                    if response:
+                        self.robot_state_machine.transition("move")
+                    else:
+                        self.robot_state_machine.transition("finished")
                 break
 
     def get_vision(self):
@@ -348,26 +368,38 @@ class MAESTROmainNode(Node):
 
     def emotion_fusion(self,emotion_list): return max(set([(i, emotion_list.count(i)) for i in set(emotion_list)]),key=lambda x:x[1])[0]
 
-    def conversate(self, data):
+    def get_llm_response(self, msg):
+        self.llm.send_request(model="llama3", prompt=msg)
+        while rclpy.ok():
+            rclpy.spin_once(self.llm)
+            if self.llm.future.done():
+                try:
+                    msg = self.llm.future.result().response
+                except Exception as e:
+                    self.llm.get_logger().info('Service call failed %r' % (e,))
+                else:
+                    msg = str(msg)
+                break
+        return msg 
+
+    def conversate(self, data, response_emotion):
         gib = chatter(data)
         #human_content_emotion = GPTJ(data, port=5052)
         #print(content_emotion)
-        addendum = emotion_2_prompt(current_emotion)
-        IP = "localhost"
-        PORT = 12345
+        addendum = response_emotion
         if gib is None:
-            gib = GPTJ(data,IP,PORT)
+            gib = self.get_llm_response(data)
         else:
             if "wikipedia:" in gib:
                 gib = gib.split(":")[1]
                 gib = utils.wikipedia_query(gib)
                 gib = "Paraphrase the following sentence"+addendum+": "+gib
-                gib = GPTJ(gib,IP,PORT)
+                gib = self.get_llm_response(gib)
             elif "dictionary:" in gib:
                 gib = gib.split(":")[1]
                 gib = utils.dictionary_query(gib)
                 gib = "Paraphrase the following sentence"+addendum+": "+gib
-                gib = GPTJ(gib,IP,PORT)
+                gib = self.get_llm_response(gib)
             elif "sensor:" in gib:
                 split = gib.split(":")
                 sensor_reading = self.get_sensor(int(split[1]))
@@ -379,19 +411,18 @@ class MAESTROmainNode(Node):
                              9:" miligrams per kilogram of soil", 10:" miligrams per kilogram of soil"}                               
                 gib = "current "+sensor_dict[int(split[1])]+" sensor reading is "+str(sensor_reading)+unit_dict[int(split[1])]
                 gib = "Paraphrase the following sentence"+addendum+": "+gib
-                gib = GPTJ(gib,IP,PORT)
+                gib = self.get_llm_response(gib)
             elif gib == "vision_check":
                 gib = self.get_vision()
                 gib = "Paraphrase the following sentence"+addendum+": "+gib 
-                gib = GPTJ(gib,IP,PORT)
+                gib = self.get_llm_response(gib)
             elif gib =="not_proc":
                 gib = process_notifications(self.notifications)
                 print(gib)
                 gib = "Paraphrase the following sentence"+addendum+": "+gib
-                gib = GPTJ(gib,IP,PORT)
+                gib = self.get_llm_response(gib)
                 self.notifications = {}
-        robot_content_emotion = GPTJ(gib, IP, port=PORT+1)
-        self.set_face(robot_content_emotion)
+        self.set_face(response_emotion)
         return gib
 
     def assign_prosody(self, utterance, method="random"):
