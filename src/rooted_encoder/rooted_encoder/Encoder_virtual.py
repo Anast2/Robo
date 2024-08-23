@@ -78,9 +78,11 @@ def spin_virtual_encoder():
     encoder = Encoder()
     rclpy.spin(encoder)
 
+
 def spin_motor_control():
     controller = MotorSpeedControlServer()
     rclpy.spin(controller)
+
 
 def main():
     rclpy.init(args=None)
