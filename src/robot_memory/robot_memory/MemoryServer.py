@@ -6,6 +6,11 @@ from rooted_msgs.srv import *
 from rooted_msgs.msg import *
 from std_msgs.msg import String
 import sqlite3 as sql 
+from queue import Queue
+import threading
+
+
+insert_queue = Queue()
 
 
 def create_table(conn, create_table_sql):
@@ -23,7 +28,7 @@ def create_table(conn, create_table_sql):
 
 class MemoryServer(Node):
 
-    def __init__(self, database_folder=""):
+    def __init__(self, database_folder="."):
         super().__init__("memory_server")
         self.srv = self.create_service(MemoryRequest, "memory_service", self.handle_request)
         self.database_folder =  database_folder
@@ -32,6 +37,7 @@ class MemoryServer(Node):
         database_name = req.db_name
         command = req.command
         response = None 
+        db, cursor = None, None 
 
         if "SELECT" in command or "INSERT" in command:
             try:
@@ -43,29 +49,66 @@ class MemoryServer(Node):
             try:
                 db = sql.connect(f"{self.database_folder}/{database_name}")
                 cursor = db.cursor()
-                cursor.execute(command)
             except:
                 self.get_logger().error(f"There was a problem connecting to {database_name}.")
                 response = "Failed"
-            
+
+            if "INSERT" in command:
+                global insert_queue
+                insert_queue.put([database_name, command])
+                response = "Success"
+
             if "SELECT" in command:
-                response = [i[0] for i in response.fetchall()]
+                cursor.execute(command)
+                response = str([i[0] for i in cursor.fetchall()])
             else:
                 response = "Success"
             resp.result = response
-        
+
         else:         
             self.get_logger().error(f"Command does not read or write from/in database {database_name}.")
             response = "Failed"
 
         return resp
 
-def main():
-    rclpy.init(args=None)
+
+class MemoryWriter:
+    def __init__(self, database_folder="."):
+        self.database_folder =  database_folder
+        self.main_routine()
+         
+    def main_routine(self):
+        global insert_queue
+        while 1:
+            while not insert_queue.empty():
+                current_insertion = insert_queue.get()
+                db_name = current_insertion[0]
+                command = current_insertion[1]
+                try:
+                    db = sql.connect(f"{self.database_folder}/{db_name}")
+                    cursor = db.cursor()
+                    cursor.execute(command)
+                except Exception as e:
+                    print("Failed to perform insertion operation due to: ", e)
+
+
+def memory_server_start():
     memory_manager = MemoryServer
     rclpy.spin(memory_manager)
+
+
+def memory_writer_start():
+    writer = MemoryWriter()
+
+
+def main():
+    rclpy.init(args=None)
+    server_thread = threading.Thread(target=memory_server_start, args=())
+    writer_thread = threading.Thread(target=memory_writer_start, args=())
+    server_thread.start()
+    writer_thread.start()
     rclpy.shutdown()
 
-
+  
 if __name__ == "__main__":
     main()

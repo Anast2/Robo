@@ -84,7 +84,7 @@ plantroid_dialogue_state_machine = StateMachine("dialogue", ["Silent","SpokeToMe
                                                              "AnnounceProblem":{"robot_finished":"WaitHumanQuestion1",},
                                                              "WaitHumanQuestion2":{"human_question":"AnswerHuman",
                                                                                    "timeout":"Goodbye",},
-                                                             "ClearProblem":{"robot_finished":"Goodbye",}} )
+                                                             "ClearProblem":{"robot_finished":"Goodbye",}})
 ##########################################################################################################################
 
 
@@ -145,7 +145,6 @@ class LLMinterface(Node):
 
 
 class BusyChecker(Node):
-
     def __init__(self):
         super().__init__('social_busy_check')
         self.cli = self.create_client(Gesture, 'busy')
@@ -158,17 +157,17 @@ class BusyChecker(Node):
         self.future = self.cli.call_async(self.req)
 
 
-class MemoryAccess(Node): # TODO 
-
+class MemoryAccess(Node):
     def __init__(self):
         super().__init__('maestro_memory_access')
-        self.cli = self.create_client(Gesture, 'busy')
+        self.cli = self.create_client(MemoryRequest, 'memory_reader')
         while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Camera service not available, waiting again...')
-        self.req = Gesture.Request()
+            self.get_logger().info('Memory service not available, waiting again...')
+        self.req = MemoryRequest.Request()
 
-    def send_request(self, busy):
-        self.req.gesture = "get"
+    def send_request(self, DB, command):
+        self.req.db_name = DB
+        self.req.command = command
         self.future = self.cli.call_async(self.req)
 
 
@@ -229,6 +228,7 @@ class MAESTROmainNode(Node):
         self.busy_check = BusyChecker()
         self.sensor_reader = SensorReader()
         self.llm = LLMinterface()
+        self.memory_access = MemoryAccess()
         self.busy = self.check_busy()
         self.notifications = {}
         self.time_last_seen = -float("inf")
@@ -284,7 +284,6 @@ class MAESTROmainNode(Node):
                 self.cb_function(a) #  TODO: Correct this line, what is a supposed to be???
                 a.data = str(self.notifications) #  TODO: Correct this line, what is a supposed to be???
                 self.cb_function(a) #  TODO: Correct this line, what is a supposed to be???
-
 
     def avoidEcho(self):
         msg = String()
@@ -387,19 +386,15 @@ class MAESTROmainNode(Node):
         #human_content_emotion = GPTJ(data, port=5052)
         #print(content_emotion)
         addendum = response_emotion
-        if gib is None:
-            gib = self.get_llm_response(data)
-        else:
+        if gib:
             if "wikipedia:" in gib:
                 gib = gib.split(":")[1]
                 gib = utils.wikipedia_query(gib)
-                gib = "Paraphrase the following sentence"+addendum+": "+gib
-                gib = self.get_llm_response(gib)
+
             elif "dictionary:" in gib:
                 gib = gib.split(":")[1]
                 gib = utils.dictionary_query(gib)
-                gib = "Paraphrase the following sentence"+addendum+": "+gib
-                gib = self.get_llm_response(gib)
+
             elif "sensor:" in gib:
                 split = gib.split(":")
                 sensor_reading = self.get_sensor(int(split[1]))
@@ -410,19 +405,34 @@ class MAESTROmainNode(Node):
                              6:" deciSiemes per centimeter", 7:"", 8:" miligrams per kilogram of soil", 
                              9:" miligrams per kilogram of soil", 10:" miligrams per kilogram of soil"}                               
                 gib = "current "+sensor_dict[int(split[1])]+" sensor reading is "+str(sensor_reading)+unit_dict[int(split[1])]
-                gib = "Paraphrase the following sentence"+addendum+": "+gib
-                gib = self.get_llm_response(gib)
+
             elif gib == "vision_check":
                 gib = self.get_vision()
-                gib = "Paraphrase the following sentence"+addendum+": "+gib 
-                gib = self.get_llm_response(gib)
+
             elif gib =="not_proc":
                 gib = process_notifications(self.notifications)
                 print(gib)
-                gib = "Paraphrase the following sentence"+addendum+": "+gib
-                gib = self.get_llm_response(gib)
                 self.notifications = {}
+
+            gib = f"Briefly and politely paraphrase the following text in a {addendum} tone: {gib}"
+            gib = self.get_llm_response(gib)
+
+        else:
+            gib = self.get_llm_response(data)
         self.set_face(response_emotion)
+        command = f"INSERT INTO conversation (input, response) VALUES ({data}, {gib})"
+        self.memory_access.send_request("/home/plantroid/plantroid_ws/src/robot_memory/db/conversation_history.db", command)
+        while rclpy.ok():
+            rclpy.spin_once(self.memory_access)
+            if self.memory_access.future.done():
+                try:
+                    response = self.memory_access.future.result().result
+                except Exception as e:
+                    self.memory_access.get_logger().info(
+                        'Service call failed %r' % (e,))
+                else:
+                    pass
+                break        
         return gib
 
     def assign_prosody(self, utterance, method="random"):
