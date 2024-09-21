@@ -1,0 +1,12 @@
+launch:
+
+- arg:
+    name: "db_folder_path"
+    default: "/home/plantroid/plantroid_ws/src/robot_memory/db/"
+
+- node:
+    pkg: "robot_memory"
+    exec: "memory_server"
+    name: "memory_server_node"
+    param:
+        - db_folder_path : "/home/plantroid/plantroid_ws/src/robot_memory/db/"

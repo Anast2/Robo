@@ -1,4 +1,6 @@
 from setuptools import setup
+import os
+from glob import glob
 
 package_name = 'robot_memory'
 
@@ -19,7 +21,10 @@ setup(
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': [
+        'console_scripts': ["memory_server = robot_memory.MemoryServer:main"
         ],
     },
+    data_files=[
+        ('share/' + package_name + '/launch', glob('launch/*.launch.yaml')),
+    ],
 )

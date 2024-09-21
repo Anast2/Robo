@@ -1,4 +1,6 @@
 from setuptools import setup
+import os
+from glob import glob
 
 package_name = 'rooted_speech_synthesizer'
 
@@ -19,7 +21,10 @@ setup(
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ["social_manager = rooted_speech_synthesizer.speech_synthesis_service:main"
+        'console_scripts': ["speech_synthesizer = rooted_speech_synthesizer.speech_synthesis_service:main"
         ],
     },
+    data_files=[
+        ('share/' + package_name + '/launch', glob('launch/*.launch.yaml')),
+    ],
 )

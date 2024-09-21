@@ -74,7 +74,7 @@ class MemoryServer(Node):
 
 class MemoryWriter:
     def __init__(self, database_folder="."):
-        self.database_folder =  database_folder
+        self.database_folder =  database_folder #TODO: convert to rosparam db_folder_path.  
         self.main_routine()
          
     def main_routine(self):

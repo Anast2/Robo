@@ -1,0 +1,6 @@
+launch:
+
+- node:
+    pkg: "movement_module"
+    exec: "navigation"
+    name: "navigation_node"

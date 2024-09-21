@@ -1,5 +1,6 @@
 from setuptools import setup
-
+import os
+from glob import glob
 package_name = 'plant_model'
 
 setup(
@@ -22,4 +23,7 @@ setup(
         'console_scripts': [
         ],
     },
+    data_files=[
+        ('share/' + package_name + '/launch', glob('launch/*.launch.yaml')),
+    ],
 )

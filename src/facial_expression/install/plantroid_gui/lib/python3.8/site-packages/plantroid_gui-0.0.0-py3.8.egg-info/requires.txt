@@ -1,3 +1,0 @@
-beepy
-kivy
-setuptools

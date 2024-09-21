@@ -1,0 +1,6 @@
+launch:
+
+- node:
+    pkg: "vision_module"
+    exec: "vision_server"
+    name: "vision_module_node"

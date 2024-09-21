@@ -3,6 +3,7 @@ import socket
 import subprocess 
 from balacoon_tts import TTS, SpeechUtterance
 
+
 def espeak_ng(msg): #  lightest option of all, worst quality of all
     speech_content = msg[0]
     volume, speed, pitch = msg[1]
@@ -11,13 +12,38 @@ def espeak_ng(msg): #  lightest option of all, worst quality of all
     return subprocess.Popen(cmd)    
 
 
-def tortoise(msg): pass #  Heavy model, but high quality results
+def tortoise(msg): pass  # Heavy model, but high quality results.
 #  TODO: implement
 
 
-def tortoise_request(msg): pass #  Heavy model, but high quality results, call from remote server, adds latency
+def tortoise_request(msg): pass  # Heavy model, but high quality results. Calls remote server, but adds latency.
 #  TODO: implement
 
 
-def balacoon(msg): pass  #  lighter model good for edge devices, lower quality results
+def balacoon(msg): pass  # lighter model good for edge devices, lower quality results.
 #  TODO: implement
+
+
+def balacoon_request(msg): pass  # lighter model good for edge devices, lower quality results. Calls remote server, but adds latency.
+#  TODO: implement
+
+
+def tts_call(msg, mode="local", model="espeak_ng", IP=None, PORT=None):  # 
+    
+    if model == "espeak_ng":
+        espeak_ng(msg)
+    
+    elif model == "tortoise":
+        if mode == "local":
+            tortoise(msg)
+        else: 
+            tortoise_request(msg, IP, PORT)
+    
+    elif model == "balacoon":
+        if mode == "local": 
+            balacoon(msg)
+        else:
+            balacoon_request(msg, IP, PORT)
+    
+    else: 
+        pass

@@ -1,5 +1,6 @@
 from setuptools import setup
-
+import os
+from glob import glob
 package_name = 'other_sensors'
 
 setup(
@@ -23,4 +24,7 @@ setup(
                             "fake_sensor_server = other_sensors.FakeSensorServer:main"
         ],
     },
+    data_files=[
+        ('share/' + package_name + '/launch', glob('launch/*.launch.yaml')),
+    ],
 )

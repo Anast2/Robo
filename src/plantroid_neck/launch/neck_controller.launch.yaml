@@ -1,0 +1,15 @@
+# example.launch.yaml
+
+launch:
+
+# args that can be set from the command line or a default will be used
+- arg:
+    name: "raspi"
+    default: true
+
+- node:
+    pkg: "plantroid_neck"
+    exec: "neck_server "
+    name: "neck_server _node"
+    param:
+        - raspi : true

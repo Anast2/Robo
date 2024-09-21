@@ -8,8 +8,9 @@ import uuid
 from time import time
 import subprocess
 import sys 
-sys.path.append('/home/plantroid/plantroid_ws/src/plantroid_listener/plantroid_listener')
-import VAD as vad
+#sys.path.append('/home/plantroid/plantroid_ws/src/plantroid_listener/plantroid_listener')
+#import VAD as vad
+import listening_module.VAD as vad 
 from transformers import pipeline
 
 def save_audio(path, data):

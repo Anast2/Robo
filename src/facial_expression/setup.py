@@ -1,4 +1,6 @@
 from setuptools import setup
+import os
+from glob import glob
 
 package_name = 'facial_expression'
 
@@ -22,4 +24,7 @@ setup(
         'console_scripts': ["face_expression_server = facial_expression.face_expression_server:main"
         ],
     },
+    data_files=[
+        ('share/' + package_name + '/launch', glob('launch/*.launch.yaml')),
+    ],
 )

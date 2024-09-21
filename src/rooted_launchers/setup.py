@@ -25,4 +25,7 @@ setup(
         'console_scripts': [
         ],
     },
+    data_files=[
+        ('share/' + package_name + '/launch', glob('launch/*.launch.yaml')),
+    ],
 )

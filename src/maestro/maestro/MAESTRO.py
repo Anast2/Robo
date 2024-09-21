@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 import os
-import sys
-sys.path.append('') #  Add the location of this package on your computer
-import utils
-from simple_state_machine import StateMachine
-from ChatBot import chatter
+# import sys
+# sys.path.append('') #  Add the location of this package on your computer
+import maestro.utils as utils 
+from maestro.simple_state_machine import StateMachine
+from maestro.ChatBot import chatter
+# import utils
+# from simple_state_machine import StateMachine
+# from ChatBot import chatter
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
@@ -13,7 +16,6 @@ from ast import literal_eval
 from rooted_msgs.srv import *
 from rooted_msgs.msg import *
 from time import time
-import argparse
 from beepy import beep
 import subprocess
 from random import choice
@@ -25,10 +27,8 @@ import json
 ##########################################################################################################################
 s = "s0"
 c = 0
-image_folder = "./IMG/"
-learning = False  # True  # True if Q-Learning is in use
 is_talking = False
-dialog_json = "" #  Path to the dialog for the dialog state machine
+dialog_json = "" #  TODO: load dialogue state-machine and implement the dialogue following
 speech_style = 0
 logging = 0
 detect_person = 0

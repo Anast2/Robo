@@ -7,11 +7,7 @@ from rooted_msgs.srv import NeckServo
 from time import time
 import os
 
-raspi =  True
-
-if os.uname()[4][:3] == "arm":  # checks if the node is running on RaspberryPi.
-    raspi = True
-
+raspi =  True  # TODO: change to rosparam
 
 class FakeServo():  # for tests out of the raspberry pi.
 

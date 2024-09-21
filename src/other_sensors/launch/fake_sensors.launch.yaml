@@ -1,0 +1,6 @@
+launch:
+
+- node:
+    pkg: "other_sensors"
+    exec: "sensor_server"
+    name: "sensor_server_node"

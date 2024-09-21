@@ -1,5 +1,6 @@
 from setuptools import setup
-
+import os
+from glob import glob
 package_name = 'plantroid_neck'
 
 setup(
@@ -22,4 +23,7 @@ setup(
         'console_scripts': ["neck_server = plantroid_neck.NeckServoServer:main"
         ],
     },
+    data_files=[
+        ('share/' + package_name + '/launch', glob('launch/*.launch.yaml')),
+    ],
 )

@@ -1,0 +1,7 @@
+launch:
+
+- node:
+    pkg: "rooted_gestures"
+    exec: "gesture_server"
+    name: "gesture_server_node"
+

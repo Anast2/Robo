@@ -1,4 +1,6 @@
 from setuptools import setup
+import os
+from glob import glob
 
 package_name = 'vision_module'
 
@@ -19,7 +21,11 @@ setup(
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ["vision_server = vision_module.Vision:main"
+        'console_scripts': ["vision_server = vision_module.Vision:main", 
+                            "fake_vision_server = vision_module.Vision_Fake:main"
         ],
     },
+    data_files=[
+        ('share/' + package_name + '/launch', glob('launch/*.launch.yaml')),
+    ],
 )

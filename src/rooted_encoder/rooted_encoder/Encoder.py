@@ -8,13 +8,13 @@ from threading import Thread
 
 import numpy as np
 from math import sin, cos
-import sys
+# import sys
+# sys.path.append('') # Change for the location of this package on your computer, e.g. /home/you/rooted_ws/src/rooted_encoder/rooted_encoder/
+# from Ax12 import Ax12
+from rooted_encoder.Ax12 import Ax12
 
-sys.path.append('') # Change for the location of this package on your computer, e.g. /home/you/rooted_ws/src/rooted_encoder/rooted_encoder/
-from Ax12 import Ax12
-
-Ax12.DEVICENAME = '/dev/ttyServo' # Change for the appropriate device name
-Ax12.BAUDRATE = 1_000_000 # Change for the appropriate baurate for your device
+Ax12.DEVICENAME = '/dev/ttyServo' # Change for the appropriate device name  # TODO: change to rosparam
+Ax12.BAUDRATE = 1_000_000 # Change for the appropriate baurate for your device  # TODO: change to rosparam
 
 Ax12.connect()
 

@@ -8,7 +8,6 @@ from kivy.clock import Clock
 import subprocess
 from kivy.uix.image import Image
 from ChatBot import chatter
-from QLearning import QLearning
 import rclpy
 from rclpy.node import Node
 from threading import Thread
@@ -22,9 +21,8 @@ from ast import literal_eval
 
 s = "s0"
 c = 0
-image_folder = "./IMG/"
 is_talking = False
-
+image_folder = None
 
 class facialExpressionEngine:
 
@@ -57,13 +55,15 @@ class facialExpressionEngine:
     def get_blink(self): return self.emotion_table[self.current_emotion][1]
 
 
-emotion_engine = facialExpressionEngine("joy", image_folder)
+emotion_engine = facialExpressionEngine("joy")
 
 
 class FaceController(Node):
 
     def __init__(self):
         super().__init__('audiovisual_controller')
+        self.image_folder = self.get_parameter('image_folder').value  
+        
         self.subscription = self.create_subscription(String, 'speechTopic',
                                                      self.cb_function_message,
                                                      10)
@@ -101,7 +101,9 @@ class MyApp(App):
     Window.maximize()
     global is_talking
     global emotion_engine
-    
+    global image_folder
+    while not image_folder: pass
+
     im_base = Image(source =image_folder+'Base.png', pos_hint={'center_x': .5,'center_y': .5}, size_hint=(1.5,1.5))
     im_l_eye = Image(source =image_folder+'eye0_r.png', pos_hint={'center_x': .65,'center_y': .65}, size_hint=(1.5,1.5))
     im_r_eye = Image(source =image_folder+'eye9.png', pos_hint={'center_x': .35,'center_y': .65}, size_hint=(1.5,1.5))

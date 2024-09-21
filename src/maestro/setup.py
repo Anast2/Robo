@@ -1,4 +1,6 @@
 from setuptools import setup
+import os
+from glob import glob
 
 package_name = 'maestro'
 
@@ -22,4 +24,7 @@ setup(
         'console_scripts': ["maestro = maestro.MAESTRO:main"
         ],
     },
+    data_files=[
+        ('share/' + package_name + '/launch', glob('launch/*.launch.yaml')),
+    ],
 )

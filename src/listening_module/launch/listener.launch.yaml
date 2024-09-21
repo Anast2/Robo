@@ -1,0 +1,7 @@
+launch:
+
+- node:
+      pkg: "listening_module"
+      exec: "listener_server"
+      name: "listener_server_node"
+      output: "screen"

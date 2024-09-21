@@ -1,0 +1,6 @@
+launch:
+
+- node:
+    pkg: "rooted_busy"
+    exec: "busy_server"
+    name: "busy_server_node"

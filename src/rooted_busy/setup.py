@@ -1,5 +1,6 @@
 from setuptools import setup
-
+import os
+from glob import glob
 package_name = 'rooted_busy'
 
 setup(
@@ -22,4 +23,7 @@ setup(
         'console_scripts': ["busy_server = rooted_busy.BusyServer:main"
         ],
     },
+    data_files=[
+        ('share/' + package_name + '/launch', glob('launch/*.launch.yaml')),
+    ],
 )

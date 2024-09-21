@@ -1,4 +1,6 @@
 from setuptools import setup
+import os
+from glob import glob
 
 package_name = 'rooted_encoder'
 
@@ -23,4 +25,7 @@ setup(
                             "encoder_virtual = rooted_encoder.Encoder_virtual:main",
         ],
     },
+    data_files=[
+        ('share/' + package_name + '/launch', glob('launch/*.launch.yaml')),
+    ],
 )

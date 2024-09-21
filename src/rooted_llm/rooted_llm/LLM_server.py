@@ -17,9 +17,10 @@ class LLMServer(Node):
         super().__init__("llm_service")
         self.srv = self.create_service(LLM, "llm_server",
                                        self.cb_function)
-        self.mode = mode
-        self.IP = IP
-        self.port = port
+        
+        self.mode = self.get_parameter('mode').value 
+        self.IP = self.get_parameter('IP').value
+        self.port = self.get_parameter('PORT').value 
 
     def cb_function(self, req, resp):
         model = req.model 

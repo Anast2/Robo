@@ -1,4 +1,6 @@
 from setuptools import setup
+import os
+from glob import glob
 
 package_name = 'rooted_llm'
 
@@ -19,7 +21,10 @@ setup(
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ["social_manager = rooted_llm.SocialManager:main"
+        'console_scripts': ["llm = rooted_llm.LLM_server:main"
         ],
     },
+    data_files=[
+        ('share/' + package_name + '/launch', glob('launch/*.launch.yaml')),
+    ],
 )

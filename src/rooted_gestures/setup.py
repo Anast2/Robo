@@ -1,4 +1,6 @@
 from setuptools import setup
+import os
+from glob import glob
 
 package_name = 'rooted_gestures'
 
@@ -22,4 +24,7 @@ setup(
         'console_scripts': ["gesture_server = rooted_gestures.GestureServer:main"
         ],
     },
+    data_files=[
+        ('share/' + package_name + '/launch', glob('launch/*.launch.yaml')),
+    ],
 )

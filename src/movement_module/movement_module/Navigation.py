@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import sys
 from rooted_msgs.srv import *
 from rooted_msgs.msg import *
 import rclpy
@@ -7,24 +6,22 @@ from rooted_msgs.msg import Pose, Speed, State
 from rclpy.node import Node
 from math import pi, sqrt
 import numpy as np
-import os
 from ast import literal_eval
 import cv2
 from math import atan2
 import threading
 from time import time
-import sys
-sys.path.append('/home/plantroid/plantroid_ws/src/plantroid_navigation/plantroid_navigation')
-from NeuralNav import NeuralNavigation, NeuralNavigationH5
-
-
+from movement_module.NeuralNav import NeuralNavigation, NeuralNavigationH5
+# import sys
+# sys.path.append('/home/plantroid/plantroid_ws/src/plantroid_navigation/plantroid_navigation')
 
 #c = get_config()
 #os.environ['LD_PRELOAD'] = '/usr/lib/aarch64-linux-gnu/libgomp.so.1'
 #c.Spawner.env.update('LD_PRELOAD')
-import sys
-sys.path.insert(1, './OKAO')
-from OKAO_vision_interface import get_image_array
+# import sys
+# sys.path.insert(1, './OKAO')
+# from movement_module.OKAO_vision_interface import get_image_array
+
 
 def min_mag(x1, x2):
     if abs(x1)<=abs(x2):return x1
@@ -216,7 +213,6 @@ def main():
     t1.start()
     rclpy.spin(t)
   
-
 
 if __name__ == "__main__":
     main()
