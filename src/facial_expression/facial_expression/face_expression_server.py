@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 import os
 os.environ["KIVY_NO_ARGS"] = "1"
-import kivy
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.clock import Clock
-import subprocess
 from kivy.uix.image import Image
-from ChatBot import chatter
 import rclpy
 from rclpy.node import Node
 from threading import Thread
@@ -16,7 +13,6 @@ from rooted_msgs.msg import *
 from std_msgs.msg import String
 from time import time
 import os
-import subprocess 
 from ast import literal_eval
 
 s = "s0"
