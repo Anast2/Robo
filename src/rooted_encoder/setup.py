@@ -12,6 +12,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/launch', glob('launch/*.launch.yaml')),
     ],
     install_requires=['setuptools', 'numpy', 'dynamixel_sdk'],
     zip_safe=True,
@@ -25,7 +26,4 @@ setup(
                             "encoder_virtual = rooted_encoder.Encoder_virtual:main",
         ],
     },
-    data_files=[
-        ('share/' + package_name + '/launch', glob('launch/*.launch.yaml')),
-    ],
 )
