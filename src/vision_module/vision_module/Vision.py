@@ -1,22 +1,13 @@
 #!/usr/bin/env python3
-import sys
 import os
-import cv2
 import rclpy
 from rclpy.node import Node
 from rooted_msgs.srv import *
 from PIL import Image
 from socket import * 
 import face_recognition as fr 
-running_on_pc = False
-sys.path.append('') # add the location of this package, e.g., /home/you/rooted_ws/src/vision_module/vision_module
-try:
-    from ThermalCamera import ThermalCamera
-except:
-    running_on_pc = True
-    print("Warning: Running on laptop PC, cannot take thermal pictures.")
-sys.path.append('') # add the location of the OKAO vision folder, e.g., /home/you/rooted_ws/src/vision_module/vision_module/OKAO
-from OKAO_vision_interface import get_emotions, get_image_array, detect_person
+from ThermalCamera import ThermalCamera
+from vision_module.OKAO.OKAO_vision_interface import get_emotions, get_image_array, detect_person
 from image_processing2 import *
 
 
@@ -52,7 +43,7 @@ class CameraServer(Node):
             print("Returning black and white image.")
             img = get_image_array().tolist() #returns thermal image
 
-        elif req.imagetype == 2 and not running_on_pc:
+        elif req.imagetype == 2:
             print("Returning thermal image.")
             img = get_thermal_image()
 

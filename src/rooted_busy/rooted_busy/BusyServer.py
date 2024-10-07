@@ -12,13 +12,15 @@ class BusyServer(Node):
 
     def __init__(self):
         super().__init__("busy_server")
-        self.srv = self.create_service(Gesture,"busy",self.handle_gesture)
+        self.srv = self.create_service(Busy,"busy_service",self.handle_request)
         self.state = 0
         
-    def handle_gesture(self, req, resp):
-        data = req.gesture
-        if data[:-1] == "set":
-            self.state = bool(int(data[-1]))
+    def handle_request(self, req, resp):
+        data = req.request
+        if data == "set_busy":
+            self.state = 1
+        elif data == "set_idle":
+            self.state = 0
         resp.result = str(self.state)
         return resp
 

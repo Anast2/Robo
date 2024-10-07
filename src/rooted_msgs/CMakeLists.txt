@@ -24,6 +24,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/MemoryRequest.srv"
   "srv/Sensors.srv"
   "srv/Command.srv"
+  "srv/Busy.srv"
   "srv/Gesture.srv")
 
 if(BUILD_TESTING)

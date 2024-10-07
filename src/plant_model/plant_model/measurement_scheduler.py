@@ -32,7 +32,7 @@ def load_plant_needs(filename):
 class SensorReader(Node):
     def __init__(self):
         super().__init__('plant_model_sensor_reader')
-        self.plant_information_file = self.get_parameter('plant_info_file').value  
+        self.plant_information_file = self.get_parameter('plant_info_file').value
         self.db = self.get_parameter('db_path').value
         self.cli = self.create_client(Sensors, 'sensors_server')
         while not self.cli.wait_for_service(timeout_sec=5.0):
@@ -48,10 +48,18 @@ class NotificationSender(Node):
     def __init__(self):
         super().__init__('plant_model_notification_sender')
         self.notification_publisher = self.create_publisher(String, 'notificationTopic', 10)
+        self.move_order_publisher = self.create_publisher(String, 'move_order', 10)
         self.notification_publisher
+        self.move_order_publisher
 
     def send_notification(self, characteristic, status, measurement):
         self.notification_publisher.publish(f"{characteristic}:{status}:{measurement}")
+
+    def send_move_order(self, order):
+        if order in ["light","shadow"]:
+            self.move_order_publisher.publish(order)
+        else:
+            self.get_logger().error("Illegal order; orders should be either 'light' or 'shadow'!")
 
 
 class MemoryAccess(Node):
@@ -75,6 +83,7 @@ plant_info_file_path = sensor_interface.plant_information_file
 plant_info = load_plant_needs(plant_info_file_path)
 db_location = sensor_interface.db
 
+
 def sensor_reading(sensor_ID):
     sensor_interface.send_request(sensor_ID)
     rclpy.spin_once(sensor_interface)  # Non-blocking
@@ -91,20 +100,6 @@ def sensor_reading(sensor_ID):
             return response
     return None
 
-
-def report_problem(characteristic="N", status="high"):
-    self.vision_control.send_request(3)
-    while rclpy.ok():
-        rclpy.spin_once(self.vision_control)
-        if self.vision_control.future.done():
-            try:
-                response = self.vision_control.future.result().image
-            except Exception as e:
-                self.vision_control.get_logger().info(
-                    'Service call failed %r' % (e,))
-            else:
-                return response
-    
 
 def write_measurement(db, sql_command):
     # "/home/pantroid/plantroid_ws/src/robot_memory/db/measurements.db","SELECT ID, filepath FROM id_table"
@@ -246,10 +241,12 @@ def soil_moisture_reading():
 def no_store_temperature_reading(): return sensor_reading(5)
 
 
-def move_2_light():pass #  Notifies that the robot needs to move to sunlight
+def move_2_light(): #  Notifies that the robot needs to move to sunlight
+    notification_sender.send_move_order("light")
 
 
-def move_2_shade():pass #  Notifies that the robot needs to move into shade
+def move_2_shade(): #  Notifies that the robot needs to move into shade
+    notification_sender.send_move_order("shadow")
 
 
 def temperature_reading(): 
@@ -272,7 +269,8 @@ def temperature_reading():
         if reading>safe_range[0]:
             problem = "high"            
             move_2_shade()
-        notification_sender.send_notification("", problem, str(reading))
+        notification_sender.send_notification("temperature", problem, str(reading))
+
 
 def irradiance_reading():
     safe_range = plant_info["plant"]["environment"]["light"]

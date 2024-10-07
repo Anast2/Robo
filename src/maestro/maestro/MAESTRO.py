@@ -144,16 +144,16 @@ class LLMinterface(Node):
         self.future = self.cli.call_async(self.req)
 
 
-class BusyChecker(Node):
+class BusyInterface(Node):
     def __init__(self):
-        super().__init__('social_busy_check')
-        self.cli = self.create_client(Gesture, 'busy')
+        super().__init__('maestro_busy_interface')
+        self.cli = self.create_client(Busy, 'busy_servive')
         while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Camera service not available, waiting again...')
-        self.req = Gesture.Request()
+            self.get_logger().info('Busy service not available, waiting again...')
+        self.req = Busy.Request()
 
     def send_request(self, busy):
-        self.req.gesture = "get"
+        self.req.request = busy
         self.future = self.cli.call_async(self.req)
 
 
@@ -225,7 +225,7 @@ class MAESTROmainNode(Node):
         self.publisher_emotion = self.create_publisher(String, 'emotionTopic', 10)
         self.publisher_speech = self.create_publisher(String, 'speechTopic', 10)
         self.vision_control = Cameras()
-        self.busy_check = BusyChecker()
+        self.busy_interface = BusyInterface()
         self.sensor_reader = SensorReader()
         self.llm = LLMinterface()
         self.memory_access = MemoryAccess()
@@ -291,25 +291,29 @@ class MAESTROmainNode(Node):
         self.publisher.publish(msg)
         self.get_logger().info("Changing listen blocking state.")
 
-    def check_busy(self):
-        self.busy_check.send_request("get")
+    def busy_request(self, request):
+        self.busy_interface.send_request(request)
         while rclpy.ok():
-            rclpy.spin_once(self.busy_check)
-            if self.busy_check.future.done():
+            rclpy.spin_once(self.busy_interface)
+            if self.busy_interface.future.done():
                 try:
-                    response = self.busy_check.future.result().result
+                    response = self.busy_interface.future.result().result
                 except Exception as e:
-                    self.robot_state_machine.transition("move")
-                    self.busy_check.get_logger().info(
+                    self.busy_interface.get_logger().info(
                         'Service call failed %r' % (e,))
                 else:
-                    print(response)
-                    response = literal_eval(response)
-                    if response:
-                        self.robot_state_machine.transition("move")
-                    else:
-                        self.robot_state_machine.transition("finished")
-                break
+                    return literal_eval(response)
+
+    def check_busy(self):
+        busy = self.busy_request("get")
+        if busy:
+            self.robot_state_machine.transition("move")
+        else:
+            self.robot_state_machine.transition("finished")
+            
+    def set_busy(self): self.busy_request("set_busy")
+
+    def set_idle(self): self.busy_request("set_idle")
 
     def get_vision(self):
         response = "" #get_image_array().astype(np.uint8)

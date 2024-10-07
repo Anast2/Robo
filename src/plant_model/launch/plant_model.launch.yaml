@@ -10,7 +10,7 @@ launch:
 - node:
     pkg: "plant_model"
     exec: "measurement_scheduler"
-    name: "sim"
+    name: "plant_monitor"
     param:
     -
       name: "plant_info_file"
