@@ -40,7 +40,7 @@ class CameraServer(Node):
     def __init__(self):
         super().__init__("camera_server")
         self.srv = self.create_service(Camera,"camera",self.handle_camera)
-
+        self.identity_db = self.get_parameter('identity_db').value
     def handle_camera(self, req, resp):
         img = None
 
@@ -119,10 +119,10 @@ class CameraServer(Node):
         elif req.imagetype == 9: # Identity recognition
             id_match = False
             matched_id = None
-            unknown_face = np.array(get_image_array()) #  TODO: convert to a format that works with this library.
+            unknown_face = np.array(get_image_array())
             unknown_face = Image.fromarray(unknown_face)  
             id_face_list = []
-            self.memory_access.send_request("/home/pantroid/plantroid_ws/src/robot_memory/db/ids.db","SELECT ID, filepath FROM id_table")  # substitute with your absolute path for your database
+            self.memory_access.send_request(self.identity_db,"SELECT ID, filepath FROM id_table")
             while rclpy.ok():
                 rclpy.spin_once(self.memory_access)
                 if self.memory_access.future.done():

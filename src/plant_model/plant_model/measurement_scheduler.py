@@ -5,6 +5,7 @@ import json
 import os
 from rooted_msgs.srv import *
 from rooted_msgs.msg import *
+from std_msgs.msg import String
 import rclpy
 from rclpy.node import Node
 
@@ -32,6 +33,7 @@ class SensorReader(Node):
     def __init__(self):
         super().__init__('plant_model_sensor_reader')
         self.plant_information_file = self.get_parameter('plant_info_file').value  
+        self.db = self.get_parameter('db_path').value
         self.cli = self.create_client(Sensors, 'sensors_server')
         while not self.cli.wait_for_service(timeout_sec=5.0):
             self.get_logger().info('Sensor service not available, waiting again...')
@@ -44,15 +46,12 @@ class SensorReader(Node):
 
 class NotificationSender(Node):
     def __init__(self):
-        super().__init__('plant_model_sensor_reader')
-        self.cli = self.create_client(Sensors, 'sensors_server')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Sensor service not available, waiting again...')
-        self.req = Sensors.Request()
+        super().__init__('plant_model_notification_sender')
+        self.notification_publisher = self.create_publisher(String, 'notificationTopic', 10)
+        self.notification_publisher
 
-    def send_request(self, num):
-        self.req.sensor_number = num
-        self.future = self.cli.call_async(self.req)
+    def send_notification(self, characteristic, status, measurement):
+        self.notification_publisher.publish(f"{characteristic}:{status}:{measurement}")
 
 
 class MemoryAccess(Node):
@@ -71,9 +70,10 @@ class MemoryAccess(Node):
 
 sensor_interface = SensorReader()
 memory_interface = MemoryAccess()
+notification_sender = NotificationSender()
 plant_info_file_path = sensor_interface.plant_information_file
 plant_info = load_plant_needs(plant_info_file_path)
-
+db_location = sensor_interface.db
 
 def sensor_reading(sensor_ID):
     sensor_interface.send_request(sensor_ID)
@@ -92,12 +92,7 @@ def sensor_reading(sensor_ID):
     return None
 
 
-def reading_memory_write():pass
-
-
-def soil_N_reading():
-    safe_range = plant_info["plant"]["health"]["nutrients"]["N"]
-    reading = sensor_reading(8)
+def report_problem(characteristic="N", status="high"):
     self.vision_control.send_request(3)
     while rclpy.ok():
         rclpy.spin_once(self.vision_control)
@@ -109,50 +104,207 @@ def soil_N_reading():
                     'Service call failed %r' % (e,))
             else:
                 return response
+    
+
+def write_measurement(db, sql_command):
+    # "/home/pantroid/plantroid_ws/src/robot_memory/db/measurements.db","SELECT ID, filepath FROM id_table"
+    memory_interface.send_request(db, sql_command)
+
+
+def soil_N_reading():
+    safe_range = plant_info["plant"]["health"]["nutrients"]["N"]
+    reading = sensor_reading(8)
+    current_time = time.time()
+    query = f"""
+    INSERT INTO N (reading, time)
+    VALUES ({reading}, {current_time})
+    """
+    global db_location
+    memory_interface.send_request(db_location, query)
     problem = False
 
     if reading < safe_range[0] or reading > safe_range[1]:
         problem = True
     
-    if problem: pass
+    if problem:
+        problem = "low"
+        if reading>safe_range[0]:
+            problem = "high"            
+        notification_sender.send_notification("nitrogen", problem, str(reading))
         
 
 def soil_P_reading(): 
     safe_range = plant_info["plant"]["health"]["nutrients"]["P"]
     reading = sensor_reading(9)
+    current_time = time.time()
+    query = f"""
+    INSERT INTO P (reading, time)
+    VALUES ({reading}, {current_time})
+    """
+    global db_location
+    memory_interface.send_request(db_location, query)
+    problem = False
+
+    if reading < safe_range[0] or reading > safe_range[1]:
+        problem = True
+    
+    if problem:
+        problem = "low"
+        if reading>safe_range[0]:
+            problem = "high"            
+        notification_sender.send_notification("phosphorus", problem, str(reading))
 
 
 def soil_K_reading(): 
     safe_range = plant_info["plant"]["health"]["nutrients"]["K"]
     reading = sensor_reading(10)
+    current_time = time.time()
+    query = f"""
+    INSERT INTO K (reading, time)
+    VALUES ({reading}, {current_time})
+    """
+    global db_location
+    memory_interface.send_request(db_location, query)    
+    problem = False
+
+    if reading < safe_range[0] or reading > safe_range[1]:
+        problem = True
+    
+    if problem:
+        problem = "low"
+        if reading>safe_range[0]:
+            problem = "high"            
+        notification_sender.send_notification("potassium", problem, str(reading))
 
 
 def soil_EC_reading(): 
     safe_range = plant_info["plant"]["health"]["EC"]
     reading = sensor_reading(6)
+    current_time = time.time()
+    query = f"""
+    INSERT INTO EC (reading, time)
+    VALUES ({reading}, {current_time})
+    """
+    global db_location
+    memory_interface.send_request(db_location, query)
+    problem = False
+
+    if reading < safe_range[0] or reading > safe_range[1]:
+        problem = True
+    
+    if problem:
+        problem = "low"
+        if reading>safe_range[0]:
+            problem = "high"            
+        notification_sender.send_notification("salinity", problem, str(reading))
 
 
 def soil_pH_reading(): 
     safe_range = plant_info["plant"]["health"]["pH"]
     reading = sensor_reading(7)
+    current_time = time.time()
+    query = f"""
+    INSERT INTO pH (reading, time)
+    VALUES ({reading}, {current_time})
+    """
+    global db_location
+    memory_interface.send_request(db_location, query)
+    problem = False
+
+    if reading < safe_range[0] or reading > safe_range[1]:
+        problem = True
+    
+    if problem:
+        problem = "low"
+        if reading>safe_range[0]:
+            problem = "high"            
+        notification_sender.send_notification("pH", problem, str(reading))
 
 
 def soil_moisture_reading(): 
     safe_range = plant_info["plant"]["health"]["soil_moisture"]
     reading = sensor_reading(4)
+    current_time = time.time()
+    query = f"""
+    INSERT INTO water (reading, time)
+    VALUES ({reading}, {current_time})
+    """
+    global db_location
+    memory_interface.send_request(db_location, query)
+    problem = False
+
+    if reading < safe_range[0] or reading > safe_range[1]:
+        problem = True
+    
+    if problem:
+        problem = "low"
+        if reading>safe_range[0]:
+            problem = "high"            
+        notification_sender.send_notification("water", problem, str(reading))
+
+
+def no_store_temperature_reading(): return sensor_reading(5)
+
+
+def move_2_light():pass #  Notifies that the robot needs to move to sunlight
+
+
+def move_2_shade():pass #  Notifies that the robot needs to move into shade
 
 
 def temperature_reading(): 
     safe_range = plant_info["plant"]["environment"]["temperature"]   
-    reading = sensor_reading(5)
+    reading = no_store_temperature_reading()
+    current_time = time.time()
+    query = f"""
+    INSERT INTO temperature (reading, time)
+    VALUES ({reading}, {current_time})
+    """
+    global db_location
+    memory_interface.send_request(db_location, query)
+    problem = False
 
+    if reading < safe_range[0] or reading > safe_range[1]:
+        problem = True
+    
+    if problem:
+        problem = "low"
+        if reading>safe_range[0]:
+            problem = "high"            
+            move_2_shade()
+        notification_sender.send_notification("", problem, str(reading))
 
 def irradiance_reading():
     safe_range = plant_info["plant"]["environment"]["light"]
+    safe_range_temperature = plant_info["plant"]["environment"]["temperature"]
     top_left = sensor_reading(1)
     top_right = sensor_reading(2)
     rear = sensor_reading(3)
-    return [top_left, top_right, rear]
+    reading =  [top_left, top_right, rear]
+    current_time = time.time()
+    current_temperature = no_store_temperature_reading()
+    high_temp = current_temperature > safe_range_temperature[1]
+    query = f"""
+    INSERT INTO light (top_left, top_right, bottom, time)
+    VALUES ({reading[0]}, {reading[1]}, {reading[2]}, {current_time})
+    """
+    global db_location
+    memory_interface.send_request(db_location, query)
+    problem = False
+
+    for l in reading:
+        if l < safe_range[0] and not high_temp:
+            problem = True
+            move_2_light()
+        elif l > safe_range[1]:
+            problem = True
+            move_2_shade()
+
+    if problem:
+        problem = "low"
+        if reading>safe_range[0]:
+            problem = "high"            
+        notification_sender.send_notification("", problem, str(reading))
 
 
 s = sched.scheduler(time.time, time.sleep)

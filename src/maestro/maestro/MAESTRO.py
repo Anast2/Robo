@@ -269,7 +269,7 @@ class MAESTROmainNode(Node):
         data = subscribedData.data
         data_breakdown = data.split(":")
         self.notifications[data_breakdown[0]] = data_breakdown[1:]
-        if "Water" in self.notifications:
+        if "water" in self.notifications:
             self.set_face("thirsty")
         else:
             self.set_face("sad")

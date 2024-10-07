@@ -58,7 +58,7 @@ class MemoryServer(Node):
                 insert_queue.put([database_name, command])
                 response = "Success"
 
-            if "SELECT" in command:
+            elif "SELECT" in command:
                 cursor.execute(command)
                 response = str([i[0] for i in cursor.fetchall()])
             else:

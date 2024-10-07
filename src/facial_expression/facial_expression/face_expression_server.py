@@ -12,7 +12,6 @@ from rooted_msgs.srv import *
 from rooted_msgs.msg import *
 from std_msgs.msg import String
 from time import time
-import os
 from ast import literal_eval
 
 s = "s0"
