@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import sys
 import os
 import cv2
 import rclpy
@@ -12,8 +11,7 @@ from std_msgs.msg import String, Bool, Int8
 import numpy as np
 import face_recognition as fr 
 from cv_bridge import CvBridge
-sys.path.append('') # add the location of this package, e.g., /home/you/rooted_ws/src/vision_module/vision_module
-from image_processing2 import *
+from vision_module.image_processing2 import *
 
 
 class MemoryAccess(Node):
@@ -36,6 +34,7 @@ class CameraServer(Node):
         super().__init__("camera_server")
         self.srv = self.create_service(Camera,"camera",self.handle_camera)
         self.current_emotion = "neutral"
+        self.identity_db = self.get_parameter('identity_db').value
         self.emotion_setter = self.create_subscription(String, 'set_emotion',
                                                        self.emotion_cb_function,
                                                        10)
@@ -46,8 +45,16 @@ class CameraServer(Node):
         self.camera_setter = self.create_subscription(Int8, 'set_camera_number',
                                                       self.camera_cb_function,
                                                       10)
-        self.camera_number = 0 
-        self.camera_source = "PC" # "Gazebo"
+        self.use_pc_camera = self.get_parameter('use_pc_camera').value
+        self.camera_number = None
+        self.camera_topic = None
+        self.camera_source = None
+        if self.use_pc_camera:
+            self.camera_source = "PC" # "Gazebo"
+            self.camera_number = self.get_parameter('pc_camera_number').value
+        else:
+            self.camera_source = "Gazebo"
+            self.camera_topic = self.get_parameter('camera_topic').value
 
         self.memory_access = MemoryAccess()
 
@@ -69,10 +76,14 @@ class CameraServer(Node):
 
         elif req.imagetype == 1: #returns image of the OKAO camera
             print("Returning black and white image.")
-            img = get_image_array(self.camera_number)
+            img = get_image_array(source=self.camera_topic,
+                                  camera_number=self.camera_number,
+                                  camera_img_topic=self.camera_source)
 
         elif req.imagetype == 2 and not running_on_pc:
-            img = get_image_array(self.camera_number)
+            img = get_image_array(source=self.camera_topic,
+                                  camera_number=self.camera_number,
+                                  camera_img_topic=self.camera_source)
             img = cv2.resize(img, (32,24))
             img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
@@ -82,24 +93,32 @@ class CameraServer(Node):
 
         elif req.imagetype == 4: #returns sunlight position. 
             print("Returning sunlight position.")
-            img = get_image_array(self.camera_number)
+            img = get_image_array(source=self.camera_topic,
+                                  camera_number=self.camera_number,
+                                  camera_img_topic=self.camera_source)
             img = get_dir_sunlight(img, None)
 
         elif req.imagetype == 5: #returns shadow position. 
             print("Returning shadow position.")
-            img = get_image_array(self.camera_number)
+            img = get_image_array(source=self.camera_topic,
+                                  camera_number=self.camera_number,
+                                  camera_img_topic=self.camera_source)
             img = get_shadow_pos(img, None)
 
         elif req.imagetype == 6: #returns sunlight coord on real world 
             print("Returning light coordinates on real world.")
-            img = get_image_array(self.camera_number)
+            img = get_image_array(source=self.camera_topic,
+                                  camera_number=self.camera_number,
+                                  camera_img_topic=self.camera_source)
             Dy = 0.32*344/(img[1]-160)
             Dx = Dy*(img[0]-120)/266
             img = [Dx, Dy]
 
         elif req.imagetype == 7:#returns shadow coord on real world
             print("Returning light coordinates on real world.")
-            img = get_image_array(self.camera_number)
+            img = get_image_array(source=self.camera_topic,
+                                  camera_number=self.camera_number,
+                                  camera_img_topic=self.camera_source)
             img = get_shadow_pos(img, None)
             Dy = 0.32*344/(img[1]-160)
             Dx = Dy*(img[0]-120)/266
@@ -107,7 +126,9 @@ class CameraServer(Node):
 
         elif req.imagetype == 8:
             try:
-                image = get_image_array(self.camera_number)
+                image = get_image_array(source=self.camera_topic,
+                                        camera_number=self.camera_number,
+                                        camera_img_topic=self.camera_source)
                 image = Image.fromarray(image,"L")
                 image.save("img.png","PNG")
                 response = ""
@@ -138,10 +159,12 @@ class CameraServer(Node):
         elif req.imagetype == 9: # Identity recognition
             id_match = False
             matched_id = None
-            unknown_face = np.array(get_image_array()) #  TODO: convert to a format that works with this library.
+            unknown_face = np.array(image = get_image_array(source=self.camera_topic,
+                                                            camera_number=self.camera_number,
+                                                            camera_img_topic=self.camera_source))
             unknown_face = Image.fromarray(unknown_face)  
             id_face_list = []
-            self.memory_access.send_request("/home/pantroid/plantroid_ws/src/robot_memory/db/ids.db","SELECT ID, filepath FROM id_table")  # substitute with your absolute path for your database
+            self.memory_access.send_request(self.identity_db,"SELECT ID, filepath FROM id_table")
             while rclpy.ok():
                 rclpy.spin_once(self.memory_access)
                 if self.memory_access.future.done():
@@ -169,10 +192,11 @@ class CameraServer(Node):
         return resp
 
 class GazeboCameraClient(Node):
-    def __init__(self):
+    def __init__(self, camera_img_topic):
         super().__init__('gazebo_camera_reader')
-        self.cli = self.create_client(Img, 'camera')
-        self.gazebo_camera_interface = self.create_subscription(Img, 'camera',
+        self.camera_img_topic = camera_img_topic
+        self.cli = self.create_client(Img, self.camera_img_topic)
+        self.gazebo_camera_interface = self.create_subscription(Img, self.camera_img_topic,
                                                       self.camera_cb_function,
                                                       10)
         self.br = CvBridge()
@@ -182,7 +206,7 @@ class GazeboCameraClient(Node):
         self.latest_image = msg.data
         return self.br.cv2_to_imgmsg(msg.data).tolist()
 
-def get_image_array(camera_number=0, source="PC"):
+def get_image_array(source="PC", camera_number=0, camera_img_topic = ""):
     img = np.zeros((240,320)).tolist()
     if source == "PC":
         camera = cv2.VideoCapture(camera_number)
@@ -190,7 +214,7 @@ def get_image_array(camera_number=0, source="PC"):
         img = cv2.resize(img, (240,320))
         img = img.tolist()
     else:
-        GazeboCamera = GazeboCameraClient()
+        GazeboCamera = GazeboCameraClient(camera_img_topic)
         rate = GazeboCamera.node.create_timer(1)
         rate.sleep()
         img = GazeboCamera.latest_image

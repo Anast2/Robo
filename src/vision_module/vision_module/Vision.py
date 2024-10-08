@@ -6,9 +6,9 @@ from rooted_msgs.srv import *
 from PIL import Image
 from socket import * 
 import face_recognition as fr 
-from ThermalCamera import ThermalCamera
+from vision_module.ThermalCamera import ThermalCamera
 from vision_module.OKAO.OKAO_vision_interface import get_emotions, get_image_array, detect_person
-from image_processing2 import *
+from vision_module.image_processing2 import *
 
 
 class MemoryAccess(Node):

@@ -6,15 +6,7 @@ from ast import literal_eval
 from plantroid_msgs.srv import *
 from plantroid_msgs.msg import *
 from time import time
-import matplotlib.pyplot as plt
-import numpy as np
-import cv2
-from image_processing2 import *
-from datetime import datetime
-import math 
-#import sys
-#sys.path.insert(1, './OKAO')
-#from OKAO_vision_interface import get_image_array
+from vision_module.vision_module.image_processing2 import *
 
 
 def list_threshold (l,t):
@@ -37,7 +29,6 @@ class Cameras(Node):
 
 
 class PersonSeeker(Node):
-
     def __init__(self):
         super().__init__('_seeker')
         self.motors_command = self.create_client(Command, 'speed_command')
@@ -45,8 +36,6 @@ class PersonSeeker(Node):
             self.get_logger().info('service not available, waiting again...')
         self.req_command = Command.Request()
         self.speed_vector = [0,0]
-        #STATE 0:idle, 1:seek light, 2:seek_shadow
-        self.state = 0
         self.notebook_mode = False
 
     def send_command_request(self, vector):
@@ -62,25 +51,21 @@ class PersonSeeker(Node):
 
     def get_person(self):
         response = False #get_image_array().astype(np.uint8)
-        if self.state == 0:
-            return False
-        else:
-            camera_client = Cameras()
-            camera_client.send_request(3)
-            while rclpy.ok():
-                rclpy.spin_once(camera_client)
-                if camera_client.future.done():
-                    try:
-                        response = camera_client.future.result().image
-                    except Exception as e:
-                        camera_client.get_logger().info(
-                            'Service call failed %r' % (e,))
-                    else:
-                        print(response)
-                        response = literal_eval(response)
-                    break
-            return response
-
+        camera_client = Cameras()
+        camera_client.send_request(3)
+        while rclpy.ok():
+            rclpy.spin_once(camera_client)
+            if camera_client.future.done():
+                try:
+                    response = camera_client.future.result().image
+                except Exception as e:
+                    camera_client.get_logger().info(
+                        'Service call failed %r' % (e,))
+                else:
+                    print(response)
+                    response = literal_eval(response)
+                break
+        return response
 
     def rotate_to_person(self):
         person = self.get_person()
@@ -96,11 +81,6 @@ if __name__ == '__main__':
     rclpy.init(args=None)
     L = PersonSeeker()    
     L.state = 1
-    #L.get_sun()
     L.rotate_to_person()
     rclpy.shutdown()
-    # while 1:
-    #     try:
-    #         L.direction_from_pics()
-    #     except:
-    #         print("Some error happened")
+

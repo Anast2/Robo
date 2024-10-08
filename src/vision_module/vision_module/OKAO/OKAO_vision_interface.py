@@ -18,7 +18,6 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import time
 import p2def
 from serial_connector import SerialConnector
 from hvc_p2_api import HVCP2Api

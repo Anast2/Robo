@@ -17,7 +17,6 @@ from rooted_msgs.srv import *
 from rooted_msgs.msg import *
 from time import time
 from beepy import beep
-import subprocess
 from random import choice
 from threading import Thread
 import json
@@ -25,15 +24,7 @@ import json
 ##########################################################################################################################
 #                                    GLOBAL VARIABLES AREA, BE CAREFUL WHILE EDITING                                     #
 ##########################################################################################################################
-s = "s0"
-c = 0
-is_talking = False
-dialog_json = "" #  TODO: load dialogue state-machine and implement the dialogue following
-speech_style = 0
-logging = 0
-detect_person = 0
-in_notebook = 0
-OKAO = 0
+
 
 plantroid_problem_state_machine = StateMachine("problem", 
                                                ["OK", "Problem"],
@@ -102,7 +93,6 @@ def process_notifications(notifications):
 
 
 class SensorReader(Node):
-
     def __init__(self):
         super().__init__('maestro_sensor_reader')
         self.cli = self.create_client(Sensors, 'sensors_server')
@@ -116,7 +106,6 @@ class SensorReader(Node):
 
 
 class Cameras(Node):
-
     def __init__(self):
         super().__init__('maestro_camera_reader')
         self.cli = self.create_client(Camera, 'camera')
@@ -191,7 +180,7 @@ class PersonDetector(Node):
                 else:
                     return response
                 
-    def detection_routine(self):
+    def detection_routine(self): #  TODO: this is probably going to lead the node to hog the camera for itself only... better modify this to make the detector pause for some time between detection requests.
         global plantroid_state_machine
         global plantroid_dialogue_state_machine
         if (plantroid_dialogue_state_machine.get_current_state() == "Silent" and 
@@ -203,43 +192,62 @@ class PersonDetector(Node):
                 pass
 
 class MAESTROmainNode(Node):
-
     def __init__(self, dialogue_state_machine, robot_state_machine):
         super().__init__('plantroid')
+
+        # defining subscribers
         self.subscription = self.create_subscription(String, 'messageTopic',
                                                      self.cb_function,
                                                      10)
-
         self.subscription_notifications = self.create_subscription(String, 'notificationTopic',
                                                                    self.cb_function_notification,
                                                                    10)
-
         self.subscription_human_seen = self.create_subscription(String, 'seenTopic',
                                                      self.cb_function_seen,
                                                      10)
-
         self.subscription
         self.subscription_notifications
         self.subscription_human_seen
+        self.busy_state_listener = self.create_subscription(String, 'busy_state_publisher',
+                                                            self.cb_function_busy_listener,
+                                                            10)
+
+        # defining publishers 
         self.publisher = self.create_publisher(String, 'ListenBlockTopic', 10)
         self.publisher_emotion = self.create_publisher(String, 'emotionTopic', 10)
         self.publisher_speech = self.create_publisher(String, 'speechTopic', 10)
+        
+        # service interfaces
         self.vision_control = Cameras()
         self.busy_interface = BusyInterface()
         self.sensor_reader = SensorReader()
         self.llm = LLMinterface()
         self.memory_access = MemoryAccess()
+        
+
+        # load parameters from launchfile.
+        self.logging = self.get_parameter('store_chat_log').value
+        self.detect_person = self.get_parameter('keep_eye_contact').value
+        self.pc_mode = self.get_parameter('pc_mode').value
+        self.store_emotion = self.get_parameter('store_emotion_change').value
+        
+        # definition of important internal variables 
         self.busy = self.check_busy()
         self.notifications = {}
         self.time_last_seen = -float("inf")
         self.diag_state_machine = dialogue_state_machine
         self.robot_state_machine = robot_state_machine
         self.current_emotion = "neutral"
+
+        # loading external information 
+        self.dialogues = {}
+        dialogue_file_location = self.get_parameter('dialogue_json').value
+
         try:
-            with open('/location/of/your/dialogue.json', 'r') as f:
+            with open(dialogue_file_location, 'r') as f:
                 self.dialogues = json.load(f)
         except Exception as e:
-            self.dialogues = {}
+            self.get_logger.error(str(e))
 
     def cb_function(self, subscribedData):
         self.diag_state_machine.transition("heard_human")
@@ -257,9 +265,15 @@ class MAESTROmainNode(Node):
         response = str(self.assign_prosody(self.conversate(data[0], response_emotion), response_emotion))
         msg = String()
         msg.data = response
+        if self.logging:
+            emotion_delta = tuple()
+            if self.store_emotion:
+                final_face_emotion = self.get_emotion()
+                emotion_delta = (final_emotion, final_face_emotion)
+            self.store_dialogue_exchange(data, gib, time(), f"{emotion_delta}")
 
         if self.robot_state_machine.get_current_state()=="Free":
-            os.system("python /location/of/this/package/PersonSeeker.py") #  Change the string to the location of this package
+            os.system("python /location/of/this/package/PersonSeeker.py") #  TODO: change this to a method in the robot movement module, MAESTRO should not be moving anything!
 
         self.publisher_speech.publish(msg)
 
@@ -285,6 +299,13 @@ class MAESTROmainNode(Node):
                 a.data = str(self.notifications) #  TODO: Correct this line, what is a supposed to be???
                 self.cb_function(a) #  TODO: Correct this line, what is a supposed to be???
 
+    def cb_function_busy_listener(self, msg):
+        busy = literal_eval(msg.data)
+        if busy:
+            self.robot_state_machine.transition("move")
+        else:
+            self.robot_state_machine.transition("finished")
+
     def avoidEcho(self):
         msg = String()
         msg.data = " "
@@ -306,11 +327,7 @@ class MAESTROmainNode(Node):
 
     def check_busy(self):
         busy = self.busy_request("get")
-        if busy:
-            self.robot_state_machine.transition("move")
-        else:
-            self.robot_state_machine.transition("finished")
-            
+
     def set_busy(self): self.busy_request("set_busy")
 
     def set_idle(self): self.busy_request("set_idle")
@@ -424,19 +441,6 @@ class MAESTROmainNode(Node):
         else:
             gib = self.get_llm_response(data)
         self.set_face(response_emotion)
-        command = f"INSERT INTO conversation (input, response) VALUES ({data}, {gib})"
-        self.memory_access.send_request("/home/plantroid/plantroid_ws/src/robot_memory/db/conversation_history.db", command)
-        while rclpy.ok():
-            rclpy.spin_once(self.memory_access)
-            if self.memory_access.future.done():
-                try:
-                    response = self.memory_access.future.result().result
-                except Exception as e:
-                    self.memory_access.get_logger().info(
-                        'Service call failed %r' % (e,))
-                else:
-                    pass
-                break        
         return gib
 
     def assign_prosody(self, utterance, method="random"):
@@ -458,6 +462,21 @@ class MAESTROmainNode(Node):
         else:
             return ([(i,[150,100,45]) for i in utterance])
 
+    def store_dialogue_exchange(humam_input, robot_output, time_stamp, emotion):
+        command = f"INSERT INTO conversation (input, response, time, emotion) VALUES ({humam_input}, {robot_output}, {time_stamp}, {emotion})"
+        self.memory_access.send_request("/home/plantroid/plantroid_ws/src/robot_memory/db/conversation_history.db", command)
+        while rclpy.ok():
+            rclpy.spin_once(self.memory_access)
+            if self.memory_access.future.done():
+                try:
+                    response = self.memory_access.future.result().result
+                except Exception as e:
+                    self.memory_access.get_logger().info(
+                        'Service call failed %r' % (e,))
+                else:
+                    pass
+                break        
+ 
 
 def maestro():
     ROS_interface = MAESTROmainNode()

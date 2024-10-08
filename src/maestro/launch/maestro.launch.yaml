@@ -1,15 +1,44 @@
 launch:
 
-# args that can be set from the command line or a default will be used
 - arg:
     name: "dialog_json"
     default: "/home/plantroid_ws/src/maestro/maestro/dialogue.json"
 
-# start a turtlesim_node in the turtlesim1 namespace
+- arg:
+    name: "store_chat_log"
+    default: false    
+
+- arg:
+    name: "keep_eye_contact"
+    default: true 
+
+- arg:
+    name: "pc_mode"
+    default: false
+
+- arg:
+    name: "store_emotion_change"
+    default: false
+
+
 - node:
       pkg: "maestro"
       exec: "maestro"
       name: "maestro_node"
       output: "screen"
       param:
-        - dialog_json: "/home/plantroid_ws/src/maestro/maestro/dialogue.json"
+        - 
+          name: "dialog_json"
+          value : "/home/plantroid_ws/src/maestro/maestro/dialogue.json"
+        -
+          name: "store_chat_log"
+          value: false
+        -
+          name: "keep_eye_contact"
+          value: true
+        -
+          name: "pc_mode"
+          value: false
+        -
+          name: "store_emotion_change"
+          value: true

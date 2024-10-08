@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import numpy as np
 import cv2
-import os
 
 def thermal_mapping (t_img, n_img, temp_tol = 5, show=False,
                      conv_gray=False, inv_therm=False):

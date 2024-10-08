@@ -2,5 +2,5 @@ launch:
 
 - node:
     pkg: "other_sensors"
-    exec: "fake_sensor_server"
+    exec: "sensor_server"
     name: "sensor_server_node"
