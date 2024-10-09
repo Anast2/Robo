@@ -9,4 +9,6 @@ launch:
     exec: "memory_server"
     name: "memory_server_node"
     param:
-        - db_folder_path : "/home/plantroid/plantroid_ws/src/robot_memory/db/"
+        - 
+          name: "db_folder_path" 
+          value: "/home/plantroid/plantroid_ws/src/robot_memory/db/"

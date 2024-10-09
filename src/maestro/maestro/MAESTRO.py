@@ -4,7 +4,7 @@ import os
 # sys.path.append('') #  Add the location of this package on your computer
 import maestro.utils as utils 
 from maestro.simple_state_machine import StateMachine
-from maestro.ChatBot import chatter
+from maestro.ChatBot import chatter, sentiment_analysis
 # import utils
 # from simple_state_machine import StateMachine
 # from ChatBot import chatter
@@ -20,63 +20,7 @@ from beepy import beep
 from random import choice
 from threading import Thread
 import json
-
-##########################################################################################################################
-#                                    GLOBAL VARIABLES AREA, BE CAREFUL WHILE EDITING                                     #
-##########################################################################################################################
-
-
-plantroid_problem_state_machine = StateMachine("problem", 
-                                               ["OK", "Problem"],
-                                               ["problem_detected", "problem_cleared"],
-                                               {"OK":{"problem_detected":"Problem",
-                                                      "problem_cleared":"OK"},
-                                                "Problem":{"problem_detected":"Problem",
-                                                           "problem_cleared":"OK"}})
-
-plantroid_state_machine = StateMachine("plantroid",["Free","Busy"],
-                                                   ["move","finished"],
-                                                   {"Free":{"move":"Busy",
-                                                            "finished":"Free"},
-                                                    "Busy":{"move":"Busy",
-                                                            "finished":"Free"}
-                                                          })
-
-plantroid_dialogue_state_machine = StateMachine("dialogue", ["Silent","SpokeToMe", "BusyCheck", 
-                                                             "LookAtUser", "AnnounceBusy", "StartDialogue2", 
-                                                             "AnswerHuman", "WaitHumanQuestion1", "CheckProblemAndBusy",
-                                                               "StartDialogue1", "Goodbye", "AskIfHumanIsAvailable",
-                                                               "AnnounceProblem", "WaitHumanQuestion2", "ClearProblem"],
-                                                            ["alone", "dialogue_end", "saw_human", "heard_human",
-                                                             "yes","no", "no_problem", "busy", "idle", "problem_detected",
-                                                             "dialog_init", "human_question", "robot_finished", "timeout"],
-                                                            {"Silent":{"alone":"Silent",
-                                                                       "saw_human":"CheckProblemAndBusy",
-                                                                       "heard_human":"SpokeToMe",
-                                                                       },
-                                                             "SpokeToMe":{"no":"Silent",
-                                                                          "yes":"BusyCheck",
-                                                                          },
-                                                             "BusyCheck":{"idle":"LookAtUser",
-                                                                          "busy":"AnnounceBusy",}, 
-                                                             "LookAtUser":{"saw_human":"StartDialogue2",},
-                                                             "AnnounceBusy":{"robot_finished":"Goodbye",},
-                                                             "StartDialogue2":{"dialogue_init":"AnswerHuman",}, 
-                                                             "AnswerHuman":{"robot_finished":"WaitHumanQuestion2",},
-                                                             "WaitHumanQuestion1":{"human_question":"AnswerHuman",
-                                                                                   "timeout":"ClearProblem",},
-                                                             "CheckProblemAndBusy":{"busy":"Silent",
-                                                                                    "no_problem":"Silent",
-                                                                                    "problem_detected":"StartDialogue1"},
-                                                             "StartDialogue1":{"dialogue_init":"AskIfHumanIsAvailable",},
-                                                             "Goodbye":{"dialogue_end":"Silent",},
-                                                             "AskIfHumanIsAvailable":{"yes":"AnnounceProblem",
-                                                                                      "no":"Goodbye",},
-                                                             "AnnounceProblem":{"robot_finished":"WaitHumanQuestion1",},
-                                                             "WaitHumanQuestion2":{"human_question":"AnswerHuman",
-                                                                                   "timeout":"Goodbye",},
-                                                             "ClearProblem":{"robot_finished":"Goodbye",}})
-##########################################################################################################################
+import pickle 
 
 
 def emotion_2_prompt(emotion):
@@ -90,6 +34,22 @@ def process_notifications(notifications):
         gib += str(notifications[N][0]) + " " + N + ", " + str(notifications[N][1])+str(notifications[N][2])+  ", content "
         if i>0 and i<len(notifications)-1: gib+= " and "
     return gib
+
+
+class StateMachineContainer(Node):
+    def __init__(self):
+        super().__init__('maestro_state_machines')
+        self.busy_state_machine = self.get_parameter('busy_state_machine').value
+        with open(self.busy_state_machine, 'rb') as file: 
+            self.busy_state_machine = pickle.load(file)
+        
+        self.problem_state_machine = self.get_parameter('problem_state_machine').value
+        with open(self.problem_state_machine, 'rb') as file: 
+            self.problem_state_machine = pickle.load(file)
+
+        self.dialog_state_machine = self.get_parameter('dialog_state_machine').value
+        with open(self.dialog_state_machine, 'rb') as file: 
+            self.dialog_state_machine = pickle.load(file)
 
 
 class SensorReader(Node):
@@ -161,10 +121,12 @@ class MemoryAccess(Node):
 
 
 class PersonDetector(Node):
-    def __init__(self):
+    def __init__(self, busy_state_machine, dialogue_state_machine):
         super().__init__('person_detector')
         self.vision_control = Cameras()
         self.person_detect_alarm = self.create_publisher(String, 'seenTopic', 10)
+        self.busy_state_machine = busy_state_machine
+        self.dialogue_state_machine = dialogue_state_machine
 
     def get_vision(self):
         response = "" #get_image_array().astype(np.uint8)
@@ -181,10 +143,8 @@ class PersonDetector(Node):
                     return response
                 
     def detection_routine(self): #  TODO: this is probably going to lead the node to hog the camera for itself only... better modify this to make the detector pause for some time between detection requests.
-        global plantroid_state_machine
-        global plantroid_dialogue_state_machine
-        if (plantroid_dialogue_state_machine.get_current_state() == "Silent" and 
-            plantroid_state_machine.get_current_state() == "Free"):
+        if (self.dialogue_state_machine.get_current_state() == "Silent" and 
+            self.busy_state_machine.get_current_state() == "Free"):
             result = self.get_vision()
             if result == True or result == "True":
                 self.person_detect_alarm.publish("Seen")
@@ -192,7 +152,7 @@ class PersonDetector(Node):
                 pass
 
 class MAESTROmainNode(Node):
-    def __init__(self, dialogue_state_machine, robot_state_machine):
+    def __init__(self, busy_state_machine, problem_state_machine, dialogue_state_machine):
         super().__init__('plantroid')
 
         # defining subscribers
@@ -235,8 +195,9 @@ class MAESTROmainNode(Node):
         self.busy = self.check_busy()
         self.notifications = {}
         self.time_last_seen = -float("inf")
-        self.diag_state_machine = dialogue_state_machine
-        self.robot_state_machine = robot_state_machine
+        self.busy_state_machine = busy_state_machine
+        self.problem_state_machine = problem_state_machine
+        self.dialogue_state_machine = dialogue_state_machine
         self.current_emotion = "neutral"
 
         # loading external information 
@@ -254,7 +215,7 @@ class MAESTROmainNode(Node):
         data = subscribedData.data.split(";")
         speaker_voice_emotion = data[2]
         content_emotion = sentiment_analysis(data[0])
-        face_emotion = self.get_emotion()
+        face_emotion = self.get_face_emotion()
         
         final_emotion = self.emotion_fusion([speaker_voice_emotion, content_emotion, face_emotion])
         # response_emotion = final_emotion #  Uncoment this line if you desire the robot to copy the emotion of the human, "mirror strategy". Comment line below.
@@ -268,7 +229,7 @@ class MAESTROmainNode(Node):
         if self.logging:
             emotion_delta = tuple()
             if self.store_emotion:
-                final_face_emotion = self.get_emotion()
+                final_face_emotion = self.get_face_emotion()
                 emotion_delta = (final_emotion, final_face_emotion)
             self.store_dialogue_exchange(data, gib, time(), f"{emotion_delta}")
 
@@ -278,8 +239,7 @@ class MAESTROmainNode(Node):
         self.publisher_speech.publish(msg)
 
     def cb_function_notification(self, subscribedData):
-        global plantroid_problem_state_machine
-        plantroid_problem_state_machine.transition("problem_detected")
+        self.problem_state_machine.transition("problem_detected")
         data = subscribedData.data
         data_breakdown = data.split(":")
         self.notifications[data_breakdown[0]] = data_breakdown[1:]
@@ -352,7 +312,7 @@ class MAESTROmainNode(Node):
         self.publisher_emotion.publish(msg)
         self.get_logger().info('Publishing: "%s"' % msg.data)
 
-    def get_emotion(self):
+    def get_face_emotion(self):
         response = False #get_image_array().astype(np.uint8)
         self.vision_control.send_request(0)
         while rclpy.ok():
@@ -484,16 +444,20 @@ def maestro():
     ROS_interface.destroy_node()
 
 
-def person_detection():
-    detector = PersonDetector()
+def person_detection(busy_state_machine, dialogue_state_machine):
+    detector = PersonDetector(busy_state_machine, dialogue_state_machine)
     rclpy.spin(detector)
     detector.destroy_node()
 
 
 def main():
     rclpy.init()
-    maestro_thread = Thread(target = main)
-    person_detection_thread = Thread(target = person_detection)
+    state_machines = StateMachineContainer()
+    maestro_thread = Thread(target = maestro,
+                            args = ())
+    person_detection_thread = Thread(target = person_detection,
+                                     args=(state_machines.busy_state_machine, 
+                                           state_machines.dialog_state_machine))
     maestro_thread.start()
     person_detection_thread.start()
     rclpy.shutdown()

@@ -1,7 +1,15 @@
 launch:
 
+- arg:
+    name: "audio_folder_path"
+    default: "/home/plantroid/plantroid_ws/src/robot_memory/db/audio/"
+
 - node:
       pkg: "listening_module"
       exec: "listener_server"
       name: "listener_server_node"
       output: "screen"
+      param:
+        - 
+          name: "audio_folder_path"
+          value: "/home/plantroid/plantroid_ws/src/robot_memory/db/audio/"

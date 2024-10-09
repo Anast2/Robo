@@ -22,18 +22,20 @@ def save_audio(path, data):
         file.close()
 
 def voice_emotion_analysis(audio_file):
-  model = pipeline("audio-classification", model="r-f/wav2vec-english-speech-emotion-recognition")
-  prediction = classifier("/home/antoniogaliza/Documents/test1.mp3", top_k=1)[0]
+  classifier = pipeline("audio-classification", model="r-f/wav2vec-english-speech-emotion-recognition")
+  prediction = classifier(audio_file, top_k=1)[0] # TODO: check if it is working well.  
   emotion_map = {"neutral":"neutral","happy":"happy","sad":"sad","anger":"anger","disgust":"anger","surprise":"surprise","fear":"surprise",}
   return emotion_map[prediction["label"].lower()]
 
 class ListenServer(Node):
     block = False
     language = "en-US"
+    
     def __init__(self):
         super().__init__('listen_server')
         self.block_time = time()
         self.publisher = self.create_publisher(String, 'messageTopic', 10)
+        self.audio_path = self.get_parameter('audio_folder_path').value
 
     def block_callback(self, message):
         self.block = not self.block
@@ -54,8 +56,8 @@ class ListenServer(Node):
                                                      language=self.language)
                 filename = str(uuid.uuid4())
                 print("HEARD: " + phrase)
-                save_audio("./mem/audio/"+filename, audio)
-                emotion_estimate = voice_emotion_analysis("./mem/audio/"+filename)
+                save_audio(self.audio_path+filename, audio)
+                emotion_estimate = voice_emotion_analysis(self.audio_path+filename)
                 self.Publish(phrase.replace(";",",")+";"+filename+";"+emotion_estimate)
             except sr.UnknownValueError:
                 print("PockectShphinx could not understand audio")
