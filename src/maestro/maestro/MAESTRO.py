@@ -36,7 +36,7 @@ def process_notifications(notifications):
     return gib
 
 
-class StateMachineContainer(Node):
+class StateMachineContainer(Node):  # TODO: convert the state machine class to read from json files
     def __init__(self):
         super().__init__('maestro_state_machines')
         self.busy_state_machine = self.get_parameter('busy_state_machine').value
@@ -157,7 +157,7 @@ class MAESTROmainNode(Node):
 
         # defining subscribers
         self.subscription = self.create_subscription(String, 'messageTopic',
-                                                     self.cb_function,
+                                                     self.cb_function_conversation,
                                                      10)
         self.subscription_notifications = self.create_subscription(String, 'notificationTopic',
                                                                    self.cb_function_notification,
@@ -199,6 +199,7 @@ class MAESTROmainNode(Node):
         self.problem_state_machine = problem_state_machine
         self.dialogue_state_machine = dialogue_state_machine
         self.current_emotion = "neutral"
+        self.last_time_seen = float("inf")
 
         # loading external information 
         self.dialogues = {}
@@ -210,7 +211,7 @@ class MAESTROmainNode(Node):
         except Exception as e:
             self.get_logger.error(str(e))
 
-    def cb_function(self, subscribedData):
+    def cb_function_conversation(self, subscribedData):
         self.diag_state_machine.transition("heard_human")
         data = subscribedData.data.split(";")
         speaker_voice_emotion = data[2]
@@ -233,7 +234,7 @@ class MAESTROmainNode(Node):
                 emotion_delta = (final_emotion, final_face_emotion)
             self.store_dialogue_exchange(data, gib, time(), f"{emotion_delta}")
 
-        if self.robot_state_machine.get_current_state()=="Free":
+        if self.busy_state_machine.get_current_state()=="Free":
             os.system("python /location/of/this/package/PersonSeeker.py") #  TODO: change this to a method in the robot movement module, MAESTRO should not be moving anything!
 
         self.publisher_speech.publish(msg)
@@ -253,18 +254,20 @@ class MAESTROmainNode(Node):
     def cb_function_seen(self, subscribedData):
             self.diag_state_machine.transition("saw_human")
             data = subscribedData.data
-            if len(self.notifications)>0 and self.robot_state_machine.get_current_state()=="Free":
+            if len(self.notifications)>0 and self.busy_state_machine.get_current_state()=="Free":
                 self.last_time_seen = time()
-                self.cb_function(a) #  TODO: Correct this line, what is a supposed to be???
+                send_hello = String()
+                send_hello.data = "Hello;None;happy"
+                self.cb_function_conversation() #  TODO: Correct this line, what is a supposed to be???
                 a.data = str(self.notifications) #  TODO: Correct this line, what is a supposed to be???
-                self.cb_function(a) #  TODO: Correct this line, what is a supposed to be???
+                self.cb_function_conversation() #  TODO: Correct this line, what is a supposed to be???
 
     def cb_function_busy_listener(self, msg):
         busy = literal_eval(msg.data)
         if busy:
-            self.robot_state_machine.transition("move")
+            self.busy_state_machine.transition("move")
         else:
-            self.robot_state_machine.transition("finished")
+            self.busy_state_machine.transition("finished")
 
     def avoidEcho(self):
         msg = String()
@@ -361,9 +364,14 @@ class MAESTROmainNode(Node):
                     msg = str(msg)
                 break
         return msg 
-
+    
     def conversate(self, data, response_emotion):
-        gib = chatter(data)
+        basic_prompts = self.dialogue_prompts.get(self.dialogue_state_machine.get_current_state())
+        #TODO: add other analysis accorsing to the state instead of only parsing it from the json file. 
+        if basic_prompts:
+            gib = chatter(data, pairs=basic_prompts)
+        else:
+            gib = chatter(data)
         #human_content_emotion = GPTJ(data, port=5052)
         #print(content_emotion)
         addendum = response_emotion
@@ -422,7 +430,7 @@ class MAESTROmainNode(Node):
         else:
             return ([(i,[150,100,45]) for i in utterance])
 
-    def store_dialogue_exchange(humam_input, robot_output, time_stamp, emotion):
+    def store_dialogue_exchange(self, humam_input, robot_output, time_stamp, emotion):
         command = f"INSERT INTO conversation (input, response, time, emotion) VALUES ({humam_input}, {robot_output}, {time_stamp}, {emotion})"
         self.memory_access.send_request("/home/plantroid/plantroid_ws/src/robot_memory/db/conversation_history.db", command)
         while rclpy.ok():
