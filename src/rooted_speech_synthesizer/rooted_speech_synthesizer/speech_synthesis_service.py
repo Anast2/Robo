@@ -15,6 +15,7 @@ class SpeechSynthesisServer(Node):
         super().__init__("llm_service")
         self.srv = self.create_service(LLM, "tts_server",
                                        self.cb_function)
+        self.publisher = self.create_publisher(String, 'finished_speaking', 10)
         self.mode = self.get_parameter("mode").value
         self.IP = self.get_parameter("IP").value
         self.port = self.get_parameter("PORT").value

@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import print_function
-
 import rclpy
 from rclpy.node import Node
 from plantroid_msgs.srv import Sensors
-
-import os
 import serial
-import syslog
-import time
 from pymodbus.client import ModbusSerialClient
 
 computer = 0
@@ -64,6 +59,7 @@ class SensorServer(Node):
                                                          slave=1).registers[0])
         client.close()
 
+        # for older NPK only integrated soil sensor.
         # if value == "A":
         #     for msg in [[0x01,0x03, 0x00, 0x1e, 0x00, 0x01, 0xe4, 0x0c],
         #                 [0x01,0x03, 0x00, 0x1f, 0x00, 0x01, 0xb5, 0xcc],
@@ -77,7 +73,7 @@ class SensorServer(Node):
         #     self.NPK_sensor.write(get_nitrogen_msg)
         #     ans = self.NPK_sensor.read(7)
         #     response = str(ans[4])
-        #
+        #   
         # elif value == "P":
         #     get_phosphorus_msg = [0x01,0x03, 0x00, 0x1f, 0x00, 0x01, 0xb5,
         #                           0xcc]

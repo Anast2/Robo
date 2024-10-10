@@ -13,7 +13,6 @@ from math import atan2
 import threading
 from time import time
 from movement_module.NeuralNav import NeuralNavigation, NeuralNavigationH5
-from queue import Queue
 
 # import sys
 # sys.path.append('/home/plantroid/plantroid_ws/src/plantroid_navigation/plantroid_navigation')
@@ -55,7 +54,7 @@ class BusyInterface(Node):
 
 class Cameras(Node):
     def __init__(self):
-        super().__init__('test_camera_service')
+        super().__init__('navigation_camera_service')
         self.cli = self.create_client(Camera, 'camera')
         while not self.cli.wait_for_service(timeout_sec=5.0):
             self.get_logger().info('service not available, waiting again...')
@@ -69,8 +68,7 @@ class Cameras(Node):
 class NavigatorNode(Node):
     def __init__(self):
         super().__init__('vgg16_avoidance')
-        self.subscription = self.create_subscription(Pose,'/encoder', self.listener_callback,10)
-        self.goal_subscription = self.create_subscription(String,'/move_order', self.move_order_listener_callback, 10)
+        self.subscription = self.create_subscription(Pose,'/encoder', self.encoder_listener_callback,10)
         self.subscription 
         self.goal_subscription
         self.camera_client = Cameras()
@@ -83,6 +81,9 @@ class NavigatorNode(Node):
             self.get_logger().info('Servo Command service not available, waiting again...')
         self.req = Command.Request()
         self.image_history = [] #[cv2.resize(self.get_image(),(30,40))]*15
+        self.srv = self.create_service(NavigationOrder, "/move_order",
+                                       self.move_order_service_callback)
+
 
     def get_image(self):
         self.camera_client.send_request(1)
@@ -97,7 +98,34 @@ class NavigatorNode(Node):
                 else:
                     return literal_eval(response)
 
-    def listener_callback(self,msg):
+    def get_person(self):
+        response = False #get_image_array().astype(np.uint8)
+        self.camera_client.send_request(3)
+        while rclpy.ok():
+            rclpy.spin_once(camera_client)
+            if camera_client.future.done():
+                try:
+                    response = camera_client.future.result().image
+                except Exception as e:
+                    camera_client.get_logger().info(
+                        'Service call failed %r' % (e,))
+                else:
+                    print(response)
+                    response = literal_eval(response)
+                break
+        return response
+
+    def rotate_to_person(self):
+        person = self.get_person()
+        while not person:
+            print("Seeking humans")
+            person = self.get_person()
+            self.send_request([0, 0.5])
+        print("person found!")
+        for i in range(4):
+            self.send_request([0, 0])
+
+    def encoder_listener_callback(self,msg):
         self.monitored_x, self.monitored_y, self.monitored_theta = msg.x, msg.y, msg.theta
         # print(msg.x, msg.y, msg.theta)
         #print(self.monitored_x, self.monitored_y)
@@ -123,29 +151,36 @@ class NavigatorNode(Node):
                 for i in range(4):
                     self.send_request(0, 0)
     
-    def goal_listener_callback(self, msg):
+    def move_order_service_callback(self, req, resp):
+        resp = "Success"
         if not self.check_busy():
-            if msg.data == "light":
-                self.camera_client.send_request(6)
+            if req.move_to != "human":
+                if req.move_to == "light":
+                    self.camera_client.send_request(6)
+                else:
+                    self.camera_client.send_request(7)
+                while rclpy.ok():
+                    rclpy.spin_once(self.camera_client)
+                    if self.camera_client.future.done():
+                        try:
+                            response = self.camera_client.future.result()
+                        except Exception as e:
+                            self.camera_client.get_logger().info(
+                                'Service call failed %r' % (e,))
+                        else:
+                            self.goal = literal_eval(response.image)[::-1] #TODO: check if -1 is necessary? it should not be, if any corrections need to be done, they should be in the Vision server and not in the actual navigation server, as the format should be [x,y]...
+                            print("GOAL WAS SET AS: ", self.goal)
+                        break
+                self.set_busy()
+                self.goal_theta = atan2(self.goal[1]-self.monitored_y, self.goal[0]-self.monitored_x) #  TODO: check if the logic still follows the ::-1  thing above. 
+                self.image_history = [cv2.resize(self.get_image(),(30,40))]*15 # Assumes that with the new computer getting the image from the vision server will be quick enough. If that is not the case, we need to change how get_image works to interface directly with the camera module. Another idea is to directly run the model in the vision server, like it was done for the previous version of the robot navigation. 
             else:
-                self.camera_client.send_request(7)
-            while rclpy.ok():
-                rclpy.spin_once(self.camera_client)
-                if self.camera_client.future.done():
-                    try:
-                        response = self.camera_client.future.result()
-                    except Exception as e:
-                        self.camera_client.get_logger().info(
-                            'Service call failed %r' % (e,))
-                    else:
-                        self.goal = literal_eval(response.image)[::-1] #TODO: check if -1 is necessary? it should not be, if any corrections need to be done, they should be in the Vision server and not in the actual navigation server, as the format should be [x,y]...
-                        print("GOAL WAS SET AS: ", self.goal)
-                    break
-            self.set_busy()
-            self.goal_theta = atan2(self.goal[1]-self.monitored_y, self.goal[0]-self.monitored_x) #  TODO: check if the logic still follows the ::-1  thing above. 
-            self.image_history = [cv2.resize(self.get_image(),(30,40))]*15 # Assumes that with the new computer getting the image from the vision server will be quick enough. If that is not the case, we need to change how get_image works to interface directly with the camera module. Another idea is to directly run the model in the vision server, like it was done for the previous version of the robot navigation. 
+                self.set_busy()
+                self.rotate_to_person()
         else:
             self.get_logger().warn("Plantroid is already busy, please send request later.")
+            resp = "Failure"
+        return resp
 
     def send_request(self, lin_spd, ang_spd):
         #print("A")

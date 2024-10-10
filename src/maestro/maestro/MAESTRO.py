@@ -151,6 +151,22 @@ class PersonDetector(Node):
             else:
                 pass
 
+
+class NavigationCommandSender(Node):
+    def __init__(self):
+        super().__init__('plant_model_navigation_command_sender')
+        self.cli = self.create_client(NavigationOrder, "navigation_service")
+        while not self.cli.wait_for_service(timeout_sec=5.0):
+            self.get_logger().info('Navigation service not available, waiting again...')
+        self.req = NavigationOrder.Request()
+        
+    def send_move_order(self, order):
+        if order in ["human"]:
+            self.req.move_to = order
+        else:
+            self.get_logger().error("Illegal order; orders should be either 'light' or 'shadow'!")
+
+
 class MAESTROmainNode(Node):
     def __init__(self, busy_state_machine, problem_state_machine, dialogue_state_machine):
         super().__init__('plantroid')
@@ -165,25 +181,32 @@ class MAESTROmainNode(Node):
         self.subscription_human_seen = self.create_subscription(String, 'seenTopic',
                                                      self.cb_function_seen,
                                                      10)
-        self.subscription
-        self.subscription_notifications
-        self.subscription_human_seen
+
         self.busy_state_listener = self.create_subscription(String, 'busy_state_publisher',
                                                             self.cb_function_busy_listener,
                                                             10)
 
+        self.finished_talking_listener = self.create_subscription(String, 'finished_speaking',
+                                                                  self.cb_function_finished_speech,
+                                                                  10)
+
+        self.subscription
+        self.subscription_notifications
+        self.subscription_human_seen
+        self.busy_state_listener
+        
         # defining publishers 
         self.publisher = self.create_publisher(String, 'ListenBlockTopic', 10)
         self.publisher_emotion = self.create_publisher(String, 'emotionTopic', 10)
         self.publisher_speech = self.create_publisher(String, 'speechTopic', 10)
-        
+
         # service interfaces
         self.vision_control = Cameras()
         self.busy_interface = BusyInterface()
         self.sensor_reader = SensorReader()
         self.llm = LLMinterface()
         self.memory_access = MemoryAccess()
-        
+        self.robot_mover = NavigationCommandSender()        
 
         # load parameters from launchfile.
         self.logging = self.get_parameter('store_chat_log').value
@@ -200,6 +223,7 @@ class MAESTROmainNode(Node):
         self.dialogue_state_machine = dialogue_state_machine
         self.current_emotion = "neutral"
         self.last_time_seen = float("inf")
+        self.is_talking = False
 
         # loading external information 
         self.dialogues = {}
@@ -212,7 +236,7 @@ class MAESTROmainNode(Node):
             self.get_logger.error(str(e))
 
     def cb_function_conversation(self, subscribedData):
-        self.diag_state_machine.transition("heard_human")
+        self.dialogue_state_machine.transition("heard_human")
         data = subscribedData.data.split(";")
         speaker_voice_emotion = data[2]
         content_emotion = sentiment_analysis(data[0])
@@ -235,8 +259,9 @@ class MAESTROmainNode(Node):
             self.store_dialogue_exchange(data, gib, time(), f"{emotion_delta}")
 
         if self.busy_state_machine.get_current_state()=="Free":
-            os.system("python /location/of/this/package/PersonSeeker.py") #  TODO: change this to a method in the robot movement module, MAESTRO should not be moving anything!
-
+            self.robot_mover.send_move_order("human")
+            
+        self.is_talking = True
         self.publisher_speech.publish(msg)
 
     def cb_function_notification(self, subscribedData):
@@ -252,15 +277,13 @@ class MAESTROmainNode(Node):
         self.get_logger().info('Subscribed: ' + data)
 
     def cb_function_seen(self, subscribedData):
-            self.diag_state_machine.transition("saw_human")
+            self.dialogue_state_machine.transition("saw_human")
             data = subscribedData.data
             if len(self.notifications)>0 and self.busy_state_machine.get_current_state()=="Free":
                 self.last_time_seen = time()
                 send_hello = String()
                 send_hello.data = "Hello;None;happy"
-                self.cb_function_conversation() #  TODO: Correct this line, what is a supposed to be???
-                a.data = str(self.notifications) #  TODO: Correct this line, what is a supposed to be???
-                self.cb_function_conversation() #  TODO: Correct this line, what is a supposed to be???
+                self.cb_function_conversation(send_hello) #TODO: adjust so it does not disturb the dialogue flow. 
 
     def cb_function_busy_listener(self, msg):
         busy = literal_eval(msg.data)
@@ -268,6 +291,9 @@ class MAESTROmainNode(Node):
             self.busy_state_machine.transition("move")
         else:
             self.busy_state_machine.transition("finished")
+
+    def cb_function_finished_speech(self,msg):
+        self.is_talking = False
 
     def avoidEcho(self):
         msg = String()

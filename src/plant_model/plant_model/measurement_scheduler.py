@@ -44,6 +44,21 @@ class SensorReader(Node):
         self.future = self.cli.call_async(self.req)
 
 
+class NavigationCommandSender(Node):
+    def __init__(self):
+        super().__init__('plant_model_navigation_command_sender')
+        self.cli = self.create_client(NavigationOrder, "navigation_service")
+        while not self.cli.wait_for_service(timeout_sec=5.0):
+            self.get_logger().info('Navigation service not available, waiting again...')
+        self.req = NavigationOrder.Request()
+        
+    def send_move_order(self, order):
+        if order in ["light","shadow"]:
+            self.req.move_to = order
+        else:
+            self.get_logger().error("Illegal order; orders should be either 'light' or 'shadow'!")
+
+
 class NotificationSender(Node):
     def __init__(self):
         super().__init__('plant_model_notification_sender')
@@ -54,13 +69,6 @@ class NotificationSender(Node):
 
     def send_notification(self, characteristic, status, measurement):
         self.notification_publisher.publish(f"{characteristic}:{status}:{measurement}")
-
-    def send_move_order(self, order):
-        if order in ["light","shadow"]:
-            self.move_order_publisher.publish(order)
-        else:
-            self.get_logger().error("Illegal order; orders should be either 'light' or 'shadow'!")
-
 
 class MemoryAccess(Node):
     def __init__(self):
@@ -79,6 +87,7 @@ class MemoryAccess(Node):
 sensor_interface = SensorReader()
 memory_interface = MemoryAccess()
 notification_sender = NotificationSender()
+robot_mover = NavigationCommandSender()
 plant_info_file_path = sensor_interface.plant_information_file
 plant_info = load_plant_needs(plant_info_file_path)
 db_location = sensor_interface.db
@@ -242,11 +251,11 @@ def no_store_temperature_reading(): return sensor_reading(5)
 
 
 def move_2_light(): #  Notifies that the robot needs to move to sunlight
-    notification_sender.send_move_order("light")
+   robot_mover.send_move_order("light")
 
 
 def move_2_shade(): #  Notifies that the robot needs to move into shade
-    notification_sender.send_move_order("shadow")
+   robot_mover.send_move_order("shadow")
 
 
 def temperature_reading(): 
@@ -326,5 +335,10 @@ def run_sensor_task(task_name, task_fn):
     s.enter(60, 1, run_sensor_task, (task_name, task_fn))  # Schedule next run after 60 seconds
 
 
-rclpy.init()
-schedule_sensor_tasks()
+def main():
+    rclpy.init()
+    schedule_sensor_tasks()
+
+
+if __name__ == "__main__":
+    main()
