@@ -13,8 +13,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from threading import Thread
 from ast import literal_eval
-from rooted_msgs.srv import *
-from rooted_msgs.msg import *
+from rooted_msgs.srv import Camera, Busy, LLM, Sensors, MemoryRequest, NavigationOrder
 from time import time
 from beepy import beep
 from random import choice
@@ -260,7 +259,7 @@ class MAESTRO(Node):
             if self.store_emotion:
                 final_face_emotion = self.get_face_emotion()
                 emotion_delta = (decided_emotion, final_face_emotion)
-            self.store_dialogue_exchange(data, gib, time(), f"{emotion_delta}")
+            self.store_dialogue_exchange(data, response, time(), f"{emotion_delta}")
     
         self.tts.send_request(model="espeak_ng", prompt=response)
         while rclpy.ok():
@@ -548,7 +547,7 @@ class MAESTRO(Node):
         elif "Ask" in current_state and event == "no":
             self.timeout_timer = self.create_timer(self.timeout_duration, 0.02)
         
-        
+
 def maestro():
     ROS_interface = MAESTRO(busy_state_machine, problem_state_machine, dialogue_state_machine)
     rclpy.spin(ROS_interface)
@@ -566,8 +565,8 @@ def main():
     maestro_thread = Thread(target = maestro,
                             args = ())
     person_detection_thread = Thread(target = person_detection,
-                                     args=(state_machines.busy_state_machine, 
-                                           state_machines.dialog_state_machine))
+                                     args=(busy_state_machine, 
+                                           dialogue_state_machine))
     maestro_thread.start()
     person_detection_thread.start()
     rclpy.shutdown()
