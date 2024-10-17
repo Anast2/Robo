@@ -17,7 +17,8 @@ class StateMachine:
         self.name = name
         self.states = states
         self.events = events
-        self.current_state = initial_state
+        self.initial_state = initial_state
+        self.current_state = self.initial_state
         self.transition_table = transition_table
         self.validity_check()
 
@@ -85,3 +86,6 @@ class StateMachine:
                     raise ValueError
         except ValueError:
             print("Error, event not present in the event set is present in the transition table!")
+    
+    def reset(self):
+        self.current_state = self.initial_state

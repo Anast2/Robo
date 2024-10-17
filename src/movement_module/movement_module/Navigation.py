@@ -81,9 +81,8 @@ class NavigatorNode(Node):
             self.get_logger().info('Servo Command service not available, waiting again...')
         self.req = Command.Request()
         self.image_history = [] #[cv2.resize(self.get_image(),(30,40))]*15
-        self.srv = self.create_service(NavigationOrder, "/move_order",
+        self.srv = self.create_service(NavigationOrder, "/navigation_service",
                                        self.move_order_service_callback)
-
 
     def get_image(self):
         self.camera_client.send_request(1)

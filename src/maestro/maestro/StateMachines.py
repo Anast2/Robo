@@ -3,7 +3,7 @@ from simple_state_machine import StateMachine
 #NOTE: this file is not used for anything besides storing the state machines in human readable format. 
 # actual state machines are saved in pickle files. 
 
-plantroid_problem_state_machine = StateMachine("problem", 
+problem_state_machine = StateMachine("problem", 
                                                ["OK", "Problem"],
                                                ["problem_detected", "problem_cleared"],
                                                "OK",
@@ -12,7 +12,7 @@ plantroid_problem_state_machine = StateMachine("problem",
                                                 "Problem":{"problem_detected":"Problem",
                                                            "problem_cleared":"OK"}})
 
-plantroid_busy_state_machine = StateMachine("busy",["Free","Busy"],
+busy_state_machine = StateMachine("busy",["Free","Busy"],
                                                    ["move","finished"],
                                                    "Free",
                                                    {"Free":{"move":"Busy",
@@ -21,7 +21,7 @@ plantroid_busy_state_machine = StateMachine("busy",["Free","Busy"],
                                                             "finished":"Free"}
                                                           })
 
-plantroid_dialogue_state_machine = StateMachine("dialogue", ["Silent","SpokeToMe", "BusyCheck", 
+dialogue_state_machine = StateMachine("dialogue", ["Silent","SpokeToMe", "BusyCheck", 
                                                              "LookAtUser", "AnnounceBusy", "StartDialogue2", 
                                                              "AnswerHuman", "WaitHumanQuestion1", "CheckProblemAndBusy",
                                                                "StartDialogue1", "Goodbye", "AskIfHumanIsAvailable",
@@ -51,7 +51,7 @@ plantroid_dialogue_state_machine = StateMachine("dialogue", ["Silent","SpokeToMe
                                                              "StartDialogue1":{"dialogue_init":"AskIfHumanIsAvailable",},
                                                              "Goodbye":{"dialogue_end":"Silent",},
                                                              "AskIfHumanIsAvailable":{"yes":"AnnounceProblem",
-                                                                                      "no":"Goodbye",},
+                                                                                      "robot_finished":"Goodbye",},
                                                              "AnnounceProblem":{"robot_finished":"WaitHumanQuestion1",},
                                                              "WaitHumanQuestion2":{"human_question":"AnswerHuman",
                                                                                    "timeout":"Goodbye",},

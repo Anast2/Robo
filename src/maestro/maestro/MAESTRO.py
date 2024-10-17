@@ -4,7 +4,7 @@ import os
 # sys.path.append('') #  Add the location of this package on your computer
 import maestro.utils as utils 
 from maestro.simple_state_machine import StateMachine
-from maestro.ChatBot import chatter, sentiment_analysis
+from maestro.ChatBot import chatter, sentiment_analysis, check_busy
 # import utils
 # from simple_state_machine import StateMachine
 # from ChatBot import chatter
@@ -20,7 +20,7 @@ from beepy import beep
 from random import choice
 from threading import Thread
 import json
-import pickle 
+from StateMachines import problem_state_machine, busy_state_machine, dialogue_state_machine
 
 
 def emotion_2_prompt(emotion):
@@ -34,22 +34,6 @@ def process_notifications(notifications):
         gib += str(notifications[N][0]) + " " + N + ", " + str(notifications[N][1])+str(notifications[N][2])+  ", content "
         if i>0 and i<len(notifications)-1: gib+= " and "
     return gib
-
-
-class StateMachineContainer(Node):  # TODO: convert the state machine class to read from json files
-    def __init__(self):
-        super().__init__('maestro_state_machines')
-        self.busy_state_machine = self.get_parameter('busy_state_machine').value
-        with open(self.busy_state_machine, 'rb') as file: 
-            self.busy_state_machine = pickle.load(file)
-        
-        self.problem_state_machine = self.get_parameter('problem_state_machine').value
-        with open(self.problem_state_machine, 'rb') as file: 
-            self.problem_state_machine = pickle.load(file)
-
-        self.dialog_state_machine = self.get_parameter('dialog_state_machine').value
-        with open(self.dialog_state_machine, 'rb') as file: 
-            self.dialog_state_machine = pickle.load(file)
 
 
 class SensorReader(Node):
@@ -84,6 +68,21 @@ class LLMinterface(Node):
         self.cli = self.create_client(LLM, 'llm_server')
         while not self.cli.wait_for_service(timeout_sec=5.0):
             self.get_logger().info('LLM service not available, waiting again...')
+        self.req = LLM.Request()
+        self.req
+
+    def send_request(self, model, prompt):
+        self.req.model = model
+        self.req.prompt = prompt
+        self.future = self.cli.call_async(self.req)
+
+
+class TTSinterface(Node):
+    def __init__(self):
+        super().__init__('maestro_tts_interface')
+        self.cli = self.create_client(LLM, 'tts_server')
+        while not self.cli.wait_for_service(timeout_sec=5.0):
+            self.get_logger().info('TTS service not available, waiting again...')
         self.req = LLM.Request()
         self.req
 
@@ -167,28 +166,28 @@ class NavigationCommandSender(Node):
             self.get_logger().error("Illegal order; orders should be either 'light' or 'shadow'!")
 
 
-class MAESTROmainNode(Node):
+class MAESTRO(Node):
     def __init__(self, busy_state_machine, problem_state_machine, dialogue_state_machine):
         super().__init__('plantroid')
 
         # defining subscribers
-        self.subscription = self.create_subscription(String, 'messageTopic',
+        self.subscription = self.create_subscription(String,
+                                                     'messageTopic',
                                                      self.cb_function_conversation,
                                                      10)
-        self.subscription_notifications = self.create_subscription(String, 'notificationTopic',
+        self.subscription_notifications = self.create_subscription(String,
+                                                                   'notificationTopic',
                                                                    self.cb_function_notification,
                                                                    10)
-        self.subscription_human_seen = self.create_subscription(String, 'seenTopic',
-                                                     self.cb_function_seen,
-                                                     10)
+        self.subscription_human_seen = self.create_subscription(String,
+                                                                'seenTopic',
+                                                                self.cb_function_seen,
+                                                                10)
 
-        self.busy_state_listener = self.create_subscription(String, 'busy_state_publisher',
-                                                            self.cb_function_busy_listener,
-                                                            10)
-
-        self.finished_talking_listener = self.create_subscription(String, 'finished_speaking',
-                                                                  self.cb_function_finished_speech,
-                                                                  10)
+        self.busy_state_listener = self.create_subscription(String,
+                                                            'busy_state_publisher',
+                                                             self.cb_function_busy_listener,
+                                                             10)
 
         self.subscription
         self.subscription_notifications
@@ -198,13 +197,13 @@ class MAESTROmainNode(Node):
         # defining publishers 
         self.publisher = self.create_publisher(String, 'ListenBlockTopic', 10)
         self.publisher_emotion = self.create_publisher(String, 'emotionTopic', 10)
-        self.publisher_speech = self.create_publisher(String, 'speechTopic', 10)
 
         # service interfaces
         self.vision_control = Cameras()
         self.busy_interface = BusyInterface()
         self.sensor_reader = SensorReader()
         self.llm = LLMinterface()
+        self.tts = TTSinterface()
         self.memory_access = MemoryAccess()
         self.robot_mover = NavigationCommandSender()        
 
@@ -213,6 +212,7 @@ class MAESTROmainNode(Node):
         self.detect_person = self.get_parameter('keep_eye_contact').value
         self.pc_mode = self.get_parameter('pc_mode').value
         self.store_emotion = self.get_parameter('store_emotion_change').value
+        self.robot_name = self.get_parameter('robot_name').value
         
         # definition of important internal variables 
         self.busy = self.check_busy()
@@ -223,7 +223,8 @@ class MAESTROmainNode(Node):
         self.dialogue_state_machine = dialogue_state_machine
         self.current_emotion = "neutral"
         self.last_time_seen = float("inf")
-        self.is_talking = False
+        self.timeout_timer = None
+        self.timeout_duration = 20.0
 
         # loading external information 
         self.dialogues = {}
@@ -236,33 +237,44 @@ class MAESTROmainNode(Node):
             self.get_logger.error(str(e))
 
     def cb_function_conversation(self, subscribedData):
-        self.dialogue_state_machine.transition("heard_human")
+        if self.timeout_timer is not None:
+            self.timeout_timer.cancel()
         data = subscribedData.data.split(";")
+        human_speech = data[0]
         speaker_voice_emotion = data[2]
-        content_emotion = sentiment_analysis(data[0])
-        face_emotion = self.get_face_emotion()
-        
-        final_emotion = self.emotion_fusion([speaker_voice_emotion, content_emotion, face_emotion])
-        # response_emotion = final_emotion #  Uncoment this line if you desire the robot to copy the emotion of the human, "mirror strategy". Comment line below.
-        response_emotion = {"neutral":"neutral","happy":"happy","sad":"happy","anger":"neutral","surprise":"neutral"}[final_emotion] # Uncoment this line if you want the robot to try to improve human emotional state. Comment line above
+        content_emotion = sentiment_analysis(data[0])        
+        event = self.dialogue_initialization_routine(human_speech)
+
+        face_emotion = self.get_face_emotion()        
+        decided_emotion = self.emotion_fusion([speaker_voice_emotion, content_emotion, face_emotion])
+        # response_emotion = decided_emotion #  Uncoment this line if you desire the robot to copy the emotion of the human, "mirror strategy". Comment line below.
+        response_emotion = {"neutral":"neutral","happy":"happy","sad":"happy","anger":"neutral","surprise":"neutral"}[decided_emotion] # Uncoment this line if you want the robot to try to improve human emotional state. Comment line above
         self.current_emotion = response_emotion
         self.get_logger().info('Subscribed: ' + data[0])
         beep(1)
-        response = str(self.assign_prosody(self.conversate(data[0], response_emotion), response_emotion))
-        msg = String()
-        msg.data = response
+        response = str(self.assign_prosody(self.generate_response(data[0], response_emotion), response_emotion))
+        self.set_face(response_emotion)
+
         if self.logging:
             emotion_delta = tuple()
             if self.store_emotion:
                 final_face_emotion = self.get_face_emotion()
-                emotion_delta = (final_emotion, final_face_emotion)
+                emotion_delta = (decided_emotion, final_face_emotion)
             self.store_dialogue_exchange(data, gib, time(), f"{emotion_delta}")
-
-        if self.busy_state_machine.get_current_state()=="Free":
-            self.robot_mover.send_move_order("human")
-            
-        self.is_talking = True
-        self.publisher_speech.publish(msg)
+    
+        self.tts.send_request(model="espeak_ng", prompt=response)
+        while rclpy.ok():
+            rclpy.spin_once(self.tts)
+            if self.tts.future.done():
+                try:
+                    response = self.tts.future.result()
+                except Exception as e:
+                    self.tts.get_logger().info(
+                        'Service call failed %r' % (e,))
+                else:
+                    break  
+        self.dialogue_state_machine.transition("robot_finished") #  All states after robot finish talking transition to Goodbye through robot_finished.
+        self.dialogue_finalization_routine(human_speech) # check if the goodbye speech is happening twice. if it is, remove farewell giving from this routine 
 
     def cb_function_notification(self, subscribedData):
         self.problem_state_machine.transition("problem_detected")
@@ -292,8 +304,32 @@ class MAESTROmainNode(Node):
         else:
             self.busy_state_machine.transition("finished")
 
-    def cb_function_finished_speech(self,msg):
-        self.is_talking = False
+    def cb_timeout(self):
+        self.get_logger().info("Timeout reached! Saying goodbye...")
+        self.dialogue_state_machine.transition("timeout")
+        bye_speech = "see you later!"
+        
+        if self.dialogue_state_machine.get_current_state()=="ClearProblem":
+            self.notifications = {}
+            bye_speech = chatter(" ", self.dialogues.get("ClearProblem"))
+            self.dialogue_state_machine.transition("robot_finished")
+        else:
+            bye_speech = bye_speech = chatter(" ", self.dialogues.get("Goodbye"))
+        self.dialogue_state_machine.transition("dialogue_end")
+        self.tts.send_request(model="espeak_ng", prompt=str([[150,150,150], bye_speech]))
+        while rclpy.ok():
+            rclpy.spin_once(self.tts)
+            if self.tts.future.done():
+                try:
+                    response = self.tts.future.result()
+                except Exception as e:
+                    self.tts.get_logger().info(
+                        'Service call failed %r' % (e,))
+                else:
+                    break
+        self.dialogue_state_machine.reset()
+
+
 
     def avoidEcho(self):
         msg = String()
@@ -391,27 +427,23 @@ class MAESTROmainNode(Node):
                 break
         return msg 
     
-    def conversate(self, data, response_emotion):
-        basic_prompts = self.dialogue_prompts.get(self.dialogue_state_machine.get_current_state())
-        #TODO: add other analysis accorsing to the state instead of only parsing it from the json file. 
-        if basic_prompts:
-            gib = chatter(data, pairs=basic_prompts)
-        else:
-            gib = chatter(data)
+    def generate_response(self, data, response_emotion):
+        basic_prompts = self.dialogues.get(self.dialogue_state_machine.get_current_state())        
+        response = chatter(data, pairs=basic_prompts)
         #human_content_emotion = GPTJ(data, port=5052)
         #print(content_emotion)
         addendum = response_emotion
-        if gib:
-            if "wikipedia:" in gib:
-                gib = gib.split(":")[1]
-                gib = utils.wikipedia_query(gib)
+        if response:
+            if "wikipedia:" in response:
+                response = response.split(":")[1]
+                response = utils.wikipedia_query(response)
 
-            elif "dictionary:" in gib:
-                gib = gib.split(":")[1]
-                gib = utils.dictionary_query(gib)
+            elif "dictionary:" in response:
+                response = response.split(":")[1]
+                response = utils.dictionary_query(response)
 
-            elif "sensor:" in gib:
-                split = gib.split(":")
+            elif "sensor:" in response:
+                split = response.split(":")
                 sensor_reading = self.get_sensor(int(split[1]))
                 sensor_dict = {0:"right ear light", 1:"tail light",
                                2:"left ear light", 3:"soil moisture", 4:"temperature", 
@@ -419,23 +451,22 @@ class MAESTROmainNode(Node):
                 unit_dict = {0:"lux", 1:"lux",2:"lux", 3:" per cent", 4:" Degrees Celsius", 5:"", 
                              6:" deciSiemes per centimeter", 7:"", 8:" miligrams per kilogram of soil", 
                              9:" miligrams per kilogram of soil", 10:" miligrams per kilogram of soil"}                               
-                gib = "current "+sensor_dict[int(split[1])]+" sensor reading is "+str(sensor_reading)+unit_dict[int(split[1])]
+                response = "current "+sensor_dict[int(split[1])]+" sensor reading is "+str(sensor_reading)+unit_dict[int(split[1])]
 
-            elif gib == "vision_check":
-                gib = self.get_vision()
+            elif response == "vision_check":
+                response = self.get_vision()
 
-            elif gib =="not_proc":
-                gib = process_notifications(self.notifications)
-                print(gib)
+            elif response =="not_proc":
+                response = process_notifications(self.notifications)
+                print(response)
                 self.notifications = {}
 
-            gib = f"Briefly and politely paraphrase the following text in a {addendum} tone: {gib}"
-            gib = self.get_llm_response(gib)
+            response = f"Briefly and politely paraphrase the following text in a {addendum} tone: {response}"
+            response = self.get_llm_response(response)
 
         else:
-            gib = self.get_llm_response(data)
-        self.set_face(response_emotion)
-        return gib
+            response = self.get_llm_response(data)
+        return response
 
     def assign_prosody(self, utterance, method="random"):
         if not isinstance(utterance, list):
@@ -471,9 +502,55 @@ class MAESTROmainNode(Node):
                     pass
                 break        
  
+    def dialogue_initialization_routine(self, human_speech):
+        
+        transitions = ["alone", "dialogue_end", "saw_human", "heard_human", 
+                        "yes","no", "no_problem", "busy", "idle", 
+                        "problem_detected", "dialogue_init", "human_question",
+                        "robot_finished"]
+        event = "alone"
+        while event in transitions: 
+            current_state = self.dialogue_state_machine.get_current_state() 
+            if current_state == "Silent" and event in ["busy", "no_problem"]: 
+                break
+            else:
+                if event == "alone":
+                    event = chatter(human_speech, self.dialogues.get(current_state))
 
+                elif current_state == "CheckProblemAndBusy":
+                    if len(self.notifications) > 0 and self.busy_state_machine.get_current_state()=="Free":
+                        event = "problem_detected"
+                    else:
+                        event = "busy"
+
+                elif current_state == "BusyCheck":
+                    if self.busy_state_machine.get_current_state()=="Free":
+                        event = "idle"
+                        event = self.dialogue_state_machine.transition(event)
+                        self.robot_mover.send_move_order("human")
+                    else:
+                        event = "busy"
+
+                elif current_state == "ClearProblem":
+                    event = "robot_finished"
+                    self.notifications = {}
+
+                else:
+                    event = chatter(event, self.dialogues.get(current_state))
+
+                self.dialogue_state_machine.transition(event)
+        return event 
+    
+    def dialogue_finalization_routine(self, human_speech, event = None):
+        current_state = self.dialogue_state_machine.get_current_state()
+        if "Wait" in current_state:
+            self.timeout_timer = self.create_timer(self.timeout_duration, self.cb_timeout)
+        elif "Ask" in current_state and event == "no":
+            self.timeout_timer = self.create_timer(self.timeout_duration, 0.02)
+        
+        
 def maestro():
-    ROS_interface = MAESTROmainNode()
+    ROS_interface = MAESTRO(busy_state_machine, problem_state_machine, dialogue_state_machine)
     rclpy.spin(ROS_interface)
     ROS_interface.destroy_node()
 
@@ -486,7 +563,6 @@ def person_detection(busy_state_machine, dialogue_state_machine):
 
 def main():
     rclpy.init()
-    state_machines = StateMachineContainer()
     maestro_thread = Thread(target = maestro,
                             args = ())
     person_detection_thread = Thread(target = person_detection,

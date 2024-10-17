@@ -32,6 +32,11 @@ launch:
     name: "dialog_state_machine"
     default: "plantroid_dialog_state_machine.pk"
 
+- arg:
+    name: "robot_name"
+    default: "plantroid"    
+
+
 - node:
       pkg: "maestro"
       exec: "maestro"
@@ -62,3 +67,6 @@ launch:
         -
           name: "dialog_state_machine"
           value: "/home/plantroid_ws/src/maestro/maestro/state_machines/plantroid_dialogue_state_machine.pkl"
+        -          
+          name: "robot_name"
+          default: "plant droid" # write the names as perceived be the STT system. e.g., Plantroid is perceived as "plant droid".

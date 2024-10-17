@@ -6,16 +6,15 @@ from ast import literal_eval
 from rooted_msgs.srv import *
 from rooted_msgs.msg import *
 #sys.path.append('') #  Add the location of this package on your computer
-import rooted_speech_synthesizer.speech_synthesis_interfaceS as tts 
+import rooted_speech_synthesizer.speech_synthesis_interfaces as tts 
 
 
 class SpeechSynthesisServer(Node):
 
     def __init__(self, mode="local", IP="localhost", port=11434):
-        super().__init__("llm_service")
+        super().__init__("tts_service")
         self.srv = self.create_service(LLM, "tts_server",
                                        self.cb_function)
-        self.publisher = self.create_publisher(String, 'finished_speaking', 10)
         self.mode = self.get_parameter("mode").value
         self.IP = self.get_parameter("IP").value
         self.port = self.get_parameter("PORT").value

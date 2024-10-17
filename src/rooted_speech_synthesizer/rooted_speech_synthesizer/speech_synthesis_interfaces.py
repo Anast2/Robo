@@ -2,11 +2,12 @@
 import socket
 import subprocess 
 from balacoon_tts import TTS, SpeechUtterance
-
+from ast import literal_eval
 
 def espeak_ng(msg): #  lightest option of all, worst quality of all
-    speech_content = msg[0]
-    volume, speed, pitch = msg[1]
+    data = literal_eval(msg.data)
+    speech_content = data[0]
+    volume, speed, pitch = data[1]
     vlm,ptc,spd = ["-a", str(volume)], ['-p', str(pitch)], ['-s',str(speed)]
     cmd = ["espeak-ng"]+["-v","en-us+f3"]+ptc+vlm+spd+[speech_content]
     return subprocess.Popen(cmd)    

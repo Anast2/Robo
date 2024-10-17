@@ -58,9 +58,11 @@ default_pairs = [[r"(hi|hello|howdy|salutations|oy|oi|hola) (.*)",["Hello!","Hi!
 [r"who was (.*)",["wikipedia:%1"]],
 ]
 
+
 def chatter(phrase, pairs=default_pairs, reflections=reflections):
   chat = Chat(pairs, reflections)
   return chat.respond(phrase)
+
 
 def sentiment_analysis(phrase):
   """Model from @article{vamossy2023emtract,
@@ -97,6 +99,7 @@ def question_detection(phrase):
     # If none of the conditions are met, it's likely not a question
     return False
 
+
 def get_subject(phrase):
     words = word_tokenize(phrase)
     pos_tags = pos_tag(words)
@@ -123,6 +126,7 @@ def get_subject(phrase):
                 break
     return subject
 
+
 def is_command(sentence):
     # Tokenize and POS tag the sentence
     words = word_tokenize(sentence)
@@ -137,3 +141,21 @@ def is_command(sentence):
     if first_word.lower() in modal_verbs:
         return True
     return False
+
+
+def check_busy(sentence):
+    sentence = sentence.lower()
+    for word in ["no", "impossible", "busy", "cannot", "can't"]:
+        if word in sentence:
+            return False
+
+    for word in ["yes", "of course", "right away", "certainly", "ok", "good", "free"]:
+        if word in sentence:
+            return True
+    #  in case none of the keywords is found, use sentiment analysis to try and check whether it an acceptance or refusal of the request. 
+    sia = SentimentIntensityAnalyzer()
+    sentiment = sia.polarity_scores(sentence)
+    if sentiment['compound'] >= 0.5:
+        return True
+    else:
+        return False
