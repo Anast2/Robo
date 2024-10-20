@@ -22,7 +22,7 @@ setup(
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ["face_expression_server = facial_expression.face_expression_server:main"
+        'console_scripts': ["facial_expression_server = facial_expression.face_expression_server:main"
         ],
     },
 )

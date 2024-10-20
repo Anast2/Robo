@@ -12,5 +12,7 @@ launch:
       name: "facial_expression_node"
       output: "screen"
       param:
-        - image_folder: "/home/plantroid_ws/src/facial_expression/facial_expression/IMG"
+        - 
+          name: image_folder
+          value: "/home/plantroid_ws/src/facial_expression/facial_expression/IMG"
 

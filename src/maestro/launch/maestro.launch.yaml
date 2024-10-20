@@ -6,19 +6,19 @@ launch:
 
 - arg:
     name: "store_chat_log"
-    default: false    
+    default: "False"
 
 - arg:
     name: "keep_eye_contact"
-    default: true 
+    default: "True"
 
 - arg:
     name: "pc_mode"
-    default: false
+    default: "False"
 
 - arg:
     name: "store_emotion_change"
-    default: false
+    default: "False"
 
 - arg:
     name: "busy_state_machine"
@@ -48,16 +48,16 @@ launch:
           value : "/home/plantroid_ws/src/maestro/maestro/dialogue.json"
         -
           name: "store_chat_log"
-          value: false
+          value: "False"
         -
           name: "keep_eye_contact"
-          value: true
+          value: "True"
         -
           name: "pc_mode"
-          value: false
+          value: "False"
         -
           name: "store_emotion_change"
-          value: true
+          value: "True"
         -
           name: "busy_state_machine"
           value: "/home/plantroid_ws/src/maestro/maestro/state_machines/plantroid_busy_state_machine.pkl"
@@ -69,4 +69,4 @@ launch:
           value: "/home/plantroid_ws/src/maestro/maestro/state_machines/plantroid_dialogue_state_machine.pkl"
         -          
           name: "robot_name"
-          default: "plant droid" # write the names as perceived be the STT system. e.g., Plantroid is perceived as "plant droid".
+          value: "plant droid" # write the names as perceived be the STT system. e.g., Plantroid is perceived as "plant droid".
