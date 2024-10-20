@@ -3,7 +3,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from ast import literal_eval
-from rooted_msgs.srv import *
+from rooted_msgs.srv import LLM
 from rooted_msgs.msg import *
 #sys.path.append('') #  Add the location of this package on your computer
 import rooted_speech_synthesizer.speech_synthesis_interfaces as tts 

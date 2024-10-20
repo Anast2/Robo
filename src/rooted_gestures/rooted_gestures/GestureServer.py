@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
-from rooted_msgs.srv import *
-from rooted_msgs.msg import *
+from rooted_msgs.srv import Gesture, Busy, NeckServo, Speed, Command 
 from ast import literal_eval    
 from time import time
 

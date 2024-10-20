@@ -5,7 +5,7 @@ import rclpy
 from rclpy.node import Node
 from rooted_msgs.srv import NeckServo
 from time import time
-import os
+import RPi.GPIO as GPIO
 
 raspi =  True  # TODO: change to rosparam
 
@@ -30,7 +30,6 @@ class NeckServoServer(Node):
                                        self.handle_neck_servo)
         self.servoPIN = 17
         if raspi:
-            import RPi.GPIO as GPIO
             GPIO.setmode(GPIO.BCM)
             GPIO.setup(self.servoPIN, GPIO.OUT)
             self.controller = GPIO.PWM(self.servoPIN, 50)

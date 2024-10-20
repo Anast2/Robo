@@ -67,7 +67,7 @@ class ListenServer(Node):
 
     def start_listening(self, recognizer):
         print("Starting Listening subprocess...")
-        return recognizer.listen_in_background(m, self.listenCallback)
+        return recognizer.listen_in_background(recognizer, self.listenCallback)
 
     def stop_listening(self, listener):
         print("Stopping Listening subprocess...")

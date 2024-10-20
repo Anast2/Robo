@@ -23,8 +23,8 @@ class SensorServer(Node):
     def cb_function(self, req, resp):
         sensor = req.sensor_number
         if sensor<=5:
-            if sensor  == 3:
-        	    resp.sensor_reading = str(32+choice(range(-10,5)))
+            if sensor == 3:
+                resp.sensor_reading = str(32+choice(range(-10,5)))
             else:
                 resp.sensor_reading = str(500+choice(range(12,47)))
         elif sensor == 6:

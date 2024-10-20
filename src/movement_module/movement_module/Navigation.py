@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 from std_msgs.msg import String
-from rooted_msgs.srv import *
+from rooted_msgs.srv import Busy, Camera, Command, NavigationOrder
 from rooted_msgs.msg import *
 import rclpy
-from rooted_msgs.msg import Pose, Speed, State
+from rooted_msgs.msg import Pose, Speed
 from rclpy.node import Node
 from math import pi, sqrt
 import numpy as np
@@ -101,12 +101,12 @@ class NavigatorNode(Node):
         response = False #get_image_array().astype(np.uint8)
         self.camera_client.send_request(3)
         while rclpy.ok():
-            rclpy.spin_once(camera_client)
-            if camera_client.future.done():
+            rclpy.spin_once(self.camera_client)
+            if self.camera_client.future.done():
                 try:
-                    response = camera_client.future.result().image
+                    response = self.camera_client.future.result().image
                 except Exception as e:
-                    camera_client.get_logger().info(
+                    self.camera_client.get_logger().info(
                         'Service call failed %r' % (e,))
                 else:
                     print(response)

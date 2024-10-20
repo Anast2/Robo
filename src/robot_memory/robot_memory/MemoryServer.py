@@ -2,7 +2,7 @@
 import rclpy
 import os
 from rclpy.node import Node
-from rooted_msgs.srv import *
+from rooted_msgs.srv import MemoryRequest
 from rooted_msgs.msg import *
 from std_msgs.msg import String
 import sqlite3 as sql 
@@ -22,12 +22,11 @@ def create_table(conn, create_table_sql):
     try:
         c = conn.cursor()
         c.execute(create_table_sql)
-    except Error as e:
+    except Exception as e:
         print(e)
 
 
 class MemoryServer(Node):
-
     def __init__(self, database_folder="."):
         super().__init__("memory_server")
         self.srv = self.create_service(MemoryRequest, "memory_service", self.handle_request)
@@ -99,6 +98,7 @@ def memory_server_start():
 
 def memory_writer_start():
     writer = MemoryWriter()
+    writer
 
 
 def main():

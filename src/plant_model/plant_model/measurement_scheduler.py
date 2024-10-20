@@ -3,7 +3,7 @@ import time
 import ast
 import json
 import os
-from rooted_msgs.srv import *
+from rooted_msgs.srv import Sensors, NavigationOrder, MemoryRequest
 from rooted_msgs.msg import *
 from std_msgs.msg import String
 import rclpy
@@ -69,6 +69,7 @@ class NotificationSender(Node):
 
     def send_notification(self, characteristic, status, measurement):
         self.notification_publisher.publish(f"{characteristic}:{status}:{measurement}")
+
 
 class MemoryAccess(Node):
     def __init__(self):
@@ -314,25 +315,27 @@ def irradiance_reading():
         notification_sender.send_notification("", problem, str(reading))
 
 
-s = sched.scheduler(time.time, time.sleep)
+plantroid_scheduler= sched.scheduler(time.time,  time.sleep)
 
 
 def schedule_sensor_tasks():
-    s.enter(10, 1, run_sensor_task, ('soil_N_reading', soil_N_reading))  # Every 10 seconds
-    s.enter(20, 1, run_sensor_task, ('soil_P_reading', soil_P_reading))  # Every 20 seconds
-    s.enter(30, 1, run_sensor_task, ('soil_K_reading', soil_K_reading))  # Every 30 seconds
-    s.enter(40, 1, run_sensor_task, ('soil_moisture_reading', soil_moisture_reading))  # Every 40 seconds
-    s.enter(60, 1, run_sensor_task, ('irradiance_reading', irradiance_reading))  # Every 60 seconds
+    plantroid_scheduler.enter(10, 1, run_sensor_task, ('soil_N_reading', soil_N_reading, 24*3600)) #  Daily measurement
+    plantroid_scheduler.enter(20, 1, run_sensor_task, ('soil_P_reading', soil_P_reading, 24*3600)) #  Daily measurement
+    plantroid_scheduler.enter(30, 1, run_sensor_task, ('soil_K_reading', soil_K_reading, 24*3600)) #  Daily measurement
+    plantroid_scheduler.enter(30, 1, run_sensor_task, ('soil_K_reading', soil_pH_reading, 24*3600)) #  Daily measurement
+    plantroid_scheduler.enter(30, 1, run_sensor_task, ('soil_K_reading', soil_EC_reading, 24*3600)) #  Daily measurement
+    plantroid_scheduler.enter(40, 1, run_sensor_task, ('soil_moisture_reading', soil_moisture_reading, 3600))  # Hourly measurement
+    plantroid_scheduler.enter(60, 1, run_sensor_task, ('irradiance_reading', irradiance_reading)) #  Every 5 minutes
+    plantroid_scheduler.enter(60, 1, run_sensor_task, ('irradiance_reading', temperature_reading)) #  Every 5 minutes
     # Repeat task execution
-    s.run()
+    plantroid_scheduler.run()
 
 
-def run_sensor_task(task_name, task_fn):
+def run_sensor_task(task_name, task_fn, period):
     readings = task_fn()
     if readings is not None:
         print(f"{task_name}: {readings}")
-        send_ros2_message({task_name: readings})
-    s.enter(60, 1, run_sensor_task, (task_name, task_fn))  # Schedule next run after 60 seconds
+    plantroid_scheduler.enter(period, 1, run_sensor_task, (task_name, task_fn)) # Schedule next run after period. 
 
 
 def main():

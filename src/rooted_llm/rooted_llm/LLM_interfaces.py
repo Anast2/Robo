@@ -19,7 +19,7 @@ def GPTJ(msg, ip="165.93.125.232", port=5050):
         if not message:pass
         else:
             message = message.decode("utf-8")
-            history_add(myHist, message)
+            myHist = myHist[:10]+[message]
             return(message)
     except:
         return("Server not reachable")

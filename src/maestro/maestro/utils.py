@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-from random import choice, random
-import subprocess
-import soundfile as sf
-import io
+from random import choice
+from wikipedia import summary, suggest
+from PyDictionary import PyDictionary
+import sqlite3 as sql
 
 
 def now():
@@ -12,7 +12,6 @@ def now():
 
 
 def write_sql(dbLoc, sql_command, values):
-    import sqlite3 as sql
     db = sql.connect(dbLoc)
     cursor = db.cursor()
     cursor.execute(sql_command, values)
@@ -60,7 +59,6 @@ def gibberish():
 
 
 def wikipedia_query(title):
-    from wikipedia import summary, suggest
     ans = "Sorry, I don't know what "+title+" is."
     try:
         ans = summary(title, sentences=2)
@@ -73,7 +71,6 @@ def wikipedia_query(title):
 
 
 def dictionary_query(word):
-    from PyDictionary import PyDictionary
     dictionary=PyDictionary()
     ans = "Sorry, I don't know what " + word + " means."
     try:
