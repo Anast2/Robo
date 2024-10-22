@@ -32,8 +32,15 @@ def load_plant_needs(filename):
 class SensorReader(Node):
     def __init__(self):
         super().__init__('plant_model_sensor_reader')
+        
+        plant_info_descriptor = ParameterDescriptor(description='Plant description file location.')
+        self.declare_parameter('plant_info_file', '', plant_info_descriptor)        
         self.plant_information_file = self.get_parameter('plant_info_file').value
-        self.db = self.get_parameter('db_path').value
+
+        plant_db_descriptor = ParameterDescriptor(description='Measured plant parameters database location.')
+        self.declare_parameter('db_path', '', plant_db_descriptor)        
+        self.db = self.get_parameter('db_path').value1
+        
         self.cli = self.create_client(Sensors, 'sensors_server')
         while not self.cli.wait_for_service(timeout_sec=5.0):
             self.get_logger().info('Sensor service not available, waiting again...')

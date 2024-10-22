@@ -9,6 +9,7 @@ import face_recognition as fr
 from vision_module.ThermalCamera import ThermalCamera
 from vision_module.OKAO.OKAO_vision_interface import get_emotions, get_image_array, detect_person
 from vision_module.image_processing2 import *
+from rcl_interfaces.msg import ParameterDescriptor
 
 
 class MemoryAccess(Node):
@@ -31,6 +32,8 @@ class CameraServer(Node):
     def __init__(self):
         super().__init__("camera_server")
         self.srv = self.create_service(Camera,"camera",self.handle_camera)
+        id_descriptor = ParameterDescriptor(description='Location of the human identity database.')
+        self.declare_parameter('identity_db', '', id_descriptor)  
         self.identity_db = self.get_parameter('identity_db').value
     def handle_camera(self, req, resp):
         img = None

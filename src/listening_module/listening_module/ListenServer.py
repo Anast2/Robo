@@ -2,7 +2,6 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-
 import speech_recognition as sr
 import uuid
 from time import time
@@ -12,6 +11,7 @@ import sys
 #import VAD as vad
 import listening_module.VAD as vad 
 from transformers import pipeline
+from rcl_interfaces.msg import ParameterDescriptor
 
 def save_audio(path, data):
     import wave
@@ -32,10 +32,12 @@ class ListenServer(Node):
     language = "en-US"
     
     def __init__(self):
-        super().__init__('listen_server')
+        super().__init__('listener_server_node')
+        my_parameter_descriptor = ParameterDescriptor(description='Location of the folder where the audio files of the speeches of users are stored.')
+        self.declare_parameter('audio_folder_path', '', my_parameter_descriptor)
+        self.audio_path = self.get_parameter('audio_folder_path').value
         self.block_time = time()
         self.publisher = self.create_publisher(String, 'messageTopic', 10)
-        self.audio_path = self.get_parameter('audio_folder_path').value
 
     def block_callback(self, message):
         self.block = not self.block

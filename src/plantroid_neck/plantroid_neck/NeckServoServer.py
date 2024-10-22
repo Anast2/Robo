@@ -6,14 +6,13 @@ from rclpy.node import Node
 from rooted_msgs.srv import NeckServo
 from time import time
 import RPi.GPIO as GPIO
+from rcl_interfaces.msg import ParameterDescriptor
 
-raspi =  True  # TODO: change to rosparam
 
 class FakeServo():  # for tests out of the raspberry pi.
-
     def __init__(self, pin, initial_pwm):
         self.PIN = pin
-        self.pwm = initial_pwm
+        self.pwm = initial_pwm     
 
     def ChangeDutyCycle(self, pwm):
         self.pwm = pwm
@@ -29,7 +28,10 @@ class NeckServoServer(Node):
         self.srv = self.create_service(NeckServo, "neck_servo",
                                        self.handle_neck_servo)
         self.servoPIN = 17
-        if raspi:
+        raspi_descriptor = ParameterDescriptor(description='Variable that represents whethe the code is running on a raspberry pi or not.')
+        self.declare_parameter('raspi', '', raspi_descriptor)        
+        self.raspi = self.get_parameter('raspi').value   
+        if self.raspi:
             GPIO.setmode(GPIO.BCM)
             GPIO.setup(self.servoPIN, GPIO.OUT)
             self.controller = GPIO.PWM(self.servoPIN, 50)

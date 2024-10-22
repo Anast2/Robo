@@ -12,6 +12,7 @@ import numpy as np
 import face_recognition as fr 
 from cv_bridge import CvBridge
 from vision_module.image_processing2 import *
+from rcl_interfaces.msg import ParameterDescriptor
 
 
 class MemoryAccess(Node):
@@ -34,7 +35,11 @@ class CameraServer(Node):
         super().__init__("camera_server")
         self.srv = self.create_service(Camera,"camera",self.handle_camera)
         self.current_emotion = "neutral"
+
+        id_descriptor = ParameterDescriptor(description='Location of the human identity database.')
+        self.declare_parameter('identity_db', '', id_descriptor)  
         self.identity_db = self.get_parameter('identity_db').value
+        
         self.emotion_setter = self.create_subscription(String, 'set_emotion',
                                                        self.emotion_cb_function,
                                                        10)
@@ -45,15 +50,23 @@ class CameraServer(Node):
         self.camera_setter = self.create_subscription(Int8, 'set_camera_number',
                                                       self.camera_cb_function,
                                                       10)
+        
+        pc_cam_descriptor = ParameterDescriptor(description='Describes which camera is being used - pc or gazebo.')
+        self.declare_parameter('use_pc_camera', '', pc_cam_descriptor)  
         self.use_pc_camera = self.get_parameter('use_pc_camera').value
         self.camera_number = None
         self.camera_topic = None
         self.camera_source = None
         if self.use_pc_camera:
             self.camera_source = "PC" # "Gazebo"
+
+            cam_num_descriptor = ParameterDescriptor(description='Number of the PC camera to be used.')
+            self.declare_parameter('pc_camera_number', '', cam_num_descriptor)  
             self.camera_number = self.get_parameter('pc_camera_number').value
         else:
             self.camera_source = "Gazebo"
+            cam_topic_descriptor = ParameterDescriptor(description='Gazebo camera topic.')
+            self.declare_parameter('camera_topic', '', cam_topic_descriptor)  
             self.camera_topic = self.get_parameter('camera_topic').value
 
         self.memory_access = MemoryAccess()

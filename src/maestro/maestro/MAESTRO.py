@@ -3,7 +3,6 @@ import os
 # import sys
 # sys.path.append('') #  Add the location of this package on your computer
 import maestro.utils as utils 
-from maestro.simple_state_machine import StateMachine
 from maestro.ChatBot import chatter, sentiment_analysis, check_busy
 # import utils
 # from simple_state_machine import StateMachine
@@ -20,7 +19,7 @@ from random import choice
 from threading import Thread
 import json
 from StateMachines import problem_state_machine, busy_state_machine, dialogue_state_machine
-
+from rcl_interfaces.msg import ParameterDescriptor
 
 def emotion_2_prompt(emotion):
     i = emotion.index(max(emotion[:-1]))
@@ -207,10 +206,24 @@ class MAESTRO(Node):
         self.robot_mover = NavigationCommandSender()        
 
         # load parameters from launchfile.
+        logging_descriptor = ParameterDescriptor(description='Variable that defines whether or not the robot should stoer conversation logs or not.')
+        self.declare_parameter('store_chat_log', '', logging_descriptor) 
         self.logging = self.get_parameter('store_chat_log').value
-        self.detect_person = self.get_parameter('keep_eye_contact').value
+        
+        detect_descriptor = ParameterDescriptor(description='Variable that defines whether the robot should keep eye contact while talking or not.')
+        self.declare_parameter('keep_eye_contact', '', detect_descriptor)        
+        self.detect_person = self.get_parameter('keep_eye_contact').value        
+
+        pc_mode_descriptor = ParameterDescriptor(description='Defines whether the node should run on embarked or PC mode.')
+        self.declare_parameter('pc_mode', '', pc_mode_descriptor)        
         self.pc_mode = self.get_parameter('pc_mode').value
+
+        store_emotion_descriptor = ParameterDescriptor(description='Variable that defines whether the robot should store emotion changes caused by its speech or not.')
+        self.declare_parameter('store_emotion_change', '', store_emotion_descriptor)        
         self.store_emotion = self.get_parameter('store_emotion_change').value
+
+        robot_name_descriptor = ParameterDescriptor(description='Name of the robot.')
+        self.declare_parameter('robot_name', '', robot_name_descriptor)
         self.robot_name = self.get_parameter('robot_name').value
         
         # definition of important internal variables 
@@ -227,6 +240,8 @@ class MAESTRO(Node):
 
         # loading external information 
         self.dialogues = {}
+        diag_file_loc_descriptor = ParameterDescriptor(description='Location of the file that contains the dialogue of your robot.')
+        self.declare_parameter('dialogue_json', '', diag_file_loc_descriptor)
         dialogue_file_location = self.get_parameter('dialogue_json').value
 
         try:

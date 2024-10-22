@@ -8,6 +8,7 @@ from std_msgs.msg import String
 import sqlite3 as sql 
 from queue import Queue
 import threading
+from rcl_interfaces.msg import ParameterDescriptor
 
 
 insert_queue = Queue()
@@ -73,7 +74,9 @@ class MemoryServer(Node):
 
 class MemoryWriter:
     def __init__(self, database_folder="."):
-        self.database_folder =  database_folder #TODO: convert to rosparam db_folder_path.  
+        folder_descriptor = ParameterDescriptor(description='Path of the folder which contains all database files.')
+        self.declare_parameter('db_folder_path', '', folder_descriptor)        
+        self.database_folder = self.get_parameter('db_folder_path').value   
         self.main_routine()
          
     def main_routine(self):

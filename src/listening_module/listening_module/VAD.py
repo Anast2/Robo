@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 # NOTE: this example requires PyAudio because it uses the Microphone class
-
-import time
 import speech_recognition as sr
-from audio import record_to_file, recognize_file, record
-import os
-#import queue #there is only one background thread running so far, so no need for this yet
+from listening_module.audio import record_to_file, recognize_file, record
 import subprocess
 
 def noise_calibration(microphone,recognizer):
