@@ -2,15 +2,15 @@
 import os
 import rclpy
 from rclpy.node import Node
-from rooted_msgs.srv import *
+from rooted_msgs.srv import MemoryRequest, Camera
 from PIL import Image
 from socket import * 
 import face_recognition as fr 
 from vision_module.ThermalCamera import ThermalCamera
 from vision_module.OKAO.OKAO_vision_interface import get_emotions, get_image_array, detect_person
-from vision_module.image_processing2 import *
+from vision_module.image_processing2 import get_dir_sunlight, get_dir_shadow
 from rcl_interfaces.msg import ParameterDescriptor
-
+import numpy as np 
 
 class MemoryAccess(Node):
 
@@ -62,7 +62,7 @@ class CameraServer(Node):
         elif req.imagetype == 5: #returns shadow position. 
             print("Returning shadow position.")
             img = get_image_array()
-            img = get_shadow_pos(img, None)
+            img = get_dir_shadow(img, None)
 
         elif req.imagetype == 6: #returns sunlight coord on real world 
             print("Returning light coordinates on real world.")
@@ -75,7 +75,7 @@ class CameraServer(Node):
         elif req.imagetype == 7:#returns shadow coord on real world
             print("Returning light coordinates on real world.")
             img = get_image_array()
-            img = get_shadow_pos(img, None)
+            img = get_dir_shadow(img, None)
             Dy = 0.32*344/(img[1]-160)
             Dx = Dy*(img[0]-120)/266
             img = [Dx, Dy]

@@ -20,6 +20,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/State.msg"
   "srv/Camera.srv"
   "srv/NeckServo.srv"
+  "srv/NavigationOrder.srv"
   "srv/LLM.srv"
   "srv/MemoryRequest.srv"
   "srv/Sensors.srv"

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
-from rooted_msgs.srv import Gesture, Busy, NeckServo, Speed, Command 
+from rooted_msgs.msg import Speed
+from rooted_msgs.srv import Gesture, Busy, NeckServo, Command 
 from ast import literal_eval    
 from time import time
+from rcl_interfaces.msg import ParameterDescriptor
 
 
 class BusyInterface(Node):

@@ -8,7 +8,9 @@ from rooted_msgs.msg import *
 from std_msgs.msg import String
 import rclpy
 from rclpy.node import Node
+from rcl_interfaces.msg import ParameterDescriptor
 
+rclpy.init()
 
 safe_N_range=[0,0]
 safe_P_range=[0,0]
@@ -39,7 +41,7 @@ class SensorReader(Node):
 
         plant_db_descriptor = ParameterDescriptor(description='Measured plant parameters database location.')
         self.declare_parameter('db_path', '', plant_db_descriptor)        
-        self.db = self.get_parameter('db_path').value1
+        self.db = self.get_parameter('db_path').value
         
         self.cli = self.create_client(Sensors, 'sensors_server')
         while not self.cli.wait_for_service(timeout_sec=5.0):
@@ -103,19 +105,23 @@ db_location = sensor_interface.db
 
 def sensor_reading(sensor_ID):
     sensor_interface.send_request(sensor_ID)
-    rclpy.spin_once(sensor_interface)  # Non-blocking
-    if sensor_interface.future.done():
-        try:
-            response = sensor_interface.future.result().sensor_reading
-            try:  # Convert result to a number (int, float) or list
-                response = ast.literal_eval(response)
-            except:
-                pass  # Keep as string if malformed
-        except Exception as e:
-            sensor_interface.get_logger().info('Service call failed %r' % (e,))
-        else:
-            return response
-    return None
+    while rclpy.ok():
+        rclpy.spin_once(sensor_interface)  # Non-blocking
+        if sensor_interface.future.done():
+            try:
+                response = sensor_interface.future.result().sensor_reading
+                try:  # Convert result to a number (int, float) or list
+                    response = ast.literal_eval(response)
+                    break
+                except:
+                    print(f'Failed to read sensor {sensor_ID}!')
+                    response = float('Nan')
+            except Exception as e:
+                print(f'Failed to read sensor {sensor_ID}!')
+                sensor_interface.get_logger().info('Service call failed %r' % (e,))
+            else:
+                return response
+    return float('Nan')
 
 
 def write_measurement(db, sql_command):
@@ -346,7 +352,6 @@ def run_sensor_task(task_name, task_fn, period):
 
 
 def main():
-    rclpy.init()
     schedule_sensor_tasks()
 
 

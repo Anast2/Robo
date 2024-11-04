@@ -19,10 +19,14 @@ class BusyServer(Node):
         data = req.request
         if data == "set_busy":
             self.state = 1
-            self.busy_notifier.publish(str(self.state))
+            notification = String()
+            notification.data = str(self.state)
+            self.busy_notifier.publish(notification)
         elif data == "set_idle":
             self.state = 0
-            self.busy_notifier.publish(str(self.state))
+            notification = String()
+            notification.data = str(self.state)
+            self.busy_notifier.publish(notification)
         resp.result = str(self.state)
         return resp
 

@@ -11,7 +11,7 @@ from kivy.core.window import Window
 import rclpy
 from rclpy.node import Node
 from threading import Thread
-from rooted_msgs.srv import *
+from rooted_msgs.srv import Gesture
 from rooted_msgs.msg import *
 from std_msgs.msg import String
 from time import time
@@ -23,11 +23,25 @@ is_talking = True
 emotion_engine = None
 
 
+class GestureRequests(Node):
+    def __init__(self):
+        super().__init__('facial_expression_gestures_service_interface')
+        self.cli = self.create_client(Gesture,"gesture")
+        while not self.cli.wait_for_service(timeout_sec=5.0):
+            self.get_logger().info('Sensor service not available, waiting again...')
+        self.req = Gesture.Request()
+
+    def send_request(self, gesture):
+        self.req.gesture = gesture
+        self.future = self.cli.call_async(self.req)    
+
+
 class FaceController(Node):
     def __init__(self,initial_emotion="joy"):
         super().__init__('facial_expression_node')
         my_parameter_descriptor = ParameterDescriptor(description='Location of the folder containing the images that comnpose the face of your robot.')
         self.declare_parameter('image_folder', '', my_parameter_descriptor)
+        self.gesture_com = GestureRequests()
         self.image_folder = self.get_parameter('image_folder').value
         self.l_eye = "eye0_r.png"
         self.r_eye = "eye0.png"
@@ -74,9 +88,13 @@ class FaceController(Node):
                          "sweaty", "confused","neutral"]:
             self.current_emotion = Data.data
             if Data.data == "surprise":
-                self.gesture_comm.send_request("surprise")
-                t0 = time()
-                while time()-t0<3:pass
+                try:
+                    self.gesture_comm.send_request("surprise")
+                    t0 = time()
+                    while time()-t0<3:pass
+                except Exception as e:
+                    print(f"Failed to move neck due to {e}!")
+
                 self.current_emotion = "neutral"
         else: pass
 

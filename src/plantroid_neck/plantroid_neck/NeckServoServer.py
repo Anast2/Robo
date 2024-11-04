@@ -5,7 +5,6 @@ import rclpy
 from rclpy.node import Node
 from rooted_msgs.srv import NeckServo
 from time import time
-import RPi.GPIO as GPIO
 from rcl_interfaces.msg import ParameterDescriptor
 
 
@@ -32,10 +31,14 @@ class NeckServoServer(Node):
         self.declare_parameter('raspi', '', raspi_descriptor)        
         self.raspi = self.get_parameter('raspi').value   
         if self.raspi:
-            GPIO.setmode(GPIO.BCM)
-            GPIO.setup(self.servoPIN, GPIO.OUT)
-            self.controller = GPIO.PWM(self.servoPIN, 50)
-            self.controller.start(0)
+            try:
+                import RPi.GPIO as GPIO
+                GPIO.setmode(GPIO.BCM)
+                GPIO.setup(self.servoPIN, GPIO.OUT)
+                self.controller = GPIO.PWM(self.servoPIN, 50)
+                self.controller.start(0)
+            except:
+                self.controller = FakeServo(self.servoPIN, 50)
         else:
             self.controller = FakeServo(self.servoPIN, 50)
 

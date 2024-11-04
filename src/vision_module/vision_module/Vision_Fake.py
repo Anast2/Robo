@@ -3,7 +3,7 @@ import os
 import cv2
 import rclpy
 from rclpy.node import Node
-from rooted_msgs.srv import *
+from rooted_msgs.srv import MemoryRequest, Camera
 from PIL import Image
 from sensor_msgs.msg import Image as Img
 from socket import * 
@@ -11,8 +11,9 @@ from std_msgs.msg import String, Bool, Int8
 import numpy as np
 import face_recognition as fr 
 from cv_bridge import CvBridge
-from vision_module.image_processing2 import *
+from vision_module.image_processing2 import get_dir_sunlight, get_dir_shadow
 from rcl_interfaces.msg import ParameterDescriptor
+import numpy as np 
 
 
 class MemoryAccess(Node):
@@ -93,7 +94,7 @@ class CameraServer(Node):
                                   camera_number=self.camera_number,
                                   camera_img_topic=self.camera_source)
 
-        elif req.imagetype == 2 and not running_on_pc:
+        elif req.imagetype == 2:
             img = get_image_array(source=self.camera_topic,
                                   camera_number=self.camera_number,
                                   camera_img_topic=self.camera_source)
@@ -116,7 +117,7 @@ class CameraServer(Node):
             img = get_image_array(source=self.camera_topic,
                                   camera_number=self.camera_number,
                                   camera_img_topic=self.camera_source)
-            img = get_shadow_pos(img, None)
+            img = get_dir_shadow(img, None)
 
         elif req.imagetype == 6: #returns sunlight coord on real world 
             print("Returning light coordinates on real world.")
@@ -132,7 +133,7 @@ class CameraServer(Node):
             img = get_image_array(source=self.camera_topic,
                                   camera_number=self.camera_number,
                                   camera_img_topic=self.camera_source)
-            img = get_shadow_pos(img, None)
+            img = get_dir_shadow(img, None)
             Dy = 0.32*344/(img[1]-160)
             Dx = Dy*(img[0]-120)/266
             img = [Dx, Dy]
