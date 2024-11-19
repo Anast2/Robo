@@ -11,7 +11,7 @@ from rcl_interfaces.msg import ParameterDescriptor
 class BusyInterface(Node):
     def __init__(self):
         super().__init__('gesture_busy_check')
-        self.cli = self.create_client(Busy, 'busy_servive')
+        self.cli = self.create_client(Busy, 'busy_service')
         while not self.cli.wait_for_service(timeout_sec=5.0):
             self.get_logger().info('Busy service not available, waiting again...')
         self.req = Busy.Request()

@@ -12,7 +12,6 @@ def espeak_ng(msg): #  lightest option of all, worst quality of all
     cmd = ["espeak-ng"]+["-v","en-us+f3"]+ptc+vlm+spd+[speech_content]
     return subprocess.Popen(cmd)    
 
-
 def tortoise(msg): pass  # Heavy model, but high quality results.
 #  TODO: implement
 
@@ -30,10 +29,13 @@ def balacoon_request(msg): pass  # lighter model good for edge devices, lower qu
 
 
 def tts_call(msg, mode="local", model="espeak_ng", IP=None, PORT=None):  # 
-    
-    if model == "espeak_ng":
-        espeak_ng(msg)
-    
+
+    if model == "espeak-ng":
+        process = espeak_ng(msg)
+        process_done = process.poll() is None
+        while process_done:
+            process_done = process.poll() is None
+        print("done")
     elif model == "tortoise":
         if mode == "local":
             tortoise(msg)

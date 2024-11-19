@@ -8,7 +8,6 @@ from time import time
 
 
 class BusyServer(Node):
-
     def __init__(self):
         super().__init__("busy_server")
         self.srv = self.create_service(Busy,"busy_service",self.handle_request)

@@ -5,7 +5,6 @@ from std_msgs.msg import String
 from ast import literal_eval
 from rooted_msgs.srv import LLM
 from rooted_msgs.msg import *
-#sys.path.append('') #  Add the location of this package on your computer
 import rooted_speech_synthesizer.speech_synthesis_interfaces as tts 
 from rcl_interfaces.msg import ParameterDescriptor
 
@@ -35,11 +34,15 @@ class SpeechSynthesisServer(Node):
         msg = req.prompt
         resp.response = "Success"
         try: 
-            self.talking_status_publisher.publish("talking")
-            tts.tts_call(msg, model, self.mode, self.IP, self.PORT)
-            self.talking_status_publisher.publish("silent")
+            talking_msg = String()
+            talking_msg.data = "talking"
+            self.talking_status_publisher.publish(talking_msg)
+            tts.tts_call(msg, model, self.mode, self.IP, self.port)
+            talking_msg.data = "silent"
+            self.talking_status_publisher.publish(talking_msg)
 
-        except:
+        except Exception as e:
+            self.get_logger().error(f"Error {str(e)} happened.")
             resp.response = "Failure"
         
         return resp

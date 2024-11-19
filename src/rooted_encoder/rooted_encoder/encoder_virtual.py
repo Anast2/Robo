@@ -9,38 +9,20 @@ from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 import numpy as np
 
-
-class MotorSpeedControlServer(Node):
-
-    def __init__(self, robot_kinematic_model=None, motors=None):
-        super().__init__("motor_speed_control_server")
-        self.srv = self.create_service(Command, "speed_command",
-                                       self.handle_speed_command)
-        self.virtual_robot_controller = self.create_publisher(Twist, "/cmd_vel", 10)
-        self.speed_command = Twist()
-        self.speed_command
-
-    def handle_speed_command(self, req, resp):
-        lin_speed = req.speed_command.linear
-        ang_speed = req.speed_command.angular
-        self.speed_command.linear.x = lin_speed
-        self.speed_command.angular.z = ang_speed
-        self.virtual_robot_controller.publish(self.speed_command)
-
-
 class Encoder(Node):
 
     def __init__(self, robot_kinematic_model=None, motors=None,
                  motor_angles=None, initial_speed=None, timer=None):
-        super().__init__('Encoder')
+        super().__init__('encoder_node')
         self.pose_publisher = self.create_publisher(Pose, "encoder", 10)
         self.pose_msg = Pose()
         self.pose_msg
         self.subscription_odometry = self.create_subscription(Odometry, 
-                                                              '/odom', 
+                                                              'odom', 
                                                               self.cb_function_odom,
                                                               10)
-
+        sleep(1)
+    
     def cb_function_odom(self, msg):
         pose = msg.pose
         x, y = pose.pose.position.x, pose.pose.position.y
@@ -75,23 +57,10 @@ class Encoder(Node):
         return roll, pitch, yaw
 
 
-def spin_virtual_encoder():
+def main():    
+    rclpy.init()
     encoder = Encoder()
     rclpy.spin(encoder)
-
-
-def spin_motor_control():
-    controller = MotorSpeedControlServer()
-    rclpy.spin(controller)
-
-
-def main():
-    rclpy.init(args=None)
-    encoder_thread = Thread(target=spin_virtual_encoder)
-    encoder_thread.start()
-    controller_thread = Thread(target=spin_motor_control)
-    controller_thread.start()
-    rclpy.shutdown()
 
 
 if __name__ == "__main__":

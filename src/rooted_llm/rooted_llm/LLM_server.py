@@ -9,7 +9,7 @@ import sys
 from rcl_interfaces.msg import ParameterDescriptor
 
 sys.path.append('') #  Add the location of this package on your computer
-import LLM_interfaces as llm 
+import rooted_llm.LLM_interfaces as llm 
 
 
 class LLMServer(Node):

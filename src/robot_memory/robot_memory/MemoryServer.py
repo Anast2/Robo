@@ -12,7 +12,7 @@ from rcl_interfaces.msg import ParameterDescriptor
 
 
 insert_queue = Queue()
-
+database_folder = "."
 
 def create_table(conn, create_table_sql):
     """ create a table from the create_table_sql statement
@@ -28,10 +28,20 @@ def create_table(conn, create_table_sql):
 
 
 class MemoryServer(Node):
-    def __init__(self, database_folder="."):
+    
+    def __init__(self):
         super().__init__("memory_server")
         self.srv = self.create_service(MemoryRequest, "memory_service", self.handle_request)
-        self.database_folder =  database_folder
+        
+        folder_descriptor = ParameterDescriptor(description='Path of the folder which contains all database files.')
+       
+        self.declare_parameter('db_folder_path', '', folder_descriptor)        
+       
+        self.database_folder = self.get_parameter('db_folder_path').value
+        
+        global database_folder 
+        database_folder = self.database_folder
+
 
     def handle_request(self, req, resp):
         database_name = req.db_name
@@ -73,29 +83,35 @@ class MemoryServer(Node):
 
 
 class MemoryWriter:
-    def __init__(self, database_folder="."):
-        folder_descriptor = ParameterDescriptor(description='Path of the folder which contains all database files.')
-        self.declare_parameter('db_folder_path', '', folder_descriptor)        
-        self.database_folder = self.get_parameter('db_folder_path').value   
+    def __init__(self):   
         self.main_routine()
          
     def main_routine(self):
         global insert_queue
-        while 1:
+        global database_folder
+        while True:
             while not insert_queue.empty():
                 current_insertion = insert_queue.get()
                 db_name = current_insertion[0]
                 command = current_insertion[1]
                 try:
-                    db = sql.connect(f"{self.database_folder}/{db_name}")
-                    cursor = db.cursor()
+                    # Open the database connection
+                    db = sql.connect(f"{database_folder}/{db_name}")
+                    cursor = db.cursor()                    
+                    # Execute the command
                     cursor.execute(command)
+                    # Commit the transaction
+                    db.commit()
                 except Exception as e:
-                    print("Failed to perform insertion operation due to: ", e)
+                    print("Failed to perform insertion operation due to:", e)
+                finally:
+                    # Ensure the database is closed properly
+                    if db:
+                        db.close()
 
 
 def memory_server_start():
-    memory_manager = MemoryServer
+    memory_manager = MemoryServer()
     rclpy.spin(memory_manager)
 
 
@@ -105,11 +121,10 @@ def memory_writer_start():
 
 
 def main():
-    rclpy.init(args=None)
-    server_thread = threading.Thread(target=memory_server_start, args=())
     writer_thread = threading.Thread(target=memory_writer_start, args=())
-    server_thread.start()
     writer_thread.start()
+    rclpy.init(args=None)
+    memory_server_start()
     rclpy.shutdown()
 
   

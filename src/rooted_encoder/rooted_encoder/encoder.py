@@ -5,7 +5,7 @@ from rclpy.node import Node
 from rooted_msgs.msg import Pose, Speed, State
 from rooted_msgs.srv import Command
 from threading import Thread
-
+from rooted_encoder.rkm import KinematicModel
 import numpy as np
 from math import sin, cos
 # import sys
@@ -17,6 +17,7 @@ Ax12.DEVICENAME = '/dev/ttyServo' # Change for the appropriate device name  # TO
 Ax12.BAUDRATE = 1_000_000 # Change for the appropriate baurate for your device  # TODO: change to rosparam
 
 Ax12.connect()
+
 
 def min_mag(l):
     l2=[abs(i) for i in l]
@@ -36,67 +37,8 @@ servo_setup(RS)
 LS.set_moving_speed(0)
 RS.set_moving_speed(0)
 
-servo_access_token = 0
 
 spd_cmd_pile = []
-
-class KinematicModel():
-
-    def __init__(self, robot_width=0.19861, wheel_radius=0.09597, initial_x=0,
-                 initial_y=0, initial_theta=0, initial_speed_left=0,
-                 initial_speed_right=0):
-        self.pose = [initial_x, initial_y, initial_theta]
-        self.left_speed = initial_speed_left
-        self.right_speed = initial_speed_right
-        self.r = wheel_radius
-        self.d = robot_width
-        self.speed = self.convert_LeftRight_to_LinearAngular(self.left_speed, self.right_speed)
-
-    def convert_LeftRight_to_LinearAngular(self,L,R):
-        LS = self.r/2*(L+R)
-        AS = self.r/(2*self.d)*(R-L)
-        return [LS, AS]
-
-    def convert_LinearAngular_to_LeftRight(self,L,A):
-        linear_speed = L
-        angular_speed = A
-        r = self.r
-        return [(linear_speed-self.d*angular_speed)/r,
-                (linear_speed+self.d*angular_speed)/r]
-
-    def wheel_speed_equation(self, left_speed, right_speed):
-        r = self.r
-        t = self.pose[2]
-        ls = left_speed
-        rs = right_speed
-        result = np.dot(np.array([[r/2*cos(t), r/2*cos(t)],
-                                  [r/2*sin(t), r/2*sin(t)],
-                                  [-r/(2*self.d), r/(2*self.d)]]),
-                                  np.array([[ls],[rs]]))
-        dx , dy, dtheta = [i[0] for i in result.tolist()]
-        return dx, dy, dtheta
-
-    def angle_limiter(self):
-        theta = self.pose[2]
-        if abs(theta)>np.pi:
-            if theta>0:
-                self.pose[2]=-2*np.pi+theta
-            else:
-                self.pose[2]=2*np.pi-theta
-
-    def generalized_speed_equation(self, left_speed, right_speed):
-        r = self.r
-        t = self.pose[2]
-        v, w =  r*(left_speed+right_speed)/2, (right_speed-left_speed)*r/self.d  #get_speed()
-        dx, dy, dtheta = [i[0] for i in np.dot(np.array([[cos(t), 0],
-                          [sin(t), 0], [0, 1]]),np.array([[v],[w]])).tolist()]
-        return dx, dy, dtheta
-
-    def update(self, dt):
-        dx, dy, dtheta = self.generalized_speed_equation(self.left_speed, self.right_speed)
-        self.pose = [round(self.pose[0]+dx*dt,3), round(self.pose[1]+dy*dt,3), round(self.pose[2]+dtheta*dt,3)]
-        self.angle_limiter()
-        #print ("Current pose [x,y,theta]: ", self.pose)
 
 def speed_command_convert(s,l=0):
     if s ==0:
@@ -111,30 +53,6 @@ def speed_command_convert(s,l=0):
             return min(2046, -s*180/np.pi*1023/300+1023)
         else:
             return min(1023, s*180/np.pi*1023/300)
-
-class MotorSpeedControlServer(Node):
-
-    def __init__(self, robot_kinematic_model=KinematicModel(), motors=[LS,RS]):
-        super().__init__("motor_speed_control_server")
-        self.rkm = robot_kinematic_model
-        self.srv = self.create_service(Command, "speed_command",
-                                       self.handle_speed_command)
-
-    def handle_speed_command(self, req, resp):
-        lin_speed = req.speed_command.linear
-        ang_speed = req.speed_command.angular
-        #self.get_logger().info(
-        #    "Received speed: ["+str(lin_speed)+","+str(ang_speed)+"]")
-        #left_servo_speed, right_servo_speed = lin_speed, ang_speed
-        left_servo_speed, right_servo_speed = self.rkm.convert_LinearAngular_to_LeftRight(lin_speed, ang_speed)
-        left_servo_speed = speed_command_convert(left_servo_speed, 1)
-        right_servo_speed = speed_command_convert(right_servo_speed, 0)
-        global spd_cmd_pile 
-        spd_cmd_pile = [right_servo_speed, left_servo_speed]
-        
-        #print(left_servo_speed, right_servo_speed)
-        resp.status = "Speed Command issued."
-        return resp
 
 def sign(x):
     if x!=0:return abs(x)/x
@@ -161,6 +79,25 @@ class Encoder(Node):
         else:
             self.timer = timer
 
+        self.srv = self.create_service(Command, "speed_command",
+                                       self.handle_speed_command)
+
+    def handle_speed_command(self, req, resp):
+        lin_speed = req.speed_command.linear
+        ang_speed = req.speed_command.angular
+        #self.get_logger().info(
+        #    "Received speed: ["+str(lin_speed)+","+str(ang_speed)+"]")
+        #left_servo_speed, right_servo_speed = lin_speed, ang_speed
+        left_servo_speed, right_servo_speed = self.rkm.convert_LinearAngular_to_LeftRight(lin_speed, ang_speed)
+        left_servo_speed = speed_command_convert(left_servo_speed, 1)
+        right_servo_speed = speed_command_convert(right_servo_speed, 0)
+        global spd_cmd_pile 
+        spd_cmd_pile = [right_servo_speed, left_servo_speed]
+        
+        #print(left_servo_speed, right_servo_speed)
+        resp.status = "Speed Command issued."
+        return resp
+
     def speed_convert(self,v):
         v = int(v*1023/300)
         if abs(v)<100:
@@ -174,7 +111,7 @@ class Encoder(Node):
             return 1023
         return int(v)
 
-    def encoder(self, publish):
+    def encoder(self):
         ang0_r, ang0_l = 0, 0
         ang1_r, ang1_l = 300, 300
         speed_r, speed_l = 0, 0
@@ -221,7 +158,7 @@ myRKM = KinematicModel()
 
 def spin_encoder():
     encoder = Encoder(robot_kinematic_model=myRKM)
-    encoder.speed_command = [1,1]
+    encoder.speed_command = [0, 0]
     t0 = time()
     while 1:
         if time()-t0>1:
@@ -237,14 +174,7 @@ def update_RKM():
 
 def main():
     rclpy.init(args=None)
-    encoder_thread = Thread(target=spin_encoder)
-    encoder_thread.start()
-    #rkm_thread = Thread(target=update_RKM)
-    #rkm_thread.start()
-
-    s = MotorSpeedControlServer(robot_kinematic_model=myRKM)
-    print("Ready to issue speed commands.")
-    rclpy.spin(s)
+    spin_encoder()
     rclpy.shutdown()
 
 
