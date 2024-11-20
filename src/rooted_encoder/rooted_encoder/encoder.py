@@ -54,9 +54,11 @@ def speed_command_convert(s,l=0):
         else:
             return min(1023, s*180/np.pi*1023/300)
 
+
 def sign(x):
     if x!=0:return abs(x)/x
     return 0
+
 
 class Encoder(Node):
 
@@ -70,7 +72,9 @@ class Encoder(Node):
         self.l_servo, self.r_servo = motors
         self.l_id = self.l_servo.get_id()
         self.r_id = self.r_servo.get_id()
-        self.motor_angle_l, self.motor_angle_r = motor_angles
+        self.motor_angle_l = self.l_servo.get_present_position()
+        self.motor_angle_r = self.r_servo.get_present_position()
+
         self.speed_command = initial_speed
         self.current_speed = self.speed_command
         self.prev_speed = initial_speed
@@ -92,7 +96,7 @@ class Encoder(Node):
         left_servo_speed = speed_command_convert(left_servo_speed, 1)
         right_servo_speed = speed_command_convert(right_servo_speed, 0)
         global spd_cmd_pile 
-        spd_cmd_pile = [right_servo_speed, left_servo_speed]
+        spd_cmd_pile = spd_cmd_pile.append([right_servo_speed, left_servo_speed])
         
         #print(left_servo_speed, right_servo_speed)
         resp.status = "Speed Command issued."
@@ -111,7 +115,41 @@ class Encoder(Node):
             return 1023
         return int(v)
 
-    def encoder(self):
+    def speed_convert_mx12w(self,v):
+        if v > 1023:
+            v -= 1023
+        return int(v)
+
+
+    def encoder_MX12W(self, publish):
+        global spd_cmd_pile
+        speed_r = 0
+        speed_l = 0
+        dt= time()-self.timer
+
+        if spd_cmd_pile != []:
+            right_servo_speed, left_servo_speed = spd_cmd_pile[0]
+            spd_cmd_pile=spd_cmd_pile[1:]
+            self.l_servo.set_moving_speed(int(left_servo_speed))
+            self.r_servo.set_moving_speed(int(right_servo_speed))
+        
+        speed_r = self.speed_convert_mx12w(self.r_servo.get_present_speed())*360/1023
+        speed_l = self.speed_convert_mx12w(self.l_servo.get_present_speed())*360/1023
+        self.timer = time()
+
+        if speed_l!=0 or speed_r!=0:
+            self.rkm.left_speed, self.rkm.right_speed = speed_l, speed_r
+            self.rkm.update(dt)
+            self.current_speed = [speed_l, speed_r]
+        else:
+            pass
+
+        msg = Pose()
+        msg.x, msg.y, msg.theta = [float(i) for i in self.rkm.pose]
+        if publish:
+            self.publisher.publish(msg)
+
+    def encoder(self, publish):
         ang0_r, ang0_l = 0, 0
         ang1_r, ang1_l = 300, 300
         speed_r, speed_l = 0, 0
@@ -154,23 +192,27 @@ class Encoder(Node):
             self.publisher.publish(msg)
             #self.get_logger().info("Published: " + str(self.rkm.pose))
 
+
 myRKM = KinematicModel()
+
 
 def spin_encoder():
     encoder = Encoder(robot_kinematic_model=myRKM)
     encoder.speed_command = [0, 0]
     t0 = time()
     while 1:
-        if time()-t0>1:
-            encoder.encoder(1)
+        if time()-t0>.5:
+            encoder.encoder_MX12W(1)
             t0=time()
         else:
-            encoder.encoder(0)
+            encoder.encoder_MX12W(0)
+
 
 def update_RKM():
     global myRKM
     while 1:
         myRKM.update()
+
 
 def main():
     rclpy.init(args=None)
