@@ -13,9 +13,8 @@ from math import sin, cos
 # from Ax12 import Ax12
 from rooted_encoder.Ax12 import Ax12
 
-Ax12.DEVICENAME = '/dev/ttyServo' # Change for the appropriate device name  # TODO: change to rosparam
+Ax12.DEVICENAME = '/dev/ttyUSB0' # Change for the appropriate device name  # TODO: change to rosparam
 Ax12.BAUDRATE = 1_000_000 # Change for the appropriate baurate for your device  # TODO: change to rosparam
-
 Ax12.connect()
 
 
@@ -23,10 +22,12 @@ def min_mag(l):
     l2=[abs(i) for i in l]
     return l[l2.index(min(l2))]
 
+
 def servo_setup(servo):
     servo.set_cw_angle_limit(0)
     servo.set_ccw_angle_limit(0)
     servo.set_moving_speed(0)
+
 
 LS = Ax12(1)
 RS = Ax12(2)
@@ -34,11 +35,11 @@ RS = Ax12(2)
 servo_setup(LS)
 servo_setup(RS)
 
-LS.set_moving_speed(0)
-RS.set_moving_speed(0)
-
+LS.set_moving_speed(10)
+RS.set_moving_speed(1033)
 
 spd_cmd_pile = []
+
 
 def speed_command_convert(s,l=0):
     if s ==0:
@@ -104,7 +105,7 @@ class Encoder(Node):
 
     def speed_convert(self,v):
         v = int(v*1023/300)
-        if abs(v)<100:
+        if abs(v)<0:
             return 0
         if v < 0:
             v = 1023-v
