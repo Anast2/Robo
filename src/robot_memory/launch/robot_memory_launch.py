@@ -10,8 +10,7 @@ def generate_launch_description():
             output='screen',
             emulate_tty=True,
             parameters=[
-                #{'db_folder_path': '/home/plantroid/plantroid_ws/src/robot_memory/db/'}
-                {'db_folder_path': '/home/antoniogaliza/ResearchWork/rooted/src/robot_memory/db/'}
+                {'db_folder_path': '/home/plantroid/rooted/src/robot_memory/db/'}
             ]
         )
     ])

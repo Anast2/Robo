@@ -7,7 +7,7 @@ def generate_launch_description():
             output='screen',
             emulate_tty=True,
             parameters=[
-                {'identity_db': '/home/plantroid/plantroid_ws/src/robot_memory/db/people.db'}
+                {'identity_db': '/home/plantroid/rooted/src/robot_memory/db/people.db'}
             ]
         )
     ])

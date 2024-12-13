@@ -10,7 +10,7 @@ def generate_launch_description():
             output='screen',
             emulate_tty=True,
             parameters=[
-                {'dialog_json': '/home/antoniogaliza/ResearchWork/rooted/src/maestro/maestro/dialogue.json',
+                {'dialog_json': '/home/plantroid/rooted/src/maestro/maestro/dialogue.json',
                  'store_chat_log':False, 
                  'keep_eye_contact':True, 
                  'pc_mode':False, 

@@ -10,7 +10,7 @@ def generate_launch_description():
             output='screen',
             emulate_tty=True,
             parameters=[
-                {'image_folder': '/home/antoniogaliza/ResearchWork/rooted/src/facial_expression/facial_expression/IMG/'}
+                {'image_folder': '/home/plantroid/rooted/src/facial_expression/facial_expression/IMG/'}
             ]
         )
     ])

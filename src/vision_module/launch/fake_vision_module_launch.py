@@ -7,9 +7,9 @@ def generate_launch_description():
             output='screen',
             emulate_tty=True,
             parameters=[
-                {'db_folder_path':'/home/plantroid/plantroid_ws/src/robot_memory/db/people.db',
-                 'use_pc_camera':True,
-                 'camera_number':0,
+                {'db_folder_path':'/home/plantroid/rooted/src/robot_memory/db/people.db',
+                 'use_pc_camera':'True',
+                 'camera_number':'0',
                  'camera_topic':'/camera/image_raw',
                  }
             ]

@@ -10,8 +10,8 @@ def generate_launch_description():
             output='screen',
             emulate_tty=True,
             parameters=[
-                {'plant_info_file':'/home/plantroid/plantroid_ws/src/plant_model/plant_characteristics.json',
-                 'db_path':'/home/plantroid/plantroid_ws/src/robot_memory/db/plant.db'
+                {'plant_info_file':'/home/plantroid/rooted/src/plant_model/plant_characteristics.json',
+                 'db_path':'/home/plantroid/rooted/src/robot_memory/db/plant.db'
                  }
             ]
         )

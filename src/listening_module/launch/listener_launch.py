@@ -10,7 +10,7 @@ def generate_launch_description():
             output='screen',
             emulate_tty=True,
             parameters=[
-                {'audio_folder_path': '/home/antoniogaliza/ResearchWork/rooted/src/robot_memory/db/audio'}
+                {'audio_folder_path': '/home/plantroid/rooted/src/robot_memory/db/audio'}
             ]
         )
     ])
