@@ -35,8 +35,8 @@ RS = Ax12(2)
 servo_setup(LS)
 servo_setup(RS)
 
-LS.set_moving_speed(10)
-RS.set_moving_speed(1033)
+LS.set_moving_speed(0)
+RS.set_moving_speed(0)
 
 spd_cmd_pile = []
 
@@ -151,6 +151,50 @@ class Encoder(Node):
             self.publisher.publish(msg)
 
     def encoder(self, publish):
+        ang0_r, ang0_l = 0, 0
+        ang1_r, ang1_l = 300, 300
+        speed_r, speed_l = 0, 0
+        self.previous_speed = self.current_speed
+        total_time = time()
+        t0=time()
+        while 300 in [ang0_r, ang0_l, ang1_r, ang1_l] or 0 in [ang0_r, ang0_l, ang1_r, ang1_l]:
+            global spd_cmd_pile
+            if spd_cmd_pile == []:
+                dt=0
+                ang0_r = round(self.r_servo.get_present_position() * 300 / 1023)
+                ang0_l = round(self.l_servo.get_present_position() * 300 / 1023)
+                while time()-t0<.1: pass
+                ang1_r = round(self.r_servo.get_present_position() * 300 / 1023)
+                ang1_l = round(self.l_servo.get_present_position() * 300 / 1023)
+            
+                dt = time()-t0
+                sr=(ang1_r-ang0_r)/dt * np.pi/180
+                sl=-(ang1_l-ang0_l)/dt * np.pi/180
+                speed_r = min_mag([sr, sign(sr)*(2*np.pi-abs(sr))])
+                speed_l = min_mag([sl, sign(sl)*(2*np.pi-abs(sl))])
+            else:
+                right_servo_speed, left_servo_speed = spd_cmd_pile
+                self.l_servo.set_moving_speed(int(left_servo_speed))
+                self.r_servo.set_moving_speed(int(right_servo_speed))
+                spd_cmd_pile = []
+
+        if speed_l!=0 or speed_r!=0:
+            self.rkm.left_speed, self.rkm.right_speed = speed_l, speed_r
+            self.rkm.update(time()-total_time)
+            #print ("Angular Wheel speed(L,R): ", '(', ang0_l,ang1_l,')', 
+            #       round(speed_l*100)/100, '(', ang0_r, ang1_r,')',round(speed_r*100)/100)
+            self.current_speed = [speed_l, speed_r]
+        else:
+            pass
+
+        msg = Pose()
+        msg.x, msg.y, msg.theta = [float(i) for i in self.rkm.pose]
+        if publish:
+            self.publisher.publish(msg)
+            #self.get_logger().info("Published: " + str(self.rkm.pose))
+
+
+    def encoder_mx12w(self, publish):
         ang0_r, ang0_l = 0, 0
         ang1_r, ang1_l = 300, 300
         speed_r, speed_l = 0, 0
