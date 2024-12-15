@@ -133,18 +133,17 @@ def generate_launch_description():
     )
 
     # Return the combined launch description
-    return LaunchDescription([
-        pkg1_launch,
-        pkg2_launch,
-        pkg3_launch,
-        pkg4_launch,
-        pkg5_launch,
-        pkg6_launch,
-        pkg7_launch,
-        pkg8_launch,
-        pkg9_launch,
-        pkg10_launch,
-        pkg11_launch,
-        pkg12_launch,
-        pkg13_launch,
-        pkg14_launch])
+    return LaunchDescription([pkg1_launch,
+                              pkg2_launch,
+                              pkg3_launch,
+                              pkg4_launch,
+                              pkg5_launch,
+                              pkg6_launch,
+                              pkg7_launch,
+                              pkg8_launch,
+                              pkg9_launch,
+                              pkg10_launch,
+                              pkg11_launch,
+                              pkg12_launch,
+                              pkg13_launch,
+                              pkg14_launch])
