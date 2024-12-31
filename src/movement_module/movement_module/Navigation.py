@@ -5,7 +5,7 @@ from rooted_msgs.msg import *
 import rclpy
 from rooted_msgs.msg import Pose, Speed
 from rclpy.node import Node
-from math import pi, sqrt
+from math import sqrt
 import numpy as np
 from ast import literal_eval
 import cv2
@@ -26,11 +26,22 @@ from movement_module.NeuralNav import NeuralNavigation, NeuralNavigationH5
 
 
 def min_mag(x1, x2):
+    """Function that selects which number has the smallest absolute value
+    @param x1<int/float>: fist number to have its magnitude compared. 
+    @param x2<int/float>: second number to have its magnitude compared. 
+    @return: <int/float> x1 or x2, whichever has the smallest magnitude.
+    """
     if abs(x1)<=abs(x2):return x1
     return x2
 
 
 def interval(x1, x2):
+    """Function that acurately calculates the difference between two angle values between -180 and 180.
+    @param x1<int/float>: first angle in radians.
+    @param x2<int/float>: second angle in radians.
+    @return: <int/float> difference between angles.
+    """
+    
     if x2-x1>np.pi:
         return (x2-x1)-2*np.pi
     elif x2-x1<-np.pi: 
@@ -40,7 +51,9 @@ def interval(x1, x2):
 
 
 class BusyInterface(Node):
+    """Class responsible for interfacing with the Busy service"""
     def __init__(self):
+        """BusyInterface class initializer function."""
         super().__init__('movement_busy_interface')
         self.cli = self.create_client(Busy, 'busy_servive')
         while not self.cli.wait_for_service(timeout_sec=5.0):
@@ -48,12 +61,15 @@ class BusyInterface(Node):
         self.req = Busy.Request()
 
     def send_request(self, busy):
+        """Method responsible for sending busy/idle requests to the Busy service."""
         self.req.request = busy
         self.future = self.cli.call_async(self.req)
 
 
 class Cameras(Node):
+    """Class responsible for interfacing with the vision service."""
     def __init__(self):
+        """Cameras class initializer function."""
         super().__init__('navigation_camera_service')
         self.cli = self.create_client(Camera, 'camera')
         while not self.cli.wait_for_service(timeout_sec=5.0):
@@ -61,11 +77,14 @@ class Cameras(Node):
         self.req = Camera.Request()
 
     def send_request(self, type):
+        """Method responsible for sending a request to the vision service."""
         self.req.imagetype = type
         self.future = self.cli.call_async(self.req)
 
 
 class NavigatorNode(Node):
+    """Class that implements the node responsible for safely navigating the robot.
+    """
     def __init__(self):
         super().__init__('vgg16_avoidance')
         self.subscription = self.create_subscription(Pose,'/encoder', self.encoder_listener_callback,10)
