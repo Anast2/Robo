@@ -3,45 +3,75 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from ast import literal_eval
-from rooted_msgs.srv import *
+from rooted_msgs.srv import LLM
 from rooted_msgs.msg import *
 import sys
 from rcl_interfaces.msg import ParameterDescriptor
 
-sys.path.append('') #  Add the location of this package on your computer
-import rooted_llm.LLM_interfaces as llm 
+# Add the location of this package to the system path
+sys.path.append('')
+import rooted_llm.LLM_interfaces as llm
 
 
 class LLMServer(Node):
+    """!
+    A ROS2 service node for interacting with a Language Model (LLM).
+    """
 
     def __init__(self, mode="local", IP="localhost", port=11434):
+        """!
+        Constructor for the LLMServer class.
+        Initializes the LLM service and sets up parameters for mode, IP, and port.
+
+        @param mode<str>: Specifies whether the LLM runs locally or on a remote server. Default is "local".
+        @param IP<str>: The IP address of the LLM server. Default is "localhost".
+        @param port<int>: The port of the LLM service. Default is 11434.
+        """
         super().__init__("llm_service")
-        self.srv = self.create_service(LLM, "llm_server",
-                                       self.cb_function)
+        self.srv = self.create_service(LLM, "llm_server", self.cb_function)
 
-        mode_descriptor = ParameterDescriptor(description='Whether the llm model is runninc locally on a remote server.')
-        self.declare_parameter('mode', '', mode_descriptor)   
-        self.mode = self.get_parameter('mode').value 
+        mode_descriptor = ParameterDescriptor(
+            description='Specifies whether the LLM model is running locally or on a remote server.'
+        )
+        self.declare_parameter('mode', '', mode_descriptor)
+        self.mode = self.get_parameter('mode').value
 
-        ip_descriptor = ParameterDescriptor(description='IP of the llm server.')
-        self.declare_parameter('IP', '', ip_descriptor)   
+        ip_descriptor = ParameterDescriptor(
+            description='IP address of the LLM server.'
+        )
+        self.declare_parameter('IP', '', ip_descriptor)
         self.IP = self.get_parameter('IP').value
 
-        port_descriptor = ParameterDescriptor(description='Port of the llm service.')
-        self.declare_parameter('PORT', '', port_descriptor)   
-        self.port = self.get_parameter('PORT').value 
+        port_descriptor = ParameterDescriptor(
+            description='Port number of the LLM service.'
+        )
+        self.declare_parameter('PORT', '', port_descriptor)
+        self.port = self.get_parameter('PORT').value
 
     def cb_function(self, req, resp):
-        model = req.model 
-        msg = req.prompt
+        """!
+        Callback function to handle incoming requests to the LLM service.
+
+        @param req<LLM.Request>: The service request containing the model and prompt.
+        @param resp<LLM.Response>: The service response containing the LLM's output.
+        @return LLM.Response: The response populated with the LLM's result.
+        """
+        model = req.model  # The model to use
+        msg = req.prompt  # The input prompt
+
         if self.mode == "local":
             resp.response = llm.ollama_local(msg, model)
         else:
             resp.response = llm.ollama_server(msg, model=model, IP=self.IP, port=self.port)
+
         return resp
 
 
 def main():
+    """!
+    Entry point for the LLM server node application.
+    Initializes the ROS2 node and starts spinning to handle LLM service requests.
+    """
     rclpy.init()
     LLM_server = LLMServer()
     rclpy.spin(LLM_server)

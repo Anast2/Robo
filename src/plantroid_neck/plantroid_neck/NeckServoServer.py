@@ -8,28 +8,52 @@ from time import time
 from rcl_interfaces.msg import ParameterDescriptor
 
 
-class FakeServo():  # for tests out of the raspberry pi.
+class FakeServo:
+    """!
+    Simulated servo class for testing outside of Raspberry Pi hardware.
+    """
     def __init__(self, pin, initial_pwm):
-        self.PIN = pin
-        self.pwm = initial_pwm     
+        """!
+        Constructor for the FakeServo class.
+
+        @param pin<int>: The GPIO pin to simulate.
+        @param initial_pwm<int>: The initial PWM value for the fake servo.
+        """
+        self.PIN = pin  ## GPIO pin used for the fake servo
+        self.pwm = initial_pwm  ## Initial PWM value
 
     def ChangeDutyCycle(self, pwm):
+        """!
+        Simulates changing the duty cycle of the servo.
+
+        @param pwm<int>: The new PWM value to simulate.
+        """
         self.pwm = pwm
-        pos_dict = {1:0, 2:18, 3:36, 4:54, 5:72, 6:90, 7:108, 8:126, 9:144,
-                    10:162, 11:180}
-        print("Fake servo on pin"+str(self.PIN)+"moving to "+
-            str(pos_dict[pwm])+" degrees.")
+        pos_dict = {1: 0, 2: 18, 3: 36, 4: 54, 5: 72, 6: 90, 7: 108, 8: 126, 9: 144,
+                    10: 162, 11: 180}
+        print("Fake servo on pin " + str(self.PIN) + " moving to " +
+              str(pos_dict[pwm]) + " degrees.")
 
 
 class NeckServoServer(Node):
+    """!
+    ROS2 Node providing a service to control a neck servo.
+    """
     def __init__(self):
+        """!
+        Constructor for the NeckServoServer class.
+        Initializes the ROS2 node, sets up the servo controller, and declares parameters.
+        """
         super().__init__("neck_servo_service")
-        self.srv = self.create_service(NeckServo, "neck_servo",
-                                       self.handle_neck_servo)
-        self.servoPIN = 17
-        raspi_descriptor = ParameterDescriptor(description='Variable that represents whethe the code is running on a raspberry pi or not.')
-        self.declare_parameter('raspi', '', raspi_descriptor)        
-        self.raspi = self.get_parameter('raspi').value   
+        self.srv = self.create_service(NeckServo, "neck_servo", self.handle_neck_servo)
+        self.servoPIN = 17  ## GPIO pin for the servo
+
+        raspi_descriptor = ParameterDescriptor(
+            description='Variable that represents whether the code is running on a Raspberry Pi or not.'
+        )
+        self.declare_parameter('raspi', '', raspi_descriptor)
+        self.raspi = self.get_parameter('raspi').value  ## Indicates if running on Raspberry Pi
+
         if self.raspi:
             try:
                 import RPi.GPIO as GPIO
@@ -43,42 +67,42 @@ class NeckServoServer(Node):
             self.controller = FakeServo(self.servoPIN, 50)
 
     def handle_neck_servo(self, req, resp):
-        angle = req.angle
+        """!
+        Callback for handling neck servo requests.
+
+        @param req<NeckServo.Request>: The service request containing the desired angle.
+        @param resp<NeckServo.Response>: The service response to be populated.
+        @return NeckServo.Response: The response with the status of the operation.
+        """
+        angle = req.angle  ## Desired servo angle from the request
         if angle <= 10:
             self.controller.ChangeDutyCycle(angle)
-            resp.status = "Tilted head to "+str(angle)
+            resp.status = "Tilted head to " + str(angle)
         else:
             initial = 4
             final = 3
             angle = initial
-            while angle>final:
-                angle-=0.2
+            while angle > final:
+                angle -= 0.2
                 t0 = time()
                 self.controller.ChangeDutyCycle(angle)
-                while time()-t0<0.25:
+                while time() - t0 < 0.25:
                     pass
             while angle < initial:
-                angle+=0.2
+                angle += 0.2
                 t0 = time()
                 self.controller.ChangeDutyCycle(angle)
-                while time()-t0<0.25:
+                while time() - t0 < 0.25:
                     pass
             self.controller.ChangeDutyCycle(5)
-        print("Tilted head to "+str(angle))
+        print("Tilted head to " + str(angle))
         return resp
-        #intervals = [-float("inf"), 0, 18, 36, 54, 72, 90, 108, 126, 144, 162,
-        #             180]
-        #for i in range(len(intervals)-1):
-        #    if angle>=intervals[i] and angle<=intervals[i+1]:
-        #        self.controller.ChangeDutyCycle(i+1)
-        #        resp.status = "Tilted head to " + str(intervals[i+1]) +\
-        #            " degrees."
-        #        t0 = time()
-        #        while time()-t0<1: pass
-        #        return resp
 
 
 def main():
+    """!
+    Entry point for the neck servo service node.
+    """
     rclpy.init(args=None)
     s = NeckServoServer()
     print("Ready to tilt head.")

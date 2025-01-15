@@ -156,10 +156,13 @@ def main():
     The main entry point for the ListenServer node.
     """
     rclpy.init(args=None)
+    ## microphone 
     m = sr.Microphone()
+    ## speech recognizer
     r = sr.Recognizer()
     vad.noise_calibration(m, r)
 
+    ## listen_server object that will provide all related services.
     listen_server = ListenServer()
     listen_server.start_listening(r)
     listen_server.getBlock()

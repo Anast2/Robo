@@ -10,7 +10,9 @@ def generate_launch_description():
             output='screen',
             emulate_tty=sTrue,
             parameters=[
-                {}
+                {'soil_sensor_path': '/dev/ttyNPK',
+                 'arduino_path': '/dev/ttyArduino',
+                 'sonar_path': '/dev/ttySonar',}
             ]
         )
     ])

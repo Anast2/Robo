@@ -14,82 +14,83 @@ import threading
 from time import time
 from movement_module.NeuralNav import NeuralNavigation, NeuralNavigationH5
 
+###############################################################################################
+#    This portion of the code should be uncommented in case it is running in a ARM computer   #
+###############################################################################################
 # import sys
 # sys.path.append('/home/plantroid/plantroid_ws/src/plantroid_navigation/plantroid_navigation')
-
 #c = get_config()
 #os.environ['LD_PRELOAD'] = '/usr/lib/aarch64-linux-gnu/libgomp.so.1'
 #c.Spawner.env.update('LD_PRELOAD')
 # import sys
 # sys.path.insert(1, './OKAO')
 # from movement_module.OKAO_vision_interface import get_image_array
-
+###############################################################################################
 
 def min_mag(x1, x2):
-    """Function that selects which number has the smallest absolute value
-    @param x1<int/float>: fist number to have its magnitude compared. 
-    @param x2<int/float>: second number to have its magnitude compared. 
-    @return: <int/float> x1 or x2, whichever has the smallest magnitude.
+    """! Function that selects which number has the smallest absolute value.
+    @param x1 <int/float>: First number to have its magnitude compared.
+    @param x2 <int/float>: Second number to have its magnitude compared.
+    @return <int/float>: x1 or x2, whichever has the smallest magnitude.
     """
-    if abs(x1)<=abs(x2):return x1
+    if abs(x1) <= abs(x2):
+        return x1
     return x2
 
-
 def interval(x1, x2):
-    """Function that acurately calculates the difference between two angle values between -180 and 180.
-    @param x1<int/float>: first angle in radians.
-    @param x2<int/float>: second angle in radians.
-    @return: <int/float> difference between angles.
+    """! Function that accurately calculates the difference between two angle values between -180 and 180.
+    @param x1 <int/float>: First angle in radians.
+    @param x2 <int/float>: Second angle in radians.
+    @return <int/float>: Difference between angles.
     """
-    
-    if x2-x1>np.pi:
-        return (x2-x1)-2*np.pi
-    elif x2-x1<-np.pi: 
-        return 2*np.pi+(x2-x1)
+    if x2 - x1 > np.pi:
+        return (x2 - x1) - 2 * np.pi
+    elif x2 - x1 < -np.pi: 
+        return 2 * np.pi + (x2 - x1)
     else:
-        return x2-x1
-
+        return x2 - x1
 
 class BusyInterface(Node):
-    """Class responsible for interfacing with the Busy service"""
+    """! Class responsible for interfacing with the Busy service."""
     def __init__(self):
-        """BusyInterface class initializer function."""
+        """! BusyInterface class initializer function."""
         super().__init__('movement_busy_interface')
-        self.cli = self.create_client(Busy, 'busy_servive')
+        self.cli = self.create_client(Busy, 'busy_service')
         while not self.cli.wait_for_service(timeout_sec=5.0):
             self.get_logger().info('Busy service not available, waiting again...')
         self.req = Busy.Request()
 
     def send_request(self, busy):
-        """Method responsible for sending busy/idle requests to the Busy service."""
+        """! Method responsible for sending busy/idle requests to the Busy service.
+        @param busy <bool>: The busy status to send to the service.
+        """
         self.req.request = busy
         self.future = self.cli.call_async(self.req)
 
-
 class Cameras(Node):
-    """Class responsible for interfacing with the vision service."""
+    """! Class responsible for interfacing with the vision service."""
     def __init__(self):
-        """Cameras class initializer function."""
+        """! Cameras class initializer function."""
         super().__init__('navigation_camera_service')
         self.cli = self.create_client(Camera, 'camera')
         while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('service not available, waiting again...')
+            self.get_logger().info('Service not available, waiting again...')
         self.req = Camera.Request()
 
     def send_request(self, type):
-        """Method responsible for sending a request to the vision service."""
+        """! Method responsible for sending a request to the vision service.
+        @param type <int>: The type of image request to send.
+        """
         self.req.imagetype = type
         self.future = self.cli.call_async(self.req)
 
-
 class NavigatorNode(Node):
-    """Class that implements the node responsible for safely navigating the robot.
-    """
+    """! Class that implements the node responsible for safely navigating the robot."""
     def __init__(self):
+        """! NavigatorNode initializer method."""
         super().__init__('vgg16_avoidance')
-        self.subscription = self.create_subscription(Pose,'/encoder', self.encoder_listener_callback,10)
-        self.subscription 
-        self.goal_subscription
+        self.subscription = self.create_subscription(Pose, '/encoder', self.encoder_listener_callback, 10)
+        self.goal_subscription = None
         self.camera_client = Cameras()
         self.busy_interface = BusyInterface()
         self.goal = None
@@ -99,11 +100,13 @@ class NavigatorNode(Node):
         while not self.cli.wait_for_service(timeout_sec=5.0):
             self.get_logger().info('Servo Command service not available, waiting again...')
         self.req = Command.Request()
-        self.image_history = [] #[cv2.resize(self.get_image(),(30,40))]*15
-        self.srv = self.create_service(NavigationOrder, "/navigation_service",
-                                       self.move_order_service_callback)
+        self.image_history = []
+        self.srv = self.create_service(NavigationOrder, "/navigation_service", self.move_order_service_callback)
 
     def get_image(self):
+        """! Method responsible for capturing an image from the camera service.
+        @return <numpy.array>: Image data captured from the camera service.
+        """
         self.camera_client.send_request(1)
         while rclpy.ok():
             rclpy.spin_once(self.camera_client)
@@ -111,13 +114,15 @@ class NavigatorNode(Node):
                 try:
                     response = self.camera_client.future.result()
                 except Exception as e:
-                    self.camera_client.get_logger().info(
-                        'Service call failed %r' % (e,))
+                    self.camera_client.get_logger().info('Service call failed: %r' % (e,))
                 else:
                     return literal_eval(response)
 
     def get_person(self):
-        response = False #get_image_array().astype(np.uint8)
+        """! Method responsible for detecting a person using the vision service.
+        @return <bool/array>: Detection result or image data.
+        """
+        response = False
         self.camera_client.send_request(3)
         while rclpy.ok():
             rclpy.spin_once(self.camera_client)
@@ -125,73 +130,66 @@ class NavigatorNode(Node):
                 try:
                     response = self.camera_client.future.result().image
                 except Exception as e:
-                    self.camera_client.get_logger().info(
-                        'Service call failed %r' % (e,))
+                    self.camera_client.get_logger().info('Service call failed: %r' % (e,))
                 else:
-                    print(response)
                     response = literal_eval(response)
                 break
         return response
 
     def rotate_to_person(self):
+        """! Method responsible for rotating the robot to face a detected person."""
         person = self.get_person()
         while not person:
             print("Seeking humans")
             person = self.get_person()
             self.send_request([0, 0.5])
-        print("person found!")
-        for i in range(4):
+        print("Person found!")
+        for _ in range(4):
             self.send_request([0, 0])
 
-    def encoder_listener_callback(self,msg):
+    def encoder_listener_callback(self, msg):
+        """! Callback function to handle encoder data updates.
+        @param msg <Pose>: Pose message containing the robot's position and orientation.
+        """
         self.monitored_x, self.monitored_y, self.monitored_theta = msg.x, msg.y, msg.theta
-        # print(msg.x, msg.y, msg.theta)
-        #print(self.monitored_x, self.monitored_y)
         if self.goal is not None:
-            error = sqrt((self.goal[0]-msg.x)**2+(self.goal[1]-msg.y)**2)
-            #print(error)
-            #theta_line = atan2(self.goal[1]-self.monitored_y, self.goal[0]-self.monitored_x)
-            #self.goal_theta = NeuralNavigation(self.get_image(),
-            #                                   self.monitored_theta, theta_line, error)
-            if abs(error)>.15:
+            error = sqrt((self.goal[0] - msg.x) ** 2 + (self.goal[1] - msg.y) ** 2)
+            if abs(error) > 0.15:
                 error_theta = interval(self.monitored_theta, self.goal_theta)
-                print("Dist E: ", error, "Rot E: ", error_theta)
                 PI_lin, PI_rot = 1, 0.5
-                tz = 0.000001
-                rot_spd, lin_spd = error_theta, error * PI_lin #min_mag((error_theta+tz)/abs((error_theta+tz))*0.8, error_theta), error * PI_lin
-                self.send_request(min(0.15,lin_spd), rot_spd)#max(.25*error_theta, 0.2*error_theta/abs(error_theta)))
-                print("Sending: ", lin_spd, rot_spd)
+                rot_spd, lin_spd = error_theta, error * PI_lin
+                self.send_request(min(0.15, lin_spd), rot_spd)
             else:
                 self.goal = None
                 self.goal_theta = None
                 self.image_history = []
                 self.set_idle()
-                for i in range(4):
+                for _ in range(4):
                     self.send_request(0, 0)
-    
+
     def move_order_service_callback(self, req, resp):
+        """! Callback function to handle navigation orders.
+        @param req <NavigationOrder>: Navigation order request.
+        @param resp <str>: Response status of the navigation order.
+        @return <str>: "Success" or "Failure" based on the navigation order handling.
+        """
         resp = "Success"
         if not self.check_busy():
             if req.move_to != "human":
-                if req.move_to == "light":
-                    self.camera_client.send_request(6)
-                else:
-                    self.camera_client.send_request(7)
+                self.camera_client.send_request(6 if req.move_to == "light" else 7)
                 while rclpy.ok():
                     rclpy.spin_once(self.camera_client)
                     if self.camera_client.future.done():
                         try:
                             response = self.camera_client.future.result()
                         except Exception as e:
-                            self.camera_client.get_logger().info(
-                                'Service call failed %r' % (e,))
+                            self.camera_client.get_logger().info('Service call failed: %r' % (e,))
                         else:
-                            self.goal = literal_eval(response.image)[::-1] #TODO: check if -1 is necessary? it should not be, if any corrections need to be done, they should be in the Vision server and not in the actual navigation server, as the format should be [x,y]...
-                            print("GOAL WAS SET AS: ", self.goal)
+                            self.goal = literal_eval(response.image)[::-1]
                         break
                 self.set_busy()
-                self.goal_theta = atan2(self.goal[1]-self.monitored_y, self.goal[0]-self.monitored_x) #  TODO: check if the logic still follows the ::-1  thing above. 
-                self.image_history = [cv2.resize(self.get_image(),(30,40))]*15 # Assumes that with the new computer getting the image from the vision server will be quick enough. If that is not the case, we need to change how get_image works to interface directly with the camera module. Another idea is to directly run the model in the vision server, like it was done for the previous version of the robot navigation. 
+                self.goal_theta = atan2(self.goal[1] - self.monitored_y, self.goal[0] - self.monitored_x)
+                self.image_history = [cv2.resize(self.get_image(), (30, 40))] * 15
             else:
                 self.set_busy()
                 self.rotate_to_person()
@@ -201,116 +199,102 @@ class NavigatorNode(Node):
         return resp
 
     def send_request(self, lin_spd, ang_spd):
-        #print("A")
+        """! Method responsible for sending movement commands.
+        @param lin_spd <float>: Linear speed to set.
+        @param ang_spd <float>: Angular speed to set.
+        """
         speed = Speed()
-       # print("B")
         speed.linear = float(lin_spd)
         speed.angular = float(ang_spd)
-        #print("C")
         self.req.speed_command = speed
-        #print("D")
         self.future = self.cli.call_async(self.req)
-        #print("E")
 
     def stitch(self):
+        """! Method that stitches a series of images into a larger image.
+        @return <numpy.array>: Stitched image data.
+        """
         stitched = []
         present_img = [self.get_image()]
         img_hist = self.image_history
-        for index, current_image in enumerate(present_img):
-            #print(current_image)
+        for current_image in present_img:
             height, width = 160, 120
             canvas = np.zeros((int(height), int(width)), dtype=np.float32)
-            current_image = cv2.resize(current_image,(30,40))
+            current_image = cv2.resize(current_image, (30, 40))
             current_image = np.squeeze(current_image)
-            resized_previous_images = [current_image]+img_hist[:15]
+            resized_previous_images = [current_image] + img_hist[:15]
             self.image_history = resized_previous_images[:15]
             for i in range(4):
                 for j in range(4):
-                    current_index = 4*i+j
+                    current_index = 4 * i + j
                     img = resized_previous_images[current_index]
-                    #print(img.shape)
                     for y in range(img.shape[0]):
                         for x in range(img.shape[1]):
-                            canvas[y+img.shape[0]*i, x+img.shape[1]*j] = img[y,x]
-
+                            canvas[y + img.shape[0] * i, x + img.shape[1] * j] = img[y, x]
             canvas = np.array(np.expand_dims(canvas, axis=-1))
             stitched.append(canvas)
         return stitched[0]
 
     def stitch10(self):
+        """! Method that stitches a series of 10 images into a larger image.
+        @return <numpy.array>: Stitched image data.
+        """
         stitched = []
-        present_img = [cv2.resize(self.get_image(),(120,160))]
+        present_img = [cv2.resize(self.get_image(), (120, 160))]
         img_hist = self.image_history
         height, width = 160, 120
 
-        for index, current_image in enumerate(present_img):
+        for current_image in present_img:
             canvas = np.zeros((200, 150), dtype=np.uint8)
             current_image = np.squeeze(current_image)
             canvas[0:height, 0:width] = current_image
-            resized_previous_images = img_hist[:9]            
-            self.image_history = [cv2.resize(current_image,(30,40))]+self.image_history[:14]            
+            resized_previous_images = img_hist[:9]
+            self.image_history = [cv2.resize(current_image, (30, 40))] + self.image_history[:14]
 
             for i in range(5):
                 img = resized_previous_images[i]
                 for y in range(img.shape[0]):
                     for x in range(img.shape[1]):
-                        canvas[y+img.shape[0]*i, width+x] = img[y,x]
+                        canvas[y + img.shape[0] * i, width + x] = img[y, x]
             resized_previous_images = resized_previous_images[::-1]
             
             for i in range(4):
                 img = resized_previous_images[i]
                 for y in range(img.shape[0]):
                     for x in range(img.shape[1]):
-                        canvas[height+y, x+(img.shape[1]*i)] = img[y,x]
+                        canvas[height + y, x + (img.shape[1] * i)] = img[y, x]
 
             canvas = np.array(np.expand_dims(canvas, axis=-1))
-            #cv2.imwrite("Stitched.png", canvas)
-            #cv2.waitKey(2000)
-            #cv2.destroyAllWindows()
             stitched.append(canvas)
         return stitched[0]
 
-    def handle_busy(self,request):
-        self.busy_interface.send_request("request")
-        while rclpy.ok():
-            rclpy.spin_once(self.busy_interface)
-            if self.busy_interface.future.done():
-                try:
-                    response = self.busy_interface.future.result().result
-                except Exception as e:
-                    self.busy_interface.get_logger().info(
-                        'Service call failed %r' % (e,))
-                else:
-                    return literal_eval(response)
+    def set_idle(self):
+        """! Method to set the robot's busy status to idle."""
+        self.busy_interface.send_request(False)
 
-    def check_busy(self): return self.handle_busy(self,"get")
+    def set_busy(self):
+        """! Method to set the robot's busy status to busy."""
+        self.busy_interface.send_request(True)
 
-    def set_busy(self): self.handle_busy(self,"set_busy")
+    def check_busy(self):
+        """! Method to check if the robot is currently busy.
+        @return <bool>: True if busy, False otherwise.
+        """
+        if self.busy_interface.future.done():
+            try:
+                response = self.busy_interface.future.result()
+            except Exception as e:
+                self.camera_client.get_logger().info('Service call failed: %r' % (e,))
+                return False
+            else:
+                return response.status
 
-    def set_idle(self): self.handle_busy(self,"set_idle")
+def main(args=None):
+    """! Main function that initializes the ROS node and keeps it running."""
+    rclpy.init(args=args)
+    navigator_node = NavigatorNode()
+    rclpy.spin(navigator_node)
+    navigator_node.destroy_node()
+    rclpy.shutdown()
 
-
-def set_theta(navigator):
-    while navigator.goal is not None:
-        x, y, t = navigator.monitored_x, navigator.monitored_y, navigator.monitored_theta
-        xg, yg = navigator.goal
-        distance = sqrt((xg-x)**2+(yg-y)**2)
-        theta_line = atan2(yg-y,xg-x)
-        #img = cv2.resize(navigator.get_image(), (120,160))
-        t0 = time()
-        navigator.goal_theta =  NeuralNavigationH5(navigator.stitch10(), t, theta_line, distance)
-        print("Inference time: ", time()-t0)
-
-
-def main():
-    rclpy.init(args=None)
-    print("Iniciando")
-    #command_service_client()
-    t = NavigatorNode()
-    t1 = threading.Thread(target=set_theta, args=(t,))
-    t1.start()
-    rclpy.spin(t)
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
