@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
-from rooted_msgs.msg import Speed
-from rooted_msgs.srv import Gesture, Busy, NeckServo, Command
+from rooted_msgs.srv import Gesture, Busy, NeckServo
+from geometry_msgs.msg import Twist
+
 from ast import literal_eval
 from time import time
-from rcl_interfaces.msg import ParameterDescriptor
 
 
 class BusyInterface(Node):
@@ -34,40 +34,10 @@ class BusyInterface(Node):
         self.future = self.cli.call_async(self.req)
 
 
-class MotorCommander(Node):
-    """!
-    A ROS2 client node for sending motor speed commands.
-    """
-
-    def __init__(self):
-        """!
-        Constructor for the MotorCommander class.
-        Initializes the client for the motor speed service.
-        """
-        super().__init__('gesture_servo_commander')
-        self.cli = self.create_client(Command, 'speed_command')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Encoder service not available, waiting again...')
-        self.req = Command.Request()
-
-    def send_request(self, vels):
-        """!
-        Sends a speed command to the motor speed service.
-
-        @param vels<list>: A list containing linear and angular velocities.
-        """
-        speed = Speed()
-        speed.linear = float(vels[0])
-        speed.angular = float(vels[1])
-        self.req.speed_command = speed
-        self.future = self.cli.call_async(self.req)
-
-
 class NeckCommander(Node):
     """!
     A ROS2 client node for controlling the neck servo.
     """
-
     def __init__(self):
         """!
         Constructor for the NeckCommander class.
@@ -106,7 +76,7 @@ class GestureServer(Node):
         self.srv = self.create_service(Gesture, "gesture", self.handle_gesture)
         self.busy_checker = BusyInterface()
         self.nc = NeckCommander()
-        self.mc = MotorCommander()
+        self.mc = self.create_publisher(Twist, '/plantroid/cmd_vel', 10)
 
     def handle_gesture(self, req, resp):
         """!
@@ -131,6 +101,7 @@ class GestureServer(Node):
                     self.nc.send_request(bow)
                     bow -= 0.001
                 self.nc.send_request(0)
+
             elif data == "yes":
                 for _ in range(3):
                     bow = 7
@@ -141,13 +112,16 @@ class GestureServer(Node):
                         self.nc.send_request(bow)
                         bow -= 0.05
                     self.nc.send_request(8)
+
             elif data == "no":
                 for i in [0.5, -1, 0.5]:
                     t0 = time()
-                    self.mc.send_request([0, i / abs(i) * 0.5])
+                    speed_command = Twist()
+                    speed_command.linear.x, speed_command.angular.z = [0, i / abs(i) * 0.5]
+                    self.mc.publish(speed_command)
                     while time() - t0 < abs(i):
                         pass
-                self.mc.send_request([0, 0])
+
             elif data == "surprise":
                 bow = 8
                 while bow > 7:
