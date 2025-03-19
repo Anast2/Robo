@@ -22,8 +22,6 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': ["encoder = rooted_encoder.encoder:main",
-                            "encoder_virtual = rooted_encoder.encoder_virtual:main",
-                            "controller_virtual = rooted_encoder.controller_virtual:main"  
         ],
     },
 )
