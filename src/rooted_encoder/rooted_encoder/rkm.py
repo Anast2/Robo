@@ -57,4 +57,5 @@ class KinematicModel():
         dx, dy, dtheta = self.generalized_speed_equation(self.left_speed, self.right_speed)
         self.pose = [round(self.pose[0]+dx*dt,3), round(self.pose[1]+dy*dt,3), round(self.pose[2]+dtheta*dt,3)]
         self.angle_limiter()
+        self.speed = self.convert_LeftRight_to_LinearAngular(self.left_speed, self.right_speed)
         #print ("Current pose [x,y,theta]: ", self.pose)
