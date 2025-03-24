@@ -12,7 +12,9 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from threading import Thread
 from ast import literal_eval
-from rooted_msgs.srv import Camera, Busy, LLM, Sensors, MemoryRequest, NavigationOrder
+from rooted_msgs.srv import Camera, Busy, LLM, Sensors, MemoryRequest
+from rclpy.action import ActionClient
+from rooted_msgs.action import HighLevelAction
 from time import time
 from beepy import beep
 from random import choice
@@ -119,7 +121,7 @@ class MemoryAccess(Node):
 
 class PersonDetector(Node):
     def __init__(self, busy_state_machine, dialogue_state_machine):
-        super().__init__('person_detector')
+        super().__init__('maestro_person_detector')
         self.vision_control = Cameras()
         self.person_detect_alarm = self.create_publisher(String, 'seenTopic', 10)
         self.busy_state_machine = busy_state_machine
@@ -150,19 +152,26 @@ class PersonDetector(Node):
 
 
 class NavigationCommandSender(Node):
+    """! Class responsible for sending navigation commands to the robot."""
     def __init__(self):
-        super().__init__('plant_model_navigation_command_sender')
-        self.cli = self.create_client(NavigationOrder, "navigation_service")
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Navigation service not available, waiting again...')
-        self.req = NavigationOrder.Request()
-        
+        """! NavigationCommandSender class' initializer method."""
+        super().__init__('maestro_navigation_command_sender')
+        self.action_client = ActionClient(self, HighLevelAction, '/plantroid/high_level_navigation')
+        while not self.action_client.wait_for_server(timeout_sec=5.0):
+            self.get_logger().info('Action server not available, waiting again...')
+
     def send_move_order(self, order):
-        if order in ["human"]:
-            self.req.move_to = order
+        """! Sends a navigation command to move the robot.
+        @param order <str>: Either 'light' or 'shadow' to move the robot accordingly."""
+        if order in ["light", "shadow"]:
+            goal_msg = HighLevelAction.Goal()
+            goal_msg.command = order
+            self.action_client.send_goal_async(goal_msg, feedback_callback=self.feedback_callback)
         else:
             self.get_logger().error("Illegal order; orders should be either 'light' or 'shadow'!")
 
+    def feedback_callback(self, feedback_msg):
+        self.get_logger().info(f"Received feedback: {feedback_msg.feedback.status}")
 
 class MAESTRO(Node):
     def __init__(self, busy_state_machine, problem_state_machine, dialogue_state_machine):
