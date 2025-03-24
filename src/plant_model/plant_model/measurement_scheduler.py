@@ -3,7 +3,9 @@ import time
 import ast
 import json
 import os
-from rooted_msgs.srv import Sensors, NavigationOrder, MemoryRequest
+from rooted_msgs.srv import Sensors, MemoryRequest
+from rclpy.action import ActionClient
+from rooted_msgs.action import HighLevelAction
 from rooted_msgs.msg import *
 from std_msgs.msg import String
 import rclpy
@@ -72,18 +74,22 @@ class NavigationCommandSender(Node):
     def __init__(self):
         """! NavigationCommandSender class' initializer method."""
         super().__init__('plant_model_navigation_command_sender')
-        self.cli = self.create_client(NavigationOrder, "navigation_service")
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Navigation service not available, waiting again...')
-        self.req = NavigationOrder.Request()
-        
+        self.action_client = ActionClient(self, HighLevelAction, '/plantroid/high_level_navigation')
+        while not self.action_client.wait_for_server(timeout_sec=5.0):
+            self.get_logger().info('Action server not available, waiting again...')
+
     def send_move_order(self, order):
         """! Sends a navigation command to move the robot.
         @param order <str>: Either 'light' or 'shadow' to move the robot accordingly."""
-        if order in ["light","shadow"]:
-            self.req.move_to = order
+        if order in ["light", "shadow"]:
+            goal_msg = HighLevelAction.Goal()
+            goal_msg.command = order
+            self.action_client.send_goal_async(goal_msg, feedback_callback=self.feedback_callback)
         else:
             self.get_logger().error("Illegal order; orders should be either 'light' or 'shadow'!")
+
+    def feedback_callback(self, feedback_msg):
+        self.get_logger().info(f"Received feedback: {feedback_msg.feedback.status}")
 
 
 class NotificationSender(Node):
