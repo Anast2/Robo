@@ -9,6 +9,7 @@ import tf_transformations
 from rooted_encoder.rkm import KinematicModel
 import numpy as np
 from rooted_encoder.Ax12 import Ax12
+from nav_msgs.msg import Odometry
 
 Ax12.DEVICENAME = '/dev/ttyUSB0'  # Change for the appropriate device name  # TODO: change to rosparam
 Ax12.BAUDRATE = 1000000  # Change for the appropriate baud rate for your device  # TODO: change to rosparam
@@ -69,13 +70,13 @@ class Encoder(Node):
         super().__init__('Encoder')
         
         self.tf_broadcaster = TransformBroadcaster(self)
-        self.speed_publisher = self.create_publisher(Twist, '/plantroid/actual_vel', 10)
         self.speed_command_subscription = self.create_subscription(
             Twist,
             '/plantroid/cmd_vel',
             self.cmd_vel_callback,
             10
         )
+        self.odom_publisher = self.create_publisher(Odometry, '/plantroid/odom', 10)
 
         self.pose_timer = self.create_timer(0.1, self.publish_pose)
         self.speed_timer = self.create_timer(2**0.5 / 10, self.publish_speed)
@@ -136,20 +137,38 @@ class Encoder(Node):
 
     def publish_pose(self):
         """!
-        Publish the robot's pose and speed.
+        Publish the robot's pose and odometry.
         """
         speed_r = self.speed_convert_mx12w(self.r_servo.get_present_speed()) * 360 / 1023
         speed_l = self.speed_convert_mx12w(self.l_servo.get_present_speed()) * 360 / 1023
+
         dt = time() - self.timer
         self.timer = time()
         self.rkm.left_speed = speed_l  ## Left wheel speed
         self.rkm.right_speed = speed_r  ## Right wheel speed
         self.rkm.update(dt)
+
         pose = {"x": self.rkm.pose[0], "y": self.rkm.pose[1], "theta": self.rkm.pose[2]}
+
+        odom_msg = Odometry()
+        odom_msg.header.stamp = self.get_clock().now().to_msg()
+        odom_msg.header.frame_id = 'odom'
+        odom_msg.child_frame_id = 'base_link'
+        odom_msg.pose.pose.position.x = pose["x"]
+        odom_msg.pose.pose.position.y = pose["y"]
+        odom_msg.pose.pose.position.z = 0.0
+        quaternion = tf_transformations.quaternion_from_euler(0, 0, pose["theta"])
+        odom_msg.pose.pose.orientation.x = quaternion[0]
+        odom_msg.pose.pose.orientation.y = quaternion[1]
+        odom_msg.pose.pose.orientation.z = quaternion[2]
+        odom_msg.pose.pose.orientation.w = quaternion[3]
+        odom_msg.twist.twist.linear.x = self.rkm.speed[0]  ## Linear speed of the robot
+        odom_msg.twist.twist.angular.z = self.rkm.speed[1]  ## Angular speed of the robot
+        
         transform_stamped = TransformStamped()
         transform_stamped.header.stamp = self.get_clock().now().to_msg()
         transform_stamped.header.frame_id = 'world'
-        transform_stamped.child_frame_id = 'plantroid_base'
+        transform_stamped.child_frame_id = 'base_link'
         transform_stamped.transform.translation.x = pose["x"]
         transform_stamped.transform.translation.y = pose["y"]
         transform_stamped.transform.translation.z = 0.0
@@ -158,11 +177,10 @@ class Encoder(Node):
         transform_stamped.transform.rotation.y = quaternion[1]
         transform_stamped.transform.rotation.z = quaternion[2]
         transform_stamped.transform.rotation.w = quaternion[3]
-        self.tf_broadcaster.sendTransform(transform_stamped)
-        twist = Twist()
-        twist.linear.x = self.rkm.speed[0]  ## Linear speed of the robot
-        twist.angular.z = self.rkm.speed[1]  ## Angular speed of the robot
-        self.speed_publisher.publish(twist)
+        
+        self.odom_publisher.publish(odom_msg)
+        self.tf_broadcaster.sendTransform(transform_stamped)    
+
 
 def main():
     """!

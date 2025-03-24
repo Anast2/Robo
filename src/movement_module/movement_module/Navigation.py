@@ -13,12 +13,9 @@ import cv2
 from time import time
 from movement_module.NeuralNav import NeuralNavigation, NeuralNavigationH5
 from geometry_msgs.msg import PoseStamped, Twist
-from nav_msgs.msg import Odometry
 from tf2_ros import Buffer, TransformListener
 from action_msgs.msg import GoalStatus
-from math import atan2, sqrt
 from nav2_msgs.action import NavigateToPose
-
 
 ###############################################################################################
 #    This portion of the code should be uncommented in case it is running in a ARM computer   #
@@ -33,6 +30,7 @@ from nav2_msgs.action import NavigateToPose
 # from movement_module.OKAO_vision_interface import get_image_array
 ###############################################################################################
 
+
 def min_mag(x1, x2):
     """! Function that selects which number has the smallest absolute value.
     @param x1 <int/float>: First number to have its magnitude compared.
@@ -42,6 +40,7 @@ def min_mag(x1, x2):
     if abs(x1) <= abs(x2):
         return x1
     return x2
+
 
 def interval(x1, x2):
     """! Function that accurately calculates the difference between two angle values between -180 and 180.
@@ -55,6 +54,7 @@ def interval(x1, x2):
         return 2 * np.pi + (x2 - x1)
     else:
         return x2 - x1
+
 
 class BusyInterface(Node):
     """! Class responsible for interfacing with the Busy service."""
@@ -95,12 +95,11 @@ class NavigatorNode(Node):
         super().__init__('navigator_node')
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
-        self.camera_client = Cameras()
         self.busy_interface = BusyInterface()
         self.goal = None
         self.goal_theta = None
         self.cmd_vel_publisher = self.create_publisher(Twist, '/plantroid/cmd_vel', 10)
-        self.image_history = []
+        self.image_history = [cv2.resize(self.get_image(), (30, 40))]*15
         self.action_server = ActionServer(
             self,
             NavigateToPose,
@@ -137,20 +136,25 @@ class NavigatorNode(Node):
                 return NavigateToPose.Result(status=GoalStatus.STATUS_CANCELED)
 
             try:
-                trans = self.tf_buffer.lookup_transform('world', 'plantroid_base', rclpy.time.Time())
+                trans = self.tf_buffer.lookup_transform('base_link', 'world', rclpy.time.Time())
                 self.monitored_x = trans.transform.translation.x
                 self.monitored_y = trans.transform.translation.y
-                self.monitored_theta = atan2(trans.transform.rotation.z, trans.transform.rotation.w) * 2
+                self.monitored_theta = trans.transform.rotation.z
             except Exception as e:
                 self.get_logger().warn(f"Could not transform: {e}")
-                continue
+                return NavigateToPose.Result(status=GoalStatus.STATUS_CANCELED)
 
             error = sqrt((self.goal[0] - self.monitored_x) ** 2 + (self.goal[1] - self.monitored_y) ** 2)
             if abs(error) > 0.15:
+                TVM = self.stitch10()
+                NeuralNavigation(TVM, 
+                                 self.monitored_theta,
+                                 atan2(self.monitored_y-self.goal[1], self.monitored_x-self.goal[0]),
+                                 error)
                 error_theta = interval(self.monitored_theta, self.goal_theta)
                 PI_lin, PI_rot = 1, 0.5
                 rot_spd, lin_spd = error_theta, error * PI_lin
-                self.publish_twist(min(0.15, lin_spd), rot_spd)
+                self.publish_twist(min(0.15, lin_spd), rot_spd)  # Done in order to prevent accidents if the robot gets to fast
 
                 feedback_msg.base_position = PoseStamped()
                 feedback_msg.base_position.pose.position.x = self.monitored_x
@@ -167,6 +171,79 @@ class NavigatorNode(Node):
                 goal_handle.succeed()
                 result.status = GoalStatus.STATUS_SUCCEEDED
                 return result
+
+    def stitch(self):
+        """! Method that stitches a series of images into a larger image.
+        @return <numpy.array>: Stitched image data.
+        """
+        stitched = []
+        present_img = [self.get_image()]
+        img_hist = self.image_history
+        for current_image in present_img:
+            height, width = 160, 120
+            canvas = np.zeros((int(height), int(width)), dtype=np.float32)
+            current_image = cv2.resize(current_image, (30, 40))
+            current_image = np.squeeze(current_image)
+            resized_previous_images = [current_image] + img_hist[:15]
+            self.image_history = resized_previous_images[:15]
+            for i in range(4):
+                for j in range(4):
+                    current_index = 4 * i + j
+                    img = resized_previous_images[current_index]
+                    for y in range(img.shape[0]):
+                        for x in range(img.shape[1]):
+                            canvas[y + img.shape[0] * i, x + img.shape[1] * j] = img[y, x]
+            canvas = np.array(np.expand_dims(canvas, axis=-1))
+            stitched.append(canvas)
+        return stitched[0]
+
+    def stitch10(self):
+        """! Method that stitches a series of 10 images into a larger image.
+        @return <numpy.array>: Stitched image data.
+        """
+        stitched = []
+        present_img = [cv2.resize(self.get_image(), (120, 160))]
+        img_hist = self.image_history
+        height, width = 160, 120
+
+        for current_image in present_img:
+            canvas = np.zeros((200, 150), dtype=np.uint8)
+            current_image = np.squeeze(current_image)
+            canvas[0:height, 0:width] = current_image
+            resized_previous_images = img_hist[:9]
+            self.image_history = [cv2.resize(current_image, (30, 40))] + self.image_history[:14]
+
+            for i in range(5):
+                img = resized_previous_images[i]
+                for y in range(img.shape[0]):
+                    for x in range(img.shape[1]):
+                        canvas[y + img.shape[0] * i, width + x] = img[y, x]
+            resized_previous_images = resized_previous_images[::-1]
+            
+            for i in range(4):
+                img = resized_previous_images[i]
+                for y in range(img.shape[0]):
+                    for x in range(img.shape[1]):
+                        canvas[height + y, x + (img.shape[1] * i)] = img[y, x]
+
+            canvas = np.array(np.expand_dims(canvas, axis=-1))
+            stitched.append(canvas)
+        return stitched[0]
+
+    def get_image(self):
+        """! Method responsible for capturing an image from the camera service.
+        @return <numpy.array>: Image data captured from the camera service.
+        """
+        self.camera_client.send_request(1)
+        while rclpy.ok():
+            rclpy.spin_once(self.camera_client)
+            if self.camera_client.future.done():
+                try:
+                    response = self.camera_client.future.result()
+                except Exception as e:
+                    self.camera_client.get_logger().info('Service call failed: %r' % (e,))
+                else:
+                    return literal_eval(response)
 
     def publish_twist(self, lin_spd, ang_spd):
         twist = Twist()
