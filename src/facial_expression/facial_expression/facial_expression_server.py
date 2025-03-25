@@ -1,193 +1,170 @@
 #!/usr/bin/env python3
-"""
-@file navigation_node.py
-@brief This file contains classes and functions for navigating the Plantroid robot.
-"""
-
-from std_msgs.msg import String
-from rooted_msgs.srv import Busy, Camera, Command, NavigationOrder
-from rooted_msgs.msg import *
+import os
+os.environ["KIVY_NO_ARGS"] = "1"
+from kivy.config import Config
+Config.set('kivy', 'window', 'x11')
+from kivy.app import App
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.image import Image
+from kivy.clock import Clock
+from kivy.core.window import Window
 import rclpy
-from rooted_msgs.msg import Pose, Speed
 from rclpy.node import Node
-from math import pi, sqrt
-import numpy as np
-from ast import literal_eval
-import cv2
-from math import atan2
-import threading
+from threading import Thread
+from rooted_msgs.srv import Gesture
+from rooted_msgs.msg import *
+from std_msgs.msg import String
 from time import time
-from movement_module.NeuralNav import NeuralNavigation, NeuralNavigationH5
+from rcl_interfaces.msg import ParameterDescriptor
 
-def min_mag(x1, x2):
-    """! Function to return the value with the smaller magnitude.
-    @param x1 (<float>): First value.
-    @param x2 (<float>): Second value.
-    @return: <float> Smaller magnitude value.
-    """
-    if abs(x1) <= abs(x2): return x1
-    return x2
+s = "s0"
+c = 0
+is_talking = True
+emotion_engine = None
 
-def interval(x1, x2):
-    """! Function to calculate the angular interval between two angles.
-    @param x1 (<float>): First angle in radians.
-    @param x2 (<float>): Second angle in radians.
-    @return: <float> Angular difference in radians.
-    """
-    if x2 - x1 > np.pi:
-        return (x2 - x1) - 2 * np.pi
-    elif x2 - x1 < -np.pi: 
-        return 2 * np.pi + (x2 - x1)
-    else:
-        return x2 - x1
 
-class BusyInterface(Node):
-    """! ROS2 Node for interfacing with the 'busy' service."""
+class GestureRequests(Node):
     def __init__(self):
-        """! Constructor for BusyInterface class."""
-        super().__init__('movement_busy_interface')
-        self.cli = self.create_client(Busy, 'busy_servive')
+        super().__init__('facial_expression_gestures_service_interface')
+        self.cli = self.create_client(Gesture,"gesture")
         while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Busy service not available, waiting again...')
-        self.req = Busy.Request()
+            self.get_logger().info('Sensor service not available, waiting again...')
+        self.req = Gesture.Request()
 
-    def send_request(self, busy):
-        """! Sends a request to the 'busy' service.
-        @param busy (<str>): Request to send to the service.
-        """
-        self.req.request = busy
-        self.future = self.cli.call_async(self.req)
+    def send_request(self, gesture):
+        self.req.gesture = gesture
+        self.future = self.cli.call_async(self.req)    
 
-class Cameras(Node):
-    """! ROS2 Node for interfacing with the camera service."""
-    def __init__(self):
-        """! Constructor for Cameras class."""
-        super().__init__('navigation_camera_service')
-        self.cli = self.create_client(Camera, 'camera')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Camera service not available, waiting again...')
-        self.req = Camera.Request()
 
-    def send_request(self, type):
-        """! Sends a request to capture an image of a specific type.
-        @param type (<int>): Image type to request.
-        """
-        self.req.imagetype = type
-        self.future = self.cli.call_async(self.req)
+class FaceController(Node):
+    def __init__(self,initial_emotion="joy"):
+        super().__init__('facial_expression_node')
+        my_parameter_descriptor = ParameterDescriptor(description='Location of the folder containing the images that comnpose the face of your robot.')
+        self.declare_parameter('image_folder', '', my_parameter_descriptor)
+        self.gesture_com = GestureRequests()
+        self.image_folder = self.get_parameter('image_folder').value
+        self.l_eye = "eye0_r.png"
+        self.r_eye = "eye0.png"
+        self.mouth = "empty.png"
+        self.emotion = "empty.png"
+        self.current_emotion = initial_emotion 
+        self.emotion_table = {"fear":[["eye5_r.png", "eye5.png", "empty.png","empty.png"],["eye5_r.png", "eye5.png", "mouth1.png","empty.png"],["eye9_r.png", "eye9.png", "empty.png","empty.png"]], 
+                              "anger":[["eye1_r.png", "eye1.png", "mouth2.png","emo0.png"],["eye1_r.png", "eye1.png", "mouth1.png","emo0.png"], ["eye9_r.png", "eye9.png", "mouth2.png","emo0.png"]],
+                              "neutral":[["eye0_r.png", "eye0.png", "empty.png","empty.png"],["eye0_r.png", "eye0.png", "mouth0.png","empty.png"],["eye9_r.png", "eye9.png", "empty.png","empty.png"]],
+                              "joy":[["eye7_r.png", "eye7.png", "empty.png","empty.png"],["eye7_r.png", "eye7.png", "mouth0.png","empty.png"],["eye9_r.png", "eye9.png", "empty.png","empty.png"]],
+                              "love":[["eye7_r.png", "eye7.png", "empty.png","empty.png"],["eye7_r.png", "eye7.png", "mouth0.png","empty.png"],["eye9_r.png", "eye9.png", "empty.png","empty.png"]],
+                              "neutral":[["eye0_r.png", "eye0.png", "empty.png","empty.png"],["eye0_r.png", "eye0.png", "mouth0.png","empty.png"],["eye9_r.png", "eye9.png", "empty.png","empty.png"]],
+                              "sadness":[["eye2_r.png", "eye2.png", "empty.png","empty.png"],["eye2_r.png", "eye2.png", "mouth1.png","empty.png"], ["eye9_r.png", "eye9.png", "mouth1.png","empty.png"]],
+                              "disgust":[["eye6_r.png", "eye6.png", "mouth1.png","empty.png"],["eye6_r.png", "eye6.png", "empty.png","empty.png"], ["eye9_r.png", "eye9.png", "mouth1.png","empty.png"]],
+                              "surprise":[["eye10_r.png", "eye10.png", "mouth1.png","emo2.png"],["eye10_r.png", "eye10.png", "empty.png","emo2.png"], ["eye9_r.png", "eye9.png", "mouth1.png","emo2.png"]],
+                              "dizzy":[["eye8_r.png", "eye8.png", "empty.png","empty.png"],["eye8_r.png", "eye8.png", "mouth0.png","empty.png"],["eye8_r.png", "eye8.png", "empty.png","empty.png"]],
+                              "sleepy":[["eye9_r.png", "eye9.png", "empty.png","emo3.png"],["eye9_r.png", "eye9.png", "empty.png","emo3.png"], ["eye9_r.png", "eye9.png", "empty.png","emo3.png"]],
+                              "thirsty":[["eye11_r.png", "eye11.png", "mouth1.png","emo1.png"],["eye11_r.png", "eye11.png", "empty.png","emo1.png"], ["eye9_r.png", "eye9.png", "mouth1.png","emo1.png"]],
+                              "sweaty":[["eye3_r.png", "eye3.png", "mouth1.png","emo1.png"],["eye3_r.png", "eye3.png", "empty.png","emo1.png"], ["eye9_r.png", "eye9.png", "mouth1.png","emo1.png"]],
+                              "confused":[["eye2_r.png", "eye3.png", "empty.png","emo4.png"],["eye2_r.png", "eye3.png", "mouth0.png","emo4.png"], ["eye9_r.png", "eye9.png", "empty.png","emo4.png"]],                         
+        }
 
-class NavigatorNode(Node):
-    """! Main navigation node for the Plantroid robot."""
-    def __init__(self):
-        """! Constructor for NavigatorNode class."""
-        super().__init__('vgg16_avoidance')
-        ## Subscription to Pose messages.
-        self.subscription = self.create_subscription(Pose, '/encoder', self.encoder_listener_callback, 10)
-        self.subscription 
-        ## Camera client instance.
-        self.camera_client = Cameras()
-        ## Busy service interface.
-        self.busy_interface = BusyInterface()
-        ## Current goal position.
-        self.goal = None
-        ## Current goal orientation.
-        self.goal_theta = None
-        ## Current monitored pose (x, y, theta).
-        self.monitored_x, self.monitored_y, self.monitored_theta = 0, 0, 0 
-        ## Speed command client.
-        self.cli = self.create_client(Command, 'speed_command')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Speed Command service not available, waiting again...')
-        self.req = Command.Request()
-        ## Image history buffer.
-        self.image_history = []
+        self.subscription = self.create_subscription(String, 'IsTalkingTopic',
+                                                     self.cb_function_message,
+                                                     10)
+        self.subscription
+        self.emotion = self.create_subscription(String, 'emotionTopic',
+                                                     self.cb_function_emotion,
+                                                     10)
 
-        ## Navigation service.
-        self.srv = self.create_service(NavigationOrder, "/navigation_service", self.move_order_service_callback)
+    def cb_function_message(self, Data):
+        global is_talking
+        reply = Data.data
+        # reply = literal_eval(reply)
+        print(reply)
+        if reply == "talking":
+            is_talking = True
+        else:
+            is_talking = False
 
-    def get_image(self):
-        """! Retrieves an image from the camera client.
-        @return: <list> Image data.
-        """
-        # Code...
+    def cb_function_emotion(self, Data):
+        if Data.data in ["fear", "anger", "joy","sadness", "disgust", 
+                         "surprise", "dizzy", "sleepy", "thirsty",
+                         "sweaty", "confused","neutral"]:
+            self.current_emotion = Data.data
+            if Data.data == "surprise":
+                try:
+                    self.gesture_comm.send_request("surprise")
+                    t0 = time()
+                    while time()-t0<3:pass
+                except Exception as e:
+                    print(f"Failed to move neck due to {e}!")
 
-    def get_person(self):
-        """! Attempts to detect a person using the camera.
-        @return: <bool> True if a person is detected, otherwise False.
-        """
-        # Code...
+                self.current_emotion = "neutral"
+        else: pass
 
-    def rotate_to_person(self):
-        """! Rotates the robot to face a detected person."""
-        # Code...
 
-    def encoder_listener_callback(self, msg):
-        """! Callback for handling encoder data.
-        @param msg (<Pose>): Pose data from encoder.
-        """
-        # Code...
+class MyApp(App):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        global emotion_engine
+        self.frame = 0
+        Clock.schedule_interval(self.mouther, 0.2)
 
-    def move_order_service_callback(self, req, resp):
-        """! Callback for handling navigation orders.
-        @param req (<NavigationOrder.Request>): Navigation request.
-        @param resp (<NavigationOrder.Response>): Response to navigation request.
-        @return: <NavigationOrder.Response> Response message.
-        """
-        # Code...
+    def build(self):
+        global emotion_engine
+        Window.clearcolor = (1, 1, 1, 1)
+        while emotion_engine is None:
+            print("Waiting for ROS2 node to start.")
+        layout = FloatLayout()
+        self.im_base = Image(source=emotion_engine.image_folder+'Base.png', pos_hint={'center_x': .5, 'center_y': .5}, size_hint=(1.5, 1.5))
+        self.im_l_eye = Image(source=emotion_engine.image_folder+'eye0_r.png', pos_hint={'center_x': .65, 'center_y': .65}, size_hint=(1.5, 1.5))
+        self.im_r_eye = Image(source=emotion_engine.image_folder+'eye9.png', pos_hint={'center_x': .35, 'center_y': .65}, size_hint=(1.5, 1.5))
+        self.im_mouth = Image(source=emotion_engine.image_folder+'mouth3.png', pos_hint={'center_x': .5, 'center_y': .205}, size_hint=(1.5, 1.5))
+        self.im_emotion = Image(source=emotion_engine.image_folder+'empty.png', pos_hint={'center_x': .85, 'center_y': .75}, size_hint=(1.5, 1.5))
+    
+        layout.add_widget(self.im_base)
+        layout.add_widget(self.im_l_eye)
+        layout.add_widget(self.im_r_eye)
+        layout.add_widget(self.im_mouth)
+        layout.add_widget(self.im_emotion)
 
-    def send_request(self, lin_spd, ang_spd):
-        """! Sends speed commands to the robot.
-        @param lin_spd (<float>): Linear speed command.
-        @param ang_spd (<float>): Angular speed command.
-        """
-        # Code...
+        self.compose_face(emotion_engine.emotion_table[emotion_engine.current_emotion][0])
+        
+        return layout
 
-    def stitch(self):
-        """! Stitches current and historical images.
-        @return: <np.array> Stitched image.
-        """
-        # Code...
+    def mouther(self, dt):
+        global is_talking
+        global emotion_engine
+        if is_talking:
+            self.frame = 1 if self.frame == 0 else 0
+        else:
+            self.frame = 0
+        
+        try:
+            self.compose_face(emotion_engine.emotion_table[emotion_engine.current_emotion][self.frame])
+        except KeyError:
+            pass
 
-    def stitch10(self):
-        """! Creates a larger stitched image using the latest and historical images.
-        @return: <np.array> Stitched image.
-        """
-        # Code...
+    def compose_face(self, lista):
+        global emotion_engine
+        self.im_l_eye.source = emotion_engine.image_folder + lista[0]
+        self.im_r_eye.source = emotion_engine.image_folder + lista[1]
+        self.im_mouth.source = emotion_engine.image_folder + lista[2]
+        self.im_emotion.source = emotion_engine.image_folder + lista[3]
 
-    def handle_busy(self, request):
-        """! Handles busy state requests.
-        @param request (<str>): Type of request ('get', 'set_busy', or 'set_idle').
-        @return: <str> Busy state response.
-        """
-        # Code...
 
-    def check_busy(self):
-        """! Checks if the robot is busy.
-        @return: <bool> True if busy, otherwise False.
-        """
-        return self.handle_busy("get")
+def ROS_main():
+    rclpy.init()
+    global emotion_engine
+    emotion_engine = FaceController()
+    rclpy.spin(emotion_engine)
 
-    def set_busy(self):
-        """! Sets the robot's state to busy."""
-        self.handle_busy("set_busy")
 
-    def set_idle(self):
-        """! Sets the robot's state to idle."""
-        self.handle_busy("set_idle")
+def GUI_main():
+    plantroid_GUI = MyApp()
+    plantroid_GUI.run()
 
-def set_theta(navigator):
-    """! Continuously updates the target orientation for the navigator.
-    @param navigator (<NavigatorNode>): Navigator instance.
-    """
-    # Code...
 
 def main():
-    """! Main entry point for the navigation node."""
-    rclpy.init(args=None)
-    print("Starting NavigatorNode")
-    t = NavigatorNode()
-    t1 = threading.Thread(target=set_theta, args=(t,))
-    t1.start()
-    rclpy.spin(t)
+    thread1 = Thread(target=ROS_main,args=())
+    thread1.start()
+    GUI_main()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
