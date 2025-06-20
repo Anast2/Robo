@@ -8,6 +8,7 @@ class MemoryAccess(Node):
         while not self.cli.wait_for_service(timeout_sec=5.0):
             self.get_logger().info('Memory service not available, waiting again...')
         self.req = MemoryRequest.Request()
+        self.future = None
 
     def send_request(self, DB, command):
         self.req.db_name = DB

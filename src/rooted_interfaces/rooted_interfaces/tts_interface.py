@@ -9,6 +9,7 @@ class TTSinterface(Node):
             self.get_logger().info('TTS service not available, waiting again...')
         self.req = LLM.Request()
         self.req
+        self.future = None
 
     def send_request(self, model, prompt):
         self.req.model = model

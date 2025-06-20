@@ -8,6 +8,7 @@ class Cameras(Node):
         while not self.cli.wait_for_service(timeout_sec=5.0):
             self.get_logger().info('Camera service not available, waiting again...')
         self.req = Camera.Request()
+        self.future = None
 
     def send_request(self, type):
         self.req.imagetype = type

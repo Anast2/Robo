@@ -10,6 +10,7 @@ class BusyInterface(Node):
         while not self.cli.wait_for_service(timeout_sec=5.0):
             self.get_logger().info('Busy service not available, waiting again...')
         self.req = Busy.Request()
+        self.future = None
 
     def send_request(self, busy):
         self.req.request = busy

@@ -9,6 +9,7 @@ class SensorReader(Node):
         while not self.cli.wait_for_service(timeout_sec=5.0):
             self.get_logger().info('Sensor service not available, waiting again...')
         self.req = Sensors.Request()
+        self.future = None
 
     def send_request(self, num):
         self.req.sensor_number = num
