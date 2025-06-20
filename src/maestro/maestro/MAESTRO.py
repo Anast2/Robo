@@ -12,9 +12,14 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from threading import Thread
 from ast import literal_eval
-from rooted_msgs.srv import Camera, Busy, LLM, Sensors, MemoryRequest
-from rclpy.action import ActionClient
-from rooted_msgs.action import HighLevelAction
+
+from rooted_interfaces.rooted_interfaces.sensors_interface import SensorReader
+from rooted_interfaces.rooted_interfaces.vision_interface import Cameras
+from rooted_interfaces.rooted_interfaces.busy_interface import BusyInterface
+from rooted_interfaces.rooted_interfaces.llm_interface import LLMinterface
+from rooted_interfaces.rooted_interfaces.tts_interface import TTSinterface
+from rooted_interfaces.rooted_interfaces.memory_interface import MemoryAccess
+from rooted_interfaces.rooted_interfaces.navigation_interface import NavigationCommandSender
 
 from time import time
 from beepy import beep
@@ -37,93 +42,10 @@ def process_notifications(notifications):
     return gib
 
 
-class SensorReader(Node):
-    def __init__(self):
-        super().__init__('maestro_sensor_reader')
-        self.cli = self.create_client(Sensors, 'sensors_server')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Sensor service not available, waiting again...')
-        self.req = Sensors.Request()
-
-    def send_request(self, num):
-        self.req.sensor_number = num
-        self.future = self.cli.call_async(self.req)
-
-
-class Cameras(Node):
-    def __init__(self):
-        super().__init__('maestro_camera_reader')
-        self.cli = self.create_client(Camera, 'camera')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Camera service not available, waiting again...')
-        self.req = Camera.Request()
-
-    def send_request(self, type):
-        self.req.imagetype = type
-        self.future = self.cli.call_async(self.req)
-
-
-class LLMinterface(Node):
-    def __init__(self):
-        super().__init__('maestro_llm_interface')
-        self.cli = self.create_client(LLM, 'llm_server')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('LLM service not available, waiting again...')
-        self.req = LLM.Request()
-        self.req
-
-    def send_request(self, model, prompt):
-        self.req.model = model
-        self.req.prompt = prompt
-        self.future = self.cli.call_async(self.req)
-
-
-class TTSinterface(Node):
-    def __init__(self):
-        super().__init__('maestro_tts_interface')
-        self.cli = self.create_client(LLM, 'tts_server')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('TTS service not available, waiting again...')
-        self.req = LLM.Request()
-        self.req
-
-    def send_request(self, model, prompt):
-        self.req.model = model
-        self.req.prompt = prompt
-        self.future = self.cli.call_async(self.req)
-
-
-class BusyInterface(Node):
-    def __init__(self):
-        super().__init__('maestro_busy_interface')
-        self.cli = self.create_client(Busy, 'busy_servive')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Busy service not available, waiting again...')
-        self.req = Busy.Request()
-
-    def send_request(self, busy):
-        self.req.request = busy
-        self.future = self.cli.call_async(self.req)
-
-
-class MemoryAccess(Node):
-    def __init__(self):
-        super().__init__('maestro_memory_access')
-        self.cli = self.create_client(MemoryRequest, 'memory_reader')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Memory service not available, waiting again...')
-        self.req = MemoryRequest.Request()
-
-    def send_request(self, DB, command):
-        self.req.db_name = DB
-        self.req.command = command
-        self.future = self.cli.call_async(self.req)
-
-
 class PersonDetector(Node):
     def __init__(self, busy_state_machine, dialogue_state_machine):
         super().__init__('maestro_person_detector')
-        self.vision_control = Cameras()
+        self.vision_control = Cameras("maestro_person_detector_camera_reader")
         self.person_detect_alarm = self.create_publisher(String, 'seenTopic', 10)
         self.busy_state_machine = busy_state_machine
         self.dialogue_state_machine = dialogue_state_machine
@@ -151,28 +73,6 @@ class PersonDetector(Node):
             else:
                 pass
 
-
-class NavigationCommandSender(Node):
-    """! Class responsible for sending navigation commands to the robot."""
-    def __init__(self):
-        """! NavigationCommandSender class' initializer method."""
-        super().__init__('maestro_navigation_command_sender')
-        self.action_client = ActionClient(self, HighLevelAction, '/plantroid/high_level_navigation')
-        while not self.action_client.wait_for_server(timeout_sec=5.0):
-            self.get_logger().info('Action server not available, waiting again...')
-
-    def send_move_order(self, order):
-        """! Sends a navigation command to move the robot.
-        @param order <str>: Either 'light' or 'shadow' to move the robot accordingly."""
-        if order in ["light", "shadow"]:
-            goal_msg = HighLevelAction.Goal()
-            goal_msg.command = order
-            self.action_client.send_goal_async(goal_msg, feedback_callback=self.feedback_callback)
-        else:
-            self.get_logger().error("Illegal order; orders should be either 'light' or 'shadow'!")
-
-    def feedback_callback(self, feedback_msg):
-        self.get_logger().info(f"Received feedback: {feedback_msg.feedback.status}")
 
 class MAESTRO(Node):
     def __init__(self, busy_state_machine, problem_state_machine, dialogue_state_machine):
@@ -207,13 +107,13 @@ class MAESTRO(Node):
         self.publisher_emotion = self.create_publisher(String, 'emotionTopic', 10)
 
         # service interfaces
-        self.vision_control = Cameras()
-        self.busy_interface = BusyInterface()
-        self.sensor_reader = SensorReader()
-        self.llm = LLMinterface()
-        self.tts = TTSinterface()
-        self.memory_access = MemoryAccess()
-        self.robot_mover = NavigationCommandSender()        
+        self.vision_control = Cameras("maestro_camera_reader")
+        self.busy_interface = BusyInterface("mestro_busy_interface")
+        self.sensor_reader = SensorReader("maestro_sensor_reader")
+        self.llm = LLMinterface("maestro_llm_interface")
+        self.tts = TTSinterface("maestro_tts_interface")
+        self.memory_access = MemoryAccess("maestro_memory_interface")
+        self.robot_mover = NavigationCommandSender("maestro_navigation_commander")        
 
         # load parameters from launchfile.
         logging_descriptor = ParameterDescriptor(description='Variable that defines whether or not the robot should stoer conversation logs or not.')

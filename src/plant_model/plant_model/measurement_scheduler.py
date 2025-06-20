@@ -3,15 +3,14 @@ import time
 import ast
 import json
 import os
-from rooted_msgs.srv import Sensors, MemoryRequest
-from rclpy.action import ActionClient
-from rooted_msgs.action import HighLevelAction
 from rooted_msgs.msg import *
 from std_msgs.msg import String
 import rclpy
 from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
-
+from rooted_interfaces.rooted_interfaces.sensors_interface import SensorReader
+from rooted_interfaces.rooted_interfaces.memory_interface import MemoryAccess
+from rooted_interfaces.rooted_interfaces.navigation_interface import NavigationCommandSender
 rclpy.init()
 
 ## Safe Nitrogen soil content range (min, max)
@@ -43,55 +42,6 @@ def load_plant_needs(filename):
         return {}
 
 
-class SensorReader(Node):
-    """! Class responsible for requesting sensor readings for the measurement scheduler."""
-    def __init__(self):
-        """! SensorReader class' initializer method."""
-        super().__init__('plant_model_sensor_reader')
-        
-        plant_info_descriptor = ParameterDescriptor(description='Plant description file location.')
-        self.declare_parameter('plant_info_file', '', plant_info_descriptor)        
-        self.plant_information_file = self.get_parameter('plant_info_file').value
-
-        plant_db_descriptor = ParameterDescriptor(description='Measured plant parameters database location.')
-        self.declare_parameter('db_path', '', plant_db_descriptor)        
-        self.db = self.get_parameter('db_path').value
-        
-        self.cli = self.create_client(Sensors, 'sensors_server')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Sensor service not available, waiting again...')
-        self.req = Sensors.Request()
-
-    def send_request(self, num):
-        """! Method responsible for sending sensor reading requests.
-        @ param num <int>: number of the sensor whose reading is requested."""
-        self.req.sensor_number = num
-        self.future = self.cli.call_async(self.req)
-
-
-class NavigationCommandSender(Node):
-    """! Class responsible for sending navigation commands to the robot."""
-    def __init__(self):
-        """! NavigationCommandSender class' initializer method."""
-        super().__init__('plant_model_navigation_command_sender')
-        self.action_client = ActionClient(self, HighLevelAction, '/plantroid/high_level_navigation')
-        while not self.action_client.wait_for_server(timeout_sec=5.0):
-            self.get_logger().info('Action server not available, waiting again...')
-
-    def send_move_order(self, order):
-        """! Sends a navigation command to move the robot.
-        @param order <str>: Either 'light' or 'shadow' to move the robot accordingly."""
-        if order in ["light", "shadow"]:
-            goal_msg = HighLevelAction.Goal()
-            goal_msg.command = order
-            self.action_client.send_goal_async(goal_msg, feedback_callback=self.feedback_callback)
-        else:
-            self.get_logger().error("Illegal order; orders should be either 'light' or 'shadow'!")
-
-    def feedback_callback(self, feedback_msg):
-        self.get_logger().info(f"Received feedback: {feedback_msg.feedback.status}")
-
-
 class NotificationSender(Node):
     """! Class responsible for sending notifications and move orders."""
     def __init__(self):
@@ -110,29 +60,10 @@ class NotificationSender(Node):
         self.notification_publisher.publish(f"{characteristic}:{status}:{measurement}")
 
 
-class MemoryAccess(Node):
-    """! Class responsible for accessing the robot's memory."""
-    def __init__(self):
-        """! MemoryAccess class' initializer method."""
-        super().__init__('plant_model_memory_access')
-        self.cli = self.create_client(MemoryRequest, 'memory_reader')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Memory service not available, waiting again...')
-        self.req = MemoryRequest.Request()
-
-    def send_request(self, DB, command):
-        """! Sends a memory access request.
-        @param DB <str>: The database name.
-        @param command <str>: The SQL command to execute."""
-        self.req.db_name = DB
-        self.req.command = command
-        self.future = self.cli.call_async(self.req)
-
-
-sensor_interface = SensorReader()
-memory_interface = MemoryAccess()
+sensor_interface = SensorReader("plant_model_sensor_reader")
+memory_interface = MemoryAccess("plant_model_memory_access")
 notification_sender = NotificationSender()
-robot_mover = NavigationCommandSender()
+robot_mover = NavigationCommandSender("plant_model_navigation_command_sender")
 plant_info_file_path = sensor_interface.plant_information_file
 plant_info = load_plant_needs(plant_info_file_path)
 db_location = sensor_interface.db

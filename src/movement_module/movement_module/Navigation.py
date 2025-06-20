@@ -17,6 +17,10 @@ from tf2_ros import Buffer, TransformListener
 from action_msgs.msg import GoalStatus
 from nav2_msgs.action import NavigateToPose
 
+from rooted_interfaces.rooted_interfaces.sensors_interface import SensorReader
+from rooted_interfaces.rooted_interfaces.vision_interface import Cameras
+from rooted_interfaces.rooted_interfaces.busy_interface import BusyInterface
+
 ###############################################################################################
 #    This portion of the code should be uncommented in case it is running in a ARM computer   #
 ###############################################################################################
@@ -56,46 +60,13 @@ def interval(x1, x2):
         return x2 - x1
 
 
-class BusyInterface(Node):
-    """! Class responsible for interfacing with the Busy service."""
-    def __init__(self):
-        """! BusyInterface class initializer function."""
-        super().__init__('movement_busy_interface')
-        self.cli = self.create_client(Busy, 'busy_service')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Busy service not available, waiting again...')
-        self.req = Busy.Request()
-
-    def send_request(self, busy):
-        """! Method responsible for sending busy/idle requests to the Busy service.
-        @param busy <bool>: The busy status to send to the service.
-        """
-        self.req.request = busy
-        self.future = self.cli.call_async(self.req)
-
-class Cameras(Node):
-    """! Class responsible for interfacing with the vision service."""
-    def __init__(self):
-        """! Cameras class initializer function."""
-        super().__init__('navigation_camera_service')
-        self.cli = self.create_client(Camera, 'camera')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Service not available, waiting again...')
-        self.req = Camera.Request()
-
-    def send_request(self, type):
-        """! Method responsible for sending a request to the vision service.
-        @param type <int>: The type of image request to send.
-        """
-        self.req.imagetype = type
-        self.future = self.cli.call_async(self.req)
-
 class NavigatorNode(Node):
     def __init__(self):
         super().__init__('navigator_node')
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
-        self.busy_interface = BusyInterface()
+        self.busy_interface = BusyInterface('movement_busy_interface')
+        self.camera_client = Cameras("movement_camera_interface")
         self.goal = None
         self.goal_theta = None
         self.cmd_vel_publisher = self.create_publisher(Twist, '/plantroid/cmd_vel', 10)

@@ -16,6 +16,7 @@ from rooted_msgs.msg import *
 from std_msgs.msg import String
 from time import time
 from rcl_interfaces.msg import ParameterDescriptor
+from rooted_interfaces.rooted_interfaces.gestures_interface import GestureRequests
 
 s = "s0"
 c = 0
@@ -23,25 +24,12 @@ is_talking = True
 emotion_engine = None
 
 
-class GestureRequests(Node):
-    def __init__(self):
-        super().__init__('facial_expression_gestures_service_interface')
-        self.cli = self.create_client(Gesture,"gesture")
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Sensor service not available, waiting again...')
-        self.req = Gesture.Request()
-
-    def send_request(self, gesture):
-        self.req.gesture = gesture
-        self.future = self.cli.call_async(self.req)    
-
-
 class FaceController(Node):
     def __init__(self,initial_emotion="joy"):
         super().__init__('facial_expression_node')
         my_parameter_descriptor = ParameterDescriptor(description='Location of the folder containing the images that comnpose the face of your robot.')
         self.declare_parameter('image_folder', '', my_parameter_descriptor)
-        self.gesture_com = GestureRequests()
+        self.gesture_com = GestureRequests("facial_expression_gesture_requester")
         self.image_folder = self.get_parameter('image_folder').value
         self.l_eye = "eye0_r.png"
         self.r_eye = "eye0.png"

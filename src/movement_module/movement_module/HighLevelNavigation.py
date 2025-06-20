@@ -1,25 +1,17 @@
 #!/usr/bin/env python3
-from rooted_msgs.srv import Busy, Camera
 from rooted_msgs.msg import *
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
-from math import sqrt
-import numpy as np
 from ast import literal_eval
-import cv2
-from math import atan2
-from movement_module.NeuralNav import NeuralNavigation, NeuralNavigationH5
-
+from rooted_interfaces.rooted_interfaces.sensors_interface import SensorReader
+from rooted_interfaces.rooted_interfaces.vision_interface import Cameras
+from rooted_interfaces.rooted_interfaces.busy_interface import BusyInterface
 from rclpy.action import ActionServer, ActionClient
 from rooted_msgs.action import HighLevelAction
 from nav2_msgs.action import NavigateToPose
 from geometry_msgs.msg import PoseStamped, Twist 
 from tf2_ros import Buffer, TransformListener
 from tf2_geometry_msgs import do_transform_pose
-from cv_bridge import CvBridge
-import cv2
-import numpy as np
 
 
 ###############################################################################################
@@ -34,41 +26,6 @@ import numpy as np
 # sys.path.insert(1, './OKAO')
 # from movement_module.OKAO_vision_interface import get_image_array
 ###############################################################################################
-
-
-class BusyInterface(Node):
-    """! Class responsible for interfacing with the Busy service."""
-    def __init__(self):
-        """! BusyInterface class initializer function."""
-        super().__init__('high_lvl_nav_busy_interface')
-        self.cli = self.create_client(Busy, 'busy_service')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Busy service not available, waiting again...')
-        self.req = Busy.Request()
-
-    def send_request(self, busy):
-        """! Method responsible for sending busy/idle requests to the Busy service.
-        @param busy <bool>: The busy status to send to the service.
-        """
-        self.req.request = busy
-        self.future = self.cli.call_async(self.req)
-
-class Cameras(Node):
-    """! Class responsible for interfacing with the vision service."""
-    def __init__(self):
-        """! Cameras class initializer function."""
-        super().__init__('high_lvl_nav_navigation_camera_service')
-        self.cli = self.create_client(Camera, 'camera')
-        while not self.cli.wait_for_service(timeout_sec=5.0):
-            self.get_logger().info('Service not available, waiting again...')
-        self.req = Camera.Request()
-
-    def send_request(self, type):
-        """! Method responsible for sending a request to the vision service.
-        @param type <int>: The type of image request to send.
-        """
-        self.req.imagetype = type
-        self.future = self.cli.call_async(self.req)
 
 
 class HighLevelNavigationActionServer(Node):
@@ -87,8 +44,8 @@ class HighLevelNavigationActionServer(Node):
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
-        self.camera_client = Cameras()
-        self.busy_interface = BusyInterface()
+        self.camera_client = Cameras('high_lvl_nav_navigation_camera_service')
+        self.busy_interface = BusyInterface('high_lvl_nav_busy_interface')
         self.image_history = []
         
     def get_person(self):
