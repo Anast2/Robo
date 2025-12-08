@@ -3,7 +3,7 @@ import rclpy
 import os
 from rclpy.node import Node
 from rooted_msgs.srv import MemoryRequest
-from rooted_msgs.msg import *
+
 import sqlite3 as sql
 from queue import Queue
 import threading

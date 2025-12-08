@@ -29,6 +29,7 @@ import json
 from StateMachines import problem_state_machine, busy_state_machine, dialogue_state_machine
 from rcl_interfaces.msg import ParameterDescriptor
 
+
 def emotion_2_prompt(emotion):
     i = emotion.index(max(emotion[:-1]))
     return [" in a happy tone", "", " in a calm tone", " in a calming tone", " to cheer up",""][i]
@@ -252,8 +253,6 @@ class MAESTRO(Node):
                 else:
                     break
         self.dialogue_state_machine.reset()
-
-
 
     def avoidEcho(self):
         msg = String()

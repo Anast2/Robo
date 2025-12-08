@@ -56,7 +56,7 @@ class StateMachine:
         except:
             pass
 
-    def add_transition(self,initial_state,event,final_state):
+    def add_transition(self, initial_state,event, final_state):
         try:
             if initial_state in self.states and event in self.events and final_state in self.events:
                 self.transition_table[initial_state][event]=final_state
