@@ -50,28 +50,28 @@ def generate_launch_description():
                           'IP':param_override_pkg2.get('IP'),
                           'PORT':param_override_pkg2.get('PORT')}.items())
 
-    pkg3_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [FindPackageShare('rooted_encoder'), '/launch/virtual_encoder_launch.py']),
-        launch_arguments={'DEVICENAME': param_override_pkg3.get('DEVICENAME'), 
-                          'BAUDRATE': param_override_pkg3.get('BAUDRATE')}.items())
+    # pkg3_launch = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         [FindPackageShare('rooted_encoder'), '/launch/virtual_encoder_launch.py']),
+    #     launch_arguments={'DEVICENAME': param_override_pkg3.get('DEVICENAME'), 
+    #                       'BAUDRATE': param_override_pkg3.get('BAUDRATE')}.items())
 
-    pkg4_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [FindPackageShare('plantroid_neck'), '/launch/neck_controller_launch.py']
-        ),
-        launch_arguments={'raspi':param_override_pkg4.get('raspi')}.items()
-    )
+    # pkg4_launch = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         [FindPackageShare('plantroid_neck'), '/launch/neck_controller_launch.py']
+    #     ),
+    #     launch_arguments={'raspi':param_override_pkg4.get('raspi')}.items()
+    # )
 
-    pkg5_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [FindPackageShare('rooted_gestures'), '/launch/gestures_service_launch.py']))
+    # pkg5_launch = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         [FindPackageShare('rooted_gestures'), '/launch/gestures_service_launch.py']))
 
-    pkg6_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [FindPackageShare('movement_module'), '/launch/movement_module_launch.py']
-        )
-    )
+    # pkg6_launch = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         [FindPackageShare('movement_module'), '/launch/movement_module_launch.py']
+    #     )
+    # )
 
     pkg7_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -108,13 +108,13 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             [FindPackageShare('other_sensors'), '/launch/fake_sensors_launch.py']))
 
-    pkg12_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [FindPackageShare('plant_model'), '/launch/plant_model_launch.py']
-        ),
-        launch_arguments={'plant_info_file':param_override_pkg12.get('plant_info_file'),
-                          'db_path':param_override_pkg12.get('db_path')}.items()
-    )
+    # pkg12_launch = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         [FindPackageShare('plant_model'), '/launch/plant_model_launch.py']
+    #     ),
+    #     launch_arguments={'plant_info_file':param_override_pkg12.get('plant_info_file'),
+    #                       'db_path':param_override_pkg12.get('db_path')}.items()
+    # )
 
     pkg13_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -142,15 +142,15 @@ def generate_launch_description():
     return LaunchDescription([
         pkg1_launch,
         pkg2_launch,
-        pkg3_launch,
-        pkg4_launch,
-        pkg5_launch,
-        pkg6_launch,
+        # pkg3_launch,
+        # pkg4_launch,
+        # pkg5_launch,
+        # pkg6_launch,
         pkg7_launch,
         pkg8_launch,
         pkg9_launch,
         pkg10_launch,
         pkg11_launch,
-        pkg12_launch,
+        # pkg12_launch,
         pkg13_launch,
         pkg14_launch])
