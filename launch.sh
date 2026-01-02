@@ -71,11 +71,22 @@ docker run --rm $DOCKER_TTY \
         echo ""
         echo "=== Installing system dependencies ==="
         apt-get update -qq
-        apt-get install -y -qq python3-pip python3-kivy espeak-ng >/dev/null 2>&1 || true
+        # libgl1-mesa-glx replaced by libgl1 in newer Ubuntu
+        apt-get install -y -qq python3-pip espeak-ng mesa-utils libgl1 libegl1 libxkbcommon0 xvfb 2>&1 | tail -5
 
         echo ""
         echo "=== Installing Python dependencies ==="
-        pip3 install --break-system-packages --quiet nltk transformers wikipedia PyDictionary SpeechRecognition beepy ollama 2>/dev/null || true
+        # Install packages separately to handle failures gracefully
+        pip3 install --break-system-packages --ignore-installed \
+            kivy wikipedia PyDictionary SpeechRecognition beepy ollama nltk 2>&1 | tail -10
+        # balacoon_tts is optional (not available on all platforms), espeak-ng is used as fallback
+
+        # Force software rendering for OpenGL (critical for Docker/Apple Silicon)
+        export LIBGL_ALWAYS_SOFTWARE=1
+        export MESA_GL_VERSION_OVERRIDE=3.3
+        export KIVY_GL_BACKEND=sdl2
+        export SDL_VIDEODRIVER=x11
+        export KIVY_WINDOW=sdl2
 
         echo ""
         echo "=== Setting up path symlinks for launch files ==="

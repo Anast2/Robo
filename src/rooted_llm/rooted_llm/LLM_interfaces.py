@@ -3,6 +3,7 @@ import socket
 import ollama
 import requests
 
+
 def GPTJ(msg, ip="165.93.125.232", port=5050):
     """!
     Sends a message to a GPT-J server and retrieves the response.

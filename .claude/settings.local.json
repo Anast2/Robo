@@ -12,7 +12,9 @@
       "Bash(bash -c:*)",
       "Bash(./launch.sh)",
       "Bash(timeout 120 ./launch.sh:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(brew install:*)",
+      "Bash(open:*)"
     ]
   }
 }

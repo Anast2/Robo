@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 import socket
 import subprocess
-from balacoon_tts import TTS, SpeechUtterance
 from ast import literal_eval
 import wave
+
+# Optional import for balacoon_tts (not available on all platforms)
+try:
+    from balacoon_tts import TTS, SpeechUtterance
+    BALACOON_AVAILABLE = True
+except ImportError:
+    BALACOON_AVAILABLE = False
+    TTS = None
+    SpeechUtterance = None
 
 
 def espeak_ng(msg):
@@ -54,6 +62,10 @@ def balacoon(msg):
                      - data[0]: The text to synthesize.
     @return subprocess.Popen: The process running the playback command for the synthesized audio.
     """
+    if not BALACOON_AVAILABLE:
+        print("WARNING: balacoon_tts not available, falling back to espeak-ng")
+        return espeak_ng(msg)
+
     data = msg.data
     speech = ""
     try:
