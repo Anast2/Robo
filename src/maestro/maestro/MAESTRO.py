@@ -13,13 +13,13 @@ from std_msgs.msg import String
 from threading import Thread
 from ast import literal_eval
 
-from rooted_interfaces.rooted_interfaces.sensors_interface import SensorReader
-from rooted_interfaces.rooted_interfaces.vision_interface import Cameras
-from rooted_interfaces.rooted_interfaces.busy_interface import BusyInterface
-from rooted_interfaces.rooted_interfaces.llm_interface import LLMinterface
-from rooted_interfaces.rooted_interfaces.tts_interface import TTSinterface
-from rooted_interfaces.rooted_interfaces.memory_interface import MemoryAccess
-from rooted_interfaces.rooted_interfaces.navigation_interface import NavigationCommandSender
+from rooted_interfaces.sensors_interface import SensorReader
+from rooted_interfaces.vision_interface import Cameras
+from rooted_interfaces.busy_interface import BusyInterface
+from rooted_interfaces.llm_interface import LLMinterface
+from rooted_interfaces.tts_interface import TTSinterface
+from rooted_interfaces.memory_interface import MemoryAccess
+from rooted_interfaces.navigation_interface import NavigationCommandSender
 
 from time import time
 from beepy import beep

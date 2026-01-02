@@ -12,11 +12,10 @@ import rclpy
 from rclpy.node import Node
 from threading import Thread
 from rooted_msgs.srv import Gesture
-from rooted_msgs.msg import *
 from std_msgs.msg import String
 from time import time
 from rcl_interfaces.msg import ParameterDescriptor
-from rooted_interfaces.rooted_interfaces.gestures_interface import GestureRequests
+from rooted_interfaces.gestures_interface import GestureRequests
 
 s = "s0"
 c = 0

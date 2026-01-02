@@ -4,7 +4,6 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from ast import literal_eval
 from rooted_msgs.srv import LLM
-from rooted_msgs.msg import *
 import rooted_speech_synthesizer.speech_synthesis_interfaces as tts
 from rcl_interfaces.msg import ParameterDescriptor
 

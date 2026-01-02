@@ -5,7 +5,6 @@ from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from move_base_msgs.action import MoveBase
 from std_msgs.msg import String
 from rooted_msgs.srv import Busy, Camera
-from rooted_msgs.msg import *
 from math import sqrt, atan2
 import numpy as np
 from ast import literal_eval
@@ -17,9 +16,9 @@ from tf2_ros import Buffer, TransformListener
 from action_msgs.msg import GoalStatus
 from nav2_msgs.action import NavigateToPose
 
-from rooted_interfaces.rooted_interfaces.sensors_interface import SensorReader
-from rooted_interfaces.rooted_interfaces.vision_interface import Cameras
-from rooted_interfaces.rooted_interfaces.busy_interface import BusyInterface
+from rooted_interfaces.sensors_interface import SensorReader
+from rooted_interfaces.vision_interface import Cameras
+from rooted_interfaces.busy_interface import BusyInterface
 
 ###############################################################################################
 #    This portion of the code should be uncommented in case it is running in a ARM computer   #

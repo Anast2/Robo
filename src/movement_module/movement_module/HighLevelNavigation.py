@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-from rooted_msgs.msg import *
 import rclpy
 from rclpy.node import Node
 from ast import literal_eval
-from rooted_interfaces.rooted_interfaces.sensors_interface import SensorReader
-from rooted_interfaces.rooted_interfaces.vision_interface import Cameras
-from rooted_interfaces.rooted_interfaces.busy_interface import BusyInterface
+from rooted_interfaces.sensors_interface import SensorReader
+from rooted_interfaces.vision_interface import Cameras
+from rooted_interfaces.busy_interface import BusyInterface
 from rclpy.action import ActionServer, ActionClient
 from rooted_msgs.action import HighLevelAction
 from nav2_msgs.action import NavigateToPose

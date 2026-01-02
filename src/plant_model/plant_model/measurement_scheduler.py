@@ -3,14 +3,13 @@ import time
 import ast
 import json
 import os
-from rooted_msgs.msg import *
 from std_msgs.msg import String
 import rclpy
 from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
-from rooted_interfaces.rooted_interfaces.sensors_interface import SensorReader
-from rooted_interfaces.rooted_interfaces.memory_interface import MemoryAccess
-from rooted_interfaces.rooted_interfaces.navigation_interface import NavigationCommandSender
+from rooted_interfaces.sensors_interface import SensorReader
+from rooted_interfaces.memory_interface import MemoryAccess
+from rooted_interfaces.navigation_interface import NavigationCommandSender
 rclpy.init()
 
 ## Safe Nitrogen soil content range (min, max)

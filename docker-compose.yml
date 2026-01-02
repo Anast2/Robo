@@ -1,0 +1,33 @@
+services:
+  plantroid:
+    image: osrf/ros:rolling-desktop-full
+    container_name: plantroid_ros
+    stdin_open: true
+    tty: true
+    privileged: true
+    network_mode: host
+    # Note: Docker Desktop on Apple Silicon uses Rosetta 2 emulation for amd64 images
+
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        . /opt/ros/rolling/setup.bash
+        echo "✓ ROS rolling environment loaded"
+        exec bash
+
+    environment:
+      - DISPLAY=${DISPLAY}
+
+    volumes:
+      # Current workspace directory
+      - .:/workspace
+      - /tmp:/tmp
+
+    working_dir: /workspace
+
+    # Uncomment for GPU support (if available)
+    # runtime: nvidia
+    # environment:
+    #   - NVIDIA_VISIBLE_DEVICES=all
+

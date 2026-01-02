@@ -21,7 +21,10 @@ setup(
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ["encoder = rooted_encoder.encoder:main",
+        'console_scripts': [
+            "encoder = rooted_encoder.encoder:main",
+            "encoder_virtual = rooted_encoder.virtual_encoder:main_encoder",
+            "controller_virtual = rooted_encoder.virtual_encoder:main_controller",
         ],
     },
 )

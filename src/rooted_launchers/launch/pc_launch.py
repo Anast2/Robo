@@ -69,7 +69,7 @@ def generate_launch_description():
 
     pkg6_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            [FindPackageShare('movement_module'), '/launch/movement_module_launch.py']
+            [FindPackageShare('movement_module'), '/launch/movement_launch.py']
         )
     )
 
