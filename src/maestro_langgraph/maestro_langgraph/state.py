@@ -1,6 +1,6 @@
 """Dialogue state schema for LangGraph."""
 
-from typing import TypedDict, Optional
+from typing import TypedDict, Optional, Literal
 from enum import Enum
 
 
@@ -22,6 +22,13 @@ class Emotion(str, Enum):
     SURPRISE = "surprise"
 
 
+class RobotStatus(str, Enum):
+    """Robot availability status."""
+    FREE = "free"
+    BUSY = "busy"
+    PROBLEM = "problem"  # has notifications to announce
+
+
 class DialogueState(TypedDict, total=False):
     """State schema for the LangGraph dialogue flow.
 
@@ -33,8 +40,9 @@ class DialogueState(TypedDict, total=False):
 
     # Robot context
     robot_busy: bool
+    robot_status: str  # "free", "busy", or "problem"
     has_problem: bool
-    notifications: dict  # sensor alerts
+    notifications: dict  # sensor alerts {sensor_name: [level, priority, ...]}
 
     # Conversation context
     conversation_history: list  # list of (role, message) tuples
@@ -43,11 +51,13 @@ class DialogueState(TypedDict, total=False):
     intent: str  # classified intent
     entities: dict  # extracted entities (for tools)
     search_context: Optional[str]  # web search results
+    context_response: Optional[str]  # response for busy/problem context
 
     # Output
     response: str
     response_emotion: str
     prosody: tuple  # (volume, speed, pitch) for TTS
+    should_end_early: bool  # if True, skip normal response generation
 
 
 # Prosody presets for each emotion

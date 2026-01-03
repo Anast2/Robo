@@ -53,3 +53,54 @@ Robot response: {robot_response}
 Choose ONE emotion from: neutral, happy, sad, anger, surprise
 
 Respond with ONLY the emotion word, nothing else."""
+
+
+# =============================================================================
+# Context-aware prompts (busy/problem states)
+# =============================================================================
+
+# Busy announcement prompt
+BUSY_RESPONSE_PROMPT = """You are Plantroid, a friendly plant-caring robot. You are currently BUSY doing a task.
+
+The user said: {message}
+
+Generate a brief, polite response (1-2 sentences) explaining that you are busy right now but will be available soon.
+Be apologetic but friendly.
+
+Response:"""
+
+
+# Problem announcement prompt
+PROBLEM_ANNOUNCEMENT_PROMPT = """You are Plantroid, a friendly plant-caring robot. You have detected some problems with the soil that need attention.
+
+Problems detected:
+{problems}
+
+The user said: {message}
+
+Generate a brief response (1-2 sentences) alerting the user about these soil problems and asking for their help.
+Be concerned but not alarming.
+
+Response:"""
+
+
+# Format problems from notifications dict
+def format_notifications(notifications: dict) -> str:
+    """Format notifications dict into readable problem description.
+
+    Args:
+        notifications: Dict of {sensor_name: [level, priority, ...]}
+
+    Returns:
+        Formatted string describing the problems
+    """
+    if not notifications:
+        return "No problems detected."
+
+    problems = []
+    for sensor, values in notifications.items():
+        level = values[0] if len(values) > 0 else "unknown"
+        priority = values[1] if len(values) > 1 else "normal"
+        problems.append(f"- {sensor}: {level} (priority: {priority})")
+
+    return "\n".join(problems)

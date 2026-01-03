@@ -17,8 +17,11 @@ from .prompts import (
     RESPONSE_GENERATION_PROMPT,
     EMOTION_DETECTION_PROMPT,
     ROBOT_PERSONA,
+    BUSY_RESPONSE_PROMPT,
+    PROBLEM_ANNOUNCEMENT_PROMPT,
+    format_notifications,
 )
-from .state import Intent, Emotion
+from .state import Intent, Emotion, RobotStatus
 
 
 # Default settings
@@ -123,6 +126,14 @@ class DialogueChains:
         # Emotion detection chain
         emotion_prompt = ChatPromptTemplate.from_template(EMOTION_DETECTION_PROMPT)
         self.emotion_chain = emotion_prompt | self.llm | StrOutputParser()
+
+        # Busy response chain
+        busy_prompt = ChatPromptTemplate.from_template(BUSY_RESPONSE_PROMPT)
+        self.busy_chain = busy_prompt | self.llm | StrOutputParser()
+
+        # Problem announcement chain
+        problem_prompt = ChatPromptTemplate.from_template(PROBLEM_ANNOUNCEMENT_PROMPT)
+        self.problem_chain = problem_prompt | self.llm | StrOutputParser()
 
     def classify_intent(self, message: str) -> str:
         """Classify the intent of a user message using LLM.
@@ -273,3 +284,61 @@ class DialogueChains:
             msg_lower = message.lower()
             return any(trigger in msg_lower for trigger in search_triggers)
         return False
+
+    def generate_busy_response(self, message: str) -> str:
+        """Generate a response when robot is busy.
+
+        Args:
+            message: User's message
+
+        Returns:
+            Busy response text
+        """
+        try:
+            result = self.busy_chain.invoke({"message": message})
+            return result.strip()
+        except Exception as e:
+            print(f"Busy response generation error: {e}")
+            return "I'm sorry, I'm currently busy with a task. Please wait a moment."
+
+    def generate_problem_response(self, message: str, notifications: dict) -> str:
+        """Generate a response announcing problems/notifications.
+
+        Args:
+            message: User's message
+            notifications: Dict of {sensor_name: [level, priority, ...]}
+
+        Returns:
+            Problem announcement text
+        """
+        try:
+            problems_text = format_notifications(notifications)
+            result = self.problem_chain.invoke({
+                "message": message,
+                "problems": problems_text,
+            })
+            return result.strip()
+        except Exception as e:
+            print(f"Problem response generation error: {e}")
+            return "I've detected some issues with the soil that need attention."
+
+    def determine_robot_status(
+        self,
+        robot_busy: bool,
+        notifications: dict,
+    ) -> str:
+        """Determine the robot's current status.
+
+        Args:
+            robot_busy: Whether robot is busy with a task
+            notifications: Pending sensor notifications
+
+        Returns:
+            RobotStatus value: "free", "busy", or "problem"
+        """
+        if robot_busy:
+            return RobotStatus.BUSY.value
+        elif notifications:
+            return RobotStatus.PROBLEM.value
+        else:
+            return RobotStatus.FREE.value

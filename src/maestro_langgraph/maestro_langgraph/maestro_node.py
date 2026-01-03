@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
-"""ROS 2 node wrapper for LangGraph dialogue system."""
+"""ROS 2 node wrapper for LangGraph dialogue system.
+
+Includes busy/problem context checking like original MAESTRO.
+"""
 
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from rcl_interfaces.msg import ParameterDescriptor
+from ast import literal_eval
 
 from rooted_interfaces.tts_interface import TTSinterface
+from rooted_interfaces.busy_interface import BusyInterface
 
 from .graph import process_message, set_chains
 from .chains import DialogueChains
@@ -93,10 +98,16 @@ class MaestroLangGraphNode(Node):
         # TTS interface
         self.tts = TTSinterface("maestro_langgraph_tts")
 
+        # Busy interface (for checking/setting robot busy state)
+        self.busy_interface = BusyInterface("maestro_langgraph_busy")
+
         # State
         self.notifications = {}
         self.robot_busy = False
         self.conversation_history = []
+
+        # Check initial busy state
+        self._check_busy()
 
         self.get_logger().info('MaestroLangGraph node initialized')
 
@@ -112,7 +123,7 @@ class MaestroLangGraphNode(Node):
         # Block listening while processing
         self._publish_listen_block()
 
-        # Process through LangGraph
+        # Process through LangGraph (includes busy/problem checking)
         result = process_message(
             message=human_speech,
             voice_emotion=voice_emotion,
@@ -124,12 +135,17 @@ class MaestroLangGraphNode(Node):
         # Update conversation history
         self.conversation_history = result.get("conversation_history", [])
 
-        # Get response
+        # Get response and status
         response = result.get("response", "")
         emotion = result.get("response_emotion", "neutral")
         prosody = result.get("prosody", (150, 100, 45))
+        robot_status = result.get("robot_status", "free")
 
-        self.get_logger().info(f'Response: "{response}" (emotion: {emotion})')
+        self.get_logger().info(f'Response: "{response}" (emotion: {emotion}, status: {robot_status})')
+
+        # Clear notifications after announcing problem (they've been addressed)
+        if robot_status == "problem" and self.notifications:
+            self.clear_notifications()
 
         # Publish emotion
         self._publish_emotion(emotion)
@@ -152,9 +168,57 @@ class MaestroLangGraphNode(Node):
         # Could trigger proactive conversation here
 
     def cb_function_busy_listener(self, msg: String):
-        """Handle busy state changes."""
-        self.robot_busy = msg.data.lower() == "true"
-        self.get_logger().info(f'Robot busy: {self.robot_busy}')
+        """Handle busy state changes from topic."""
+        try:
+            busy = literal_eval(msg.data)
+            self.robot_busy = bool(busy)
+        except (ValueError, SyntaxError):
+            self.robot_busy = msg.data.lower() == "true"
+        self.get_logger().info(f'Robot busy state changed: {self.robot_busy}')
+
+    def _busy_request(self, request: str):
+        """Make a request to the busy service.
+
+        Args:
+            request: "get", "set_busy", or "set_idle"
+
+        Returns:
+            Response from the service
+        """
+        self.busy_interface.send_request(request)
+        while rclpy.ok():
+            rclpy.spin_once(self.busy_interface)
+            if self.busy_interface.future.done():
+                try:
+                    response = self.busy_interface.future.result().result
+                    return literal_eval(response)
+                except Exception as e:
+                    self.get_logger().warning(f'Busy service call failed: {e}')
+                    return None
+
+    def _check_busy(self):
+        """Check if robot is currently busy via service."""
+        result = self._busy_request("get")
+        if result is not None:
+            self.robot_busy = bool(result)
+            self.get_logger().debug(f'Checked busy state: {self.robot_busy}')
+
+    def _set_busy(self):
+        """Set robot state to busy."""
+        self._busy_request("set_busy")
+        self.robot_busy = True
+        self.get_logger().info('Robot set to busy')
+
+    def _set_idle(self):
+        """Set robot state to idle."""
+        self._busy_request("set_idle")
+        self.robot_busy = False
+        self.get_logger().info('Robot set to idle')
+
+    def clear_notifications(self):
+        """Clear all pending notifications after announcing them."""
+        self.notifications = {}
+        self.get_logger().info('Notifications cleared')
 
     def _publish_listen_block(self):
         """Signal to pause listening."""
