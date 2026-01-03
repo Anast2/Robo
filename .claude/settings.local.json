@@ -14,7 +14,11 @@
       "Bash(timeout 120 ./launch.sh:*)",
       "Bash(git checkout:*)",
       "Bash(brew install:*)",
-      "Bash(open:*)"
+      "Bash(open:*)",
+      "Bash(git remote add:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 from random import choice
 from wikipedia import summary, suggest
-from PyDictionary import PyDictionary
 import sqlite3 as sql
+
+# Optional import for PyDictionary (has broken dependencies on Python 3)
+try:
+    from PyDictionary import PyDictionary
+    PYDICTIONARY_AVAILABLE = True
+except ImportError:
+    PYDICTIONARY_AVAILABLE = False
+    PyDictionary = None
 
 
 def now():
@@ -71,9 +78,12 @@ def wikipedia_query(title):
 
 
 def dictionary_query(word):
-    dictionary=PyDictionary()
     ans = "Sorry, I don't know what " + word + " means."
+    if not PYDICTIONARY_AVAILABLE:
+        # Fallback: return message that will be processed by LLM
+        return f"Please explain the meaning of the word: {word}"
     try:
+        dictionary = PyDictionary()
         temp = "The "
         d = dictionary.meaning(word)
         for grammar in list(d.keys()):

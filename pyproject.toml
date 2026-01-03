@@ -1,0 +1,69 @@
+[project]
+name = "rooted"
+version = "0.1.0"
+description = "ROOTED - Open Source toolkit for Dialogue Systems in Human Robot Interaction"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "nltk>=3.8",
+    "wikipedia>=1.4",
+    "SpeechRecognition>=3.10",
+    "beepy>=1.0",
+    "ollama>=0.1",
+    "transformers>=4.30",
+    "torch>=2.0",
+    "ipykernel>=7.1.0",
+    "langchain-openai>=1.1.6",
+    "ddgs>=9.10.0",
+]
+# Note: PyDictionary removed - broken dependency (futures is Python 2 only)
+# Dictionary lookups use LLM fallback instead
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "flake8>=6.0",
+    "black>=23.0",
+]
+notebook = [
+    "jupyter>=1.0",
+    "ipywidgets>=8.0",
+    "matplotlib>=3.7",
+    "networkx>=3.0",
+]
+gui = [
+    "kivy>=2.2",
+]
+langgraph = [
+    "langchain>=0.1",
+    "langgraph>=0.0.30",
+    "langchain-community>=0.0.20",
+    "langchain-ollama>=0.0.1",
+    "langchain-openai>=0.0.5",  # For LM Studio (OpenAI-compatible API)
+    "duckduckgo-search>=4.0",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=7.0",
+    "flake8>=6.0",
+    "black>=23.0",
+]
+
+[tool.uv.sources]
+# ROS 2 packages are installed via apt, not pip
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.black]
+line-length = 120
+target-version = ["py310", "py311", "py312", "py313"]
+
+[tool.pytest.ini_options]
+testpaths = ["src"]
+python_files = ["test_*.py"]
