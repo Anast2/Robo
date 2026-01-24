@@ -5,15 +5,20 @@ Includes DuckDuckGo web search for factual questions.
 Includes busy/problem context checking (like original MAESTRO).
 """
 
-from typing import Literal
+from typing import Literal, Optional
 from langgraph.graph import StateGraph, END
 
 from .state import DialogueState, Intent, RobotStatus, Emotion, get_prosody_for_emotion
 from .chains import DialogueChains
+from .sensor_tracker import SensorTracker, UserResponseType, SensorType, THRESHOLDS
+from .solutions import get_solutions, get_quick_fix
 
 
 # Global chains instance (initialized lazily)
 _chains: DialogueChains = None
+
+# Global tracker instance (persistent across messages)
+_tracker: SensorTracker = None
 
 
 def get_chains() -> DialogueChains:
@@ -28,6 +33,20 @@ def set_chains(chains: DialogueChains):
     """Set the dialogue chains instance (for testing/custom config)."""
     global _chains
     _chains = chains
+
+
+def get_tracker() -> SensorTracker:
+    """Get or create the sensor tracker instance."""
+    global _tracker
+    if _tracker is None:
+        _tracker = SensorTracker()
+    return _tracker
+
+
+def set_tracker(tracker: SensorTracker):
+    """Set the sensor tracker instance."""
+    global _tracker
+    _tracker = tracker
 
 
 # ============================================================================
@@ -178,6 +197,148 @@ def update_history_node(state: DialogueState) -> DialogueState:
 
 
 # ============================================================================
+# Sensor-Aware Nodes
+# ============================================================================
+
+def process_sensor_issues_node(state: DialogueState) -> DialogueState:
+    """Update tracker and determine which issues to mention.
+
+    Processes sensor notifications and identifies any resolved issues.
+    """
+    tracker = get_tracker()
+
+    # Load state if provided
+    if state.get("sensor_tracker_state"):
+        tracker.load_state(state["sensor_tracker_state"])
+
+    # Process notifications
+    notifications = state.get("notifications", {})
+    improvement = None
+
+    for sensor_name, values in notifications.items():
+        # Extract numeric value from notification
+        try:
+            if isinstance(values, (list, tuple)) and len(values) > 0:
+                value = float(str(values[0]).replace("%", "").replace("°C", "").replace("lux", "").strip())
+            else:
+                value = float(str(values).replace("%", "").replace("°C", "").replace("lux", "").strip())
+
+            result = tracker.process_notification(sensor_name, value)
+            if result and result.severity.value == "optimal":
+                improvement = result  # Issue resolved!
+        except (ValueError, TypeError):
+            continue
+
+    # Get issues to mention
+    issues = tracker.get_issues_to_mention()
+
+    return {
+        **state,
+        "sensor_tracker_state": tracker.to_state(),
+        "issues_to_mention": [i.to_dict() for i in issues],
+        "improvement_detected": improvement.to_dict() if improvement else None,
+    }
+
+
+def check_user_response_node(state: DialogueState) -> DialogueState:
+    """Check if user responded to a pending sensor issue."""
+    tracker = get_tracker()
+    chains = get_chains()
+
+    pending = tracker.get_pending_issue()
+    if not pending:
+        return {**state, "user_response_type": None, "pending_issue": None}
+
+    message = state.get("human_message", "")
+    issue_desc = f"{pending.sensor_type.value} is {pending.direction.replace('_', ' ')}"
+
+    response_type = chains.classify_user_response(message, issue_desc)
+    tracker.record_user_response(response_type)
+
+    return {
+        **state,
+        "user_response_type": response_type.value,
+        "pending_issue": pending.to_dict(),
+        "sensor_tracker_state": tracker.to_state(),
+    }
+
+
+def integrate_sensor_response_node(state: DialogueState) -> DialogueState:
+    """Add sensor issue information to response naturally."""
+    chains = get_chains()
+    tracker = get_tracker()
+
+    base_response = state.get("response", "")
+    user_response_type = state.get("user_response_type")
+    issues = state.get("issues_to_mention", [])
+    pending = state.get("pending_issue")
+    improvement = state.get("improvement_detected")
+
+    # Case 1: Celebrate improvement
+    if improvement:
+        response = chains.generate_celebration_response(
+            base_response=base_response,
+            sensor_type=improvement["sensor_type"],
+            previous_value=improvement.get("current_value", 0),
+            current_value=0,  # Now optimal
+        )
+        return {**state, "response": response, "response_emotion": "happy"}
+
+    # Case 2: User deferred action
+    if user_response_type == UserResponseType.DEFERRED.value and pending:
+        sensor_type = SensorType(pending["sensor_type"])
+        quick_fix = get_quick_fix(sensor_type, pending["direction"])
+
+        response = chains.generate_deferred_response(
+            message=state.get("human_message", ""),
+            issue=pending,
+            quick_fix={"action": quick_fix.action, "time_until_damage": quick_fix.time_until_damage} if quick_fix else None,
+        )
+        # Clear pending issue after addressing deferred response
+        tracker.clear_pending_issue()
+        return {**state, "response": response, "sensor_tracker_state": tracker.to_state()}
+
+    # Case 3: User committed to fix
+    if user_response_type == UserResponseType.COMMITTED.value:
+        # Simple acknowledgment, issue will be tracked
+        tracker.clear_pending_issue()
+        return {
+            **state,
+            "response": base_response + " Thank you, I appreciate your help!",
+            "sensor_tracker_state": tracker.to_state(),
+        }
+
+    # Case 4: New issues to mention
+    if issues:
+        issue = issues[0]  # Most critical first
+        sensor_type = SensorType(issue["sensor_type"])
+        solutions = get_solutions(sensor_type, issue["direction"], issue.get("solutions_suggested", []))
+        solution = solutions[0] if solutions else None
+
+        response = chains.generate_sensor_integrated_response(
+            base_response=base_response,
+            issue=issue,
+            solution={"action": solution.action} if solution else None,
+        )
+
+        # Record mention
+        if issue["sensor_type"] in tracker.active_issues:
+            tracker.record_mention(
+                tracker.active_issues[issue["sensor_type"]],
+                [solution.description] if solution else []
+            )
+
+        return {
+            **state,
+            "response": response,
+            "last_suggested_solution": solution.description if solution else None,
+            "sensor_tracker_state": tracker.to_state(),
+        }
+
+    return state
+
+
+# ============================================================================
 # Conditional Edges
 # ============================================================================
 
@@ -210,14 +371,14 @@ def route_after_intent(state: DialogueState) -> Literal["search", "respond"]:
 # ============================================================================
 
 def build_dialogue_graph() -> StateGraph:
-    """Build and compile the dialogue graph.
+    """Build and compile the sensor-aware dialogue graph.
 
-    Graph flow (with busy/problem checking like original MAESTRO):
+    Graph flow (with busy/problem checking and sensor awareness):
 
-    START -> check_context -> [busy?] -> generate_response -> determine_emotion -> update_history -> END
+    START -> check_context -> [busy?] -> generate_response -> integrate_sensors -> determine_emotion -> update_history -> END
                            |
                            v (not busy)
-                      classify_intent -> check_search -> generate_response -> ...
+                      process_sensors -> classify_intent -> check_user_response -> check_search -> generate_response -> ...
 
     All nodes use LLM - no hardcoded responses.
 
@@ -229,9 +390,12 @@ def build_dialogue_graph() -> StateGraph:
 
     # Add nodes
     graph.add_node("check_context", check_context_node)
+    graph.add_node("process_sensors", process_sensor_issues_node)
     graph.add_node("classify_intent", classify_intent_node)
+    graph.add_node("check_user_response", check_user_response_node)
     graph.add_node("check_search", check_search_node)
     graph.add_node("generate_response", generate_response_node)
+    graph.add_node("integrate_sensors", integrate_sensor_response_node)
     graph.add_node("determine_emotion", determine_emotion_node)
     graph.add_node("update_history", update_history_node)
 
@@ -244,14 +408,17 @@ def build_dialogue_graph() -> StateGraph:
         route_after_context,
         {
             "busy_response": "generate_response",  # Skip to response if busy
-            "normal_flow": "classify_intent",      # Normal flow if free
+            "normal_flow": "process_sensors",      # Process sensors first
         }
     )
 
-    # Normal flow edges
-    graph.add_edge("classify_intent", "check_search")
+    # Normal flow edges with sensor integration
+    graph.add_edge("process_sensors", "classify_intent")
+    graph.add_edge("classify_intent", "check_user_response")
+    graph.add_edge("check_user_response", "check_search")
     graph.add_edge("check_search", "generate_response")
-    graph.add_edge("generate_response", "determine_emotion")
+    graph.add_edge("generate_response", "integrate_sensors")
+    graph.add_edge("integrate_sensors", "determine_emotion")
     graph.add_edge("determine_emotion", "update_history")
     graph.add_edge("update_history", END)
 
@@ -265,11 +432,13 @@ def process_message(
     history: list = None,
     robot_busy: bool = False,
     notifications: dict = None,
+    sensor_tracker_state: dict = None,
 ) -> DialogueState:
     """Process a user message through the dialogue graph.
 
     This is the main entry point for the dialogue system.
     All responses are generated by LLM - no hardcoded flows.
+    Includes sensor-aware response integration.
 
     Args:
         message: User's message text
@@ -277,6 +446,7 @@ def process_message(
         history: Previous conversation history
         robot_busy: Whether robot is currently busy
         notifications: Pending sensor notifications
+        sensor_tracker_state: Serialized sensor tracker state
 
     Returns:
         Final dialogue state with response
@@ -290,6 +460,12 @@ def process_message(
         "has_problem": bool(notifications),
         "notifications": notifications or {},
         "search_context": None,
+        "sensor_tracker_state": sensor_tracker_state or {},
+        "issues_to_mention": [],
+        "user_response_type": None,
+        "pending_issue": None,
+        "improvement_detected": None,
+        "last_suggested_solution": None,
     }
 
     # Get or build graph

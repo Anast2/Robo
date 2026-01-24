@@ -59,6 +59,15 @@ class DialogueState(TypedDict, total=False):
     prosody: tuple  # (volume, speed, pitch) for TTS
     should_end_early: bool  # if True, skip normal response generation
 
+    # Sensor awareness fields
+    sensor_tracker_state: dict  # Serialized SensorTracker
+    issues_to_mention: list  # List of SensorIssue dicts
+    sensor_context: Optional[str]  # Context for response generation
+    user_response_type: Optional[str]  # committed/deferred/rejected/question/unrelated
+    pending_issue: Optional[dict]  # Issue being discussed
+    improvement_detected: Optional[dict]  # Resolved issue to celebrate
+    last_suggested_solution: Optional[str]  # Track what was suggested
+
 
 # Prosody presets for each emotion
 PROSODY_PRESETS = {

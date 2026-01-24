@@ -20,8 +20,14 @@ from .prompts import (
     BUSY_RESPONSE_PROMPT,
     PROBLEM_ANNOUNCEMENT_PROMPT,
     format_notifications,
+    USER_RESPONSE_CLASSIFICATION_PROMPT,
+    SENSOR_INTEGRATED_RESPONSE_PROMPT,
+    DEFERRED_RESPONSE_PROMPT,
+    IMPROVEMENT_CELEBRATION_PROMPT,
 )
 from .state import Intent, Emotion, RobotStatus
+from .sensor_tracker import UserResponseType, SensorType, THRESHOLDS
+from .solutions import get_solutions, get_quick_fix
 
 
 # Default settings
@@ -134,6 +140,22 @@ class DialogueChains:
         # Problem announcement chain
         problem_prompt = ChatPromptTemplate.from_template(PROBLEM_ANNOUNCEMENT_PROMPT)
         self.problem_chain = problem_prompt | self.llm | StrOutputParser()
+
+        # User response classification chain
+        user_response_prompt = ChatPromptTemplate.from_template(USER_RESPONSE_CLASSIFICATION_PROMPT)
+        self.user_response_chain = user_response_prompt | self.llm | StrOutputParser()
+
+        # Sensor integrated response chain
+        sensor_response_prompt = ChatPromptTemplate.from_template(SENSOR_INTEGRATED_RESPONSE_PROMPT)
+        self.sensor_response_chain = sensor_response_prompt | self.llm | StrOutputParser()
+
+        # Deferred response chain
+        deferred_prompt = ChatPromptTemplate.from_template(DEFERRED_RESPONSE_PROMPT)
+        self.deferred_chain = deferred_prompt | self.llm | StrOutputParser()
+
+        # Celebration chain
+        celebration_prompt = ChatPromptTemplate.from_template(IMPROVEMENT_CELEBRATION_PROMPT)
+        self.celebration_chain = celebration_prompt | self.llm | StrOutputParser()
 
     def classify_intent(self, message: str) -> str:
         """Classify the intent of a user message using LLM.
@@ -342,3 +364,135 @@ class DialogueChains:
             return RobotStatus.PROBLEM.value
         else:
             return RobotStatus.FREE.value
+
+    def classify_user_response(self, message: str, issue_description: str) -> UserResponseType:
+        """Classify user's response to a sensor issue.
+
+        Args:
+            message: User's message
+            issue_description: Description of the issue that was mentioned
+
+        Returns:
+            UserResponseType enum value
+        """
+        try:
+            result = self.user_response_chain.invoke({
+                "message": message,
+                "issue_description": issue_description,
+            })
+            response = result.strip().lower()
+
+            # Map to enum
+            mapping = {
+                "committed": UserResponseType.COMMITTED,
+                "deferred": UserResponseType.DEFERRED,
+                "rejected": UserResponseType.REJECTED,
+                "question": UserResponseType.QUESTION,
+                "unrelated": UserResponseType.UNRELATED,
+            }
+            return mapping.get(response, UserResponseType.UNRELATED)
+        except Exception as e:
+            print(f"User response classification error: {e}")
+            return UserResponseType.UNRELATED
+
+    def generate_sensor_integrated_response(
+        self,
+        base_response: str,
+        issue: dict,
+        solution: dict,
+    ) -> str:
+        """Generate response that naturally integrates sensor issue.
+
+        Args:
+            base_response: The original response to the user
+            issue: Dict with sensor issue details
+            solution: Dict with solution details
+
+        Returns:
+            Combined response with sensor information
+        """
+        try:
+            sensor_type = SensorType(issue["sensor_type"])
+            threshold = THRESHOLDS[sensor_type]
+
+            result = self.sensor_response_chain.invoke({
+                "base_response": base_response,
+                "sensor_type": issue["sensor_type"],
+                "value": issue["current_value"],
+                "unit": threshold.unit,
+                "optimal_min": threshold.optimal_min,
+                "optimal_max": threshold.optimal_max,
+                "direction": "too low" if issue["direction"] == "too_low" else "too high",
+                "severity": issue["severity"],
+                "action": solution["action"] if solution else "check on it",
+                "outcome": f"get it back to optimal levels ({threshold.optimal_min}-{threshold.optimal_max}{threshold.unit})",
+            })
+            return result.strip()
+        except Exception as e:
+            print(f"Sensor integrated response error: {e}")
+            return base_response
+
+    def generate_deferred_response(
+        self,
+        message: str,
+        issue: dict,
+        quick_fix: dict,
+    ) -> str:
+        """Generate empathetic response when user defers action.
+
+        Args:
+            message: User's message
+            issue: Dict with sensor issue details
+            quick_fix: Dict with quick fix solution details
+
+        Returns:
+            Empathetic response suggesting quick fix
+        """
+        try:
+            sensor_type = SensorType(issue["sensor_type"])
+            threshold = THRESHOLDS[sensor_type]
+
+            result = self.deferred_chain.invoke({
+                "sensor_type": issue["sensor_type"],
+                "value": issue["current_value"],
+                "unit": threshold.unit,
+                "optimal_min": threshold.optimal_min,
+                "optimal_max": threshold.optimal_max,
+                "message": message,
+                "time_until_damage": quick_fix["time_until_damage"] if quick_fix else "soon",
+                "quick_fix_action": quick_fix["action"] if quick_fix else "a quick check",
+            })
+            return result.strip()
+        except Exception as e:
+            print(f"Deferred response error: {e}")
+            return "I understand. Just keep an eye on it when you can."
+
+    def generate_celebration_response(
+        self,
+        base_response: str,
+        sensor_type: str,
+        previous_value: float,
+        current_value: float,
+    ) -> str:
+        """Generate happy response for resolved issue.
+
+        Args:
+            base_response: The original response to the user
+            sensor_type: Type of sensor that improved
+            previous_value: Previous sensor value
+            current_value: Current (improved) sensor value
+
+        Returns:
+            Celebratory response
+        """
+        try:
+            result = self.celebration_chain.invoke({
+                "base_response": base_response,
+                "sensor_type": sensor_type,
+                "previous_value": previous_value,
+                "current_value": current_value,
+            })
+            return result.strip()
+        except Exception as e:
+            print(f"Celebration response error: {e}")
+            return base_response

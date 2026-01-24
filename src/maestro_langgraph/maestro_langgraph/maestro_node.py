@@ -13,8 +13,9 @@ from ast import literal_eval
 from rooted_interfaces.tts_interface import TTSinterface
 from rooted_interfaces.busy_interface import BusyInterface
 
-from .graph import process_message, set_chains
+from .graph import process_message, set_chains, set_tracker
 from .chains import DialogueChains
+from .sensor_tracker import SensorTracker
 
 
 class MaestroLangGraphNode(Node):
@@ -106,6 +107,10 @@ class MaestroLangGraphNode(Node):
         self.robot_busy = False
         self.conversation_history = []
 
+        # Persistent sensor tracker
+        self.sensor_tracker = SensorTracker()
+        set_tracker(self.sensor_tracker)
+
         # Check initial busy state
         self._check_busy()
 
@@ -123,14 +128,19 @@ class MaestroLangGraphNode(Node):
         # Block listening while processing
         self._publish_listen_block()
 
-        # Process through LangGraph (includes busy/problem checking)
+        # Process through LangGraph (includes busy/problem checking and sensor awareness)
         result = process_message(
             message=human_speech,
             voice_emotion=voice_emotion,
             history=self.conversation_history,
             robot_busy=self.robot_busy,
             notifications=self.notifications,
+            sensor_tracker_state=self.sensor_tracker.to_state(),
         )
+
+        # Update sensor tracker from result
+        if result.get("sensor_tracker_state"):
+            self.sensor_tracker.load_state(result["sensor_tracker_state"])
 
         # Update conversation history
         self.conversation_history = result.get("conversation_history", [])
@@ -140,12 +150,17 @@ class MaestroLangGraphNode(Node):
         emotion = result.get("response_emotion", "neutral")
         prosody = result.get("prosody", (150, 100, 45))
         robot_status = result.get("robot_status", "free")
+        user_response = result.get("user_response_type")
 
         self.get_logger().info(f'Response: "{response}" (emotion: {emotion}, status: {robot_status})')
 
-        # Clear notifications after announcing problem (they've been addressed)
-        if robot_status == "problem" and self.notifications:
-            self.clear_notifications()
+        # Handle notification clearing based on user response
+        if user_response == "committed":
+            # Clear only the acknowledged issue's notification
+            pending = result.get("pending_issue")
+            if pending:
+                sensor_type = pending.get("sensor_type")
+                self._clear_notification_for_sensor(sensor_type)
 
         # Publish emotion
         self._publish_emotion(emotion)
@@ -219,6 +234,30 @@ class MaestroLangGraphNode(Node):
         """Clear all pending notifications after announcing them."""
         self.notifications = {}
         self.get_logger().info('Notifications cleared')
+
+    def _clear_notification_for_sensor(self, sensor_type: str):
+        """Clear notifications related to a specific sensor type.
+
+        Args:
+            sensor_type: Type of sensor to clear ("moisture", "temperature", etc.)
+        """
+        if not sensor_type:
+            return
+
+        # Map sensor types to possible notification keys
+        mapping = {
+            "moisture": ["moisture", "soil_moisture"],
+            "temperature": ["temperature", "temp"],
+            "light": ["light", "lux"],
+            "pH": ["ph", "acidity"],
+        }
+
+        keys_to_remove = mapping.get(sensor_type, [])
+        for key in list(self.notifications.keys()):
+            if key.lower() in keys_to_remove:
+                del self.notifications[key]
+
+        self.get_logger().info(f'Cleared notifications for {sensor_type}')
 
     def _publish_listen_block(self):
         """Signal to pause listening."""

@@ -104,3 +104,97 @@ def format_notifications(notifications: dict) -> str:
         problems.append(f"- {sensor}: {level} (priority: {priority})")
 
     return "\n".join(problems)
+
+
+# =============================================================================
+# Sensor-aware prompts
+# =============================================================================
+
+# Detect user response to sensor issue
+USER_RESPONSE_CLASSIFICATION_PROMPT = """Classify the user's response to a sensor issue.
+
+The robot mentioned this issue: {issue_description}
+User said: {message}
+
+Categories:
+- committed: User will fix it now ("I'll do it", "OK I'll water it", "Done", "I watered it")
+- deferred: User will fix it later ("I'll do it later", "Maybe later", "Not now")
+- rejected: User won't fix it ("No", "I can't", "Not possible")
+- question: User asks about it ("Why?", "What should I do?", "How?")
+- unrelated: User didn't address the issue at all
+
+Respond with ONLY the category name."""
+
+
+# Integrate sensor info into response naturally
+SENSOR_INTEGRATED_RESPONSE_PROMPT = """You have a base response to the user. Now add sensor issue information naturally.
+
+Your base response: {base_response}
+
+Sensor issue to mention:
+- Type: {sensor_type}
+- Current value: {value}{unit}
+- Optimal range: {optimal_min}-{optimal_max}{unit}
+- Problem: {direction}
+- Severity: {severity}
+
+Suggested action: {action}
+Expected outcome: {outcome}
+
+Create a combined response that:
+1. First delivers your base response naturally
+2. Smoothly transitions ("I notice...", "By the way...", "I also noticed...")
+3. Mentions the issue with the actual value
+4. Suggests the action
+5. Explains briefly why it matters
+
+Keep total response to 3-4 sentences. Be caring but not alarming.
+
+Combined response:"""
+
+
+# Response when user defers action
+DEFERRED_RESPONSE_PROMPT = """The user said they will fix the issue later. Respond empathetically.
+
+Issue: {sensor_type} at {value}{unit} (should be {optimal_min}-{optimal_max}{unit})
+User said: {message}
+Time until damage: {time_until_damage}
+Quick fix alternative: {quick_fix_action}
+
+Generate a response that:
+1. Acknowledges their situation ("I understand you're busy")
+2. Gently reminds about time-sensitive consequences with timeframe
+3. Offers the quick fix as an easier alternative
+4. Asks if that would be possible
+
+Be friendly and understanding, not pushy. 2-3 sentences max.
+
+Response:"""
+
+
+# Celebrate resolved issue
+IMPROVEMENT_CELEBRATION_PROMPT = """A sensor issue was resolved! Respond happily.
+
+Your base response: {base_response}
+Resolved issue: {sensor_type} is now back to normal
+Previous value: {previous_value}
+Current value: {current_value}
+
+Add a brief, warm celebration to your response. Thank the user for their help.
+Keep it to 1-2 additional sentences.
+
+Response:"""
+
+
+# Follow-up on previous suggestion
+FOLLOW_UP_PROMPT = """Check on a previously suggested solution.
+
+Previous suggestion: {suggestion}
+Time elapsed: {time_elapsed}
+Sensor: {sensor_type}
+Current value: {current_value} (still {status})
+
+Generate a brief, friendly follow-up question to check if the user tried the solution.
+Be curious but not pushy.
+
+Response:"""
