@@ -1,5 +1,3 @@
-"""Sensor tracking and issue management system."""
-
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Optional
@@ -22,19 +20,18 @@ class IssueSeverity(str, Enum):
 
 
 class UserResponseType(str, Enum):
-    COMMITTED = "committed"      # "I'll do it now", "Done"
-    DEFERRED = "deferred"        # "I'll do it later"
-    REJECTED = "rejected"        # "No", "I can't"
-    QUESTION = "question"        # "Why?", "What should I do?"
-    UNRELATED = "unrelated"      # Didn't address the issue
+    COMMITTED = "committed"
+    DEFERRED = "deferred"
+    REJECTED = "rejected"
+    QUESTION = "question"
+    UNRELATED = "unrelated"
 
 
 class UrgencyLevel(str, Enum):
-    """Urgency level based on how long issue persists."""
-    NORMAL = "normal"           # < 6 hours
-    ELEVATED = "elevated"       # 6-12 hours
-    HIGH = "high"               # 12-24 hours
-    CRITICAL = "critical"       # > 24 hours
+    NORMAL = "normal"
+    ELEVATED = "elevated"
+    HIGH = "high"
+    CRITICAL = "critical"
 
 
 @dataclass
@@ -66,7 +63,6 @@ class SensorThreshold:
         return "too_high"
 
 
-# Threshold configurations per requirements
 THRESHOLDS = {
     SensorType.TEMPERATURE: SensorThreshold(
         sensor_type=SensorType.TEMPERATURE,
@@ -98,12 +94,11 @@ THRESHOLDS = {
     ),
 }
 
-# Mention frequency by severity
 MENTION_FREQUENCY = {
-    IssueSeverity.CRITICAL: 1,   # Every interaction
-    IssueSeverity.HIGH: 2,       # Every 2nd
-    IssueSeverity.MEDIUM: 3,     # Every 3rd
-    IssueSeverity.LOW: 999999,   # Once per conversation
+    IssueSeverity.CRITICAL: 1,
+    IssueSeverity.HIGH: 2,
+    IssueSeverity.MEDIUM: 3,
+    IssueSeverity.LOW: 999999,
 }
 
 
@@ -112,20 +107,18 @@ class SensorIssue:
     sensor_type: SensorType
     current_value: float
     severity: IssueSeverity
-    direction: str  # "too_low" or "too_high"
+    direction: str
     first_detected: datetime = field(default_factory=datetime.now)
     last_mentioned: Optional[datetime] = None
     mention_count: int = 0
     user_response: Optional[UserResponseType] = None
     solutions_suggested: List[str] = field(default_factory=list)
-    # New fields for better tracking
-    last_solution_suggested: Optional[str] = None  # Track last suggested solution
-    user_committed_at: Optional[datetime] = None   # When user said they'd fix it
-    needs_follow_up: bool = False                  # Should we ask if they did it?
-    effective_solution: Optional[str] = None       # Which solution worked (after resolution)
+    last_solution_suggested: Optional[str] = None
+    user_committed_at: Optional[datetime] = None
+    needs_follow_up: bool = False
+    effective_solution: Optional[str] = None
 
     def get_urgency(self) -> UrgencyLevel:
-        """Calculate urgency based on how long the issue has persisted."""
         elapsed = datetime.now() - self.first_detected
         hours = elapsed.total_seconds() / 3600
 
@@ -138,15 +131,12 @@ class SensorIssue:
         return UrgencyLevel.NORMAL
 
     def get_hours_persisting(self) -> float:
-        """Get how many hours the issue has been active."""
         elapsed = datetime.now() - self.first_detected
         return elapsed.total_seconds() / 3600
 
     def should_follow_up(self) -> bool:
-        """Check if we should ask user if they implemented the solution."""
         if not self.user_committed_at:
             return False
-        # Follow up if user committed more than 1 hour ago
         elapsed = datetime.now() - self.user_committed_at
         return elapsed.total_seconds() > 3600 and self.needs_follow_up
 
@@ -187,16 +177,14 @@ class SensorIssue:
 
 
 class SensorTracker:
-    """Tracks sensor issues and determines when to mention them."""
 
     def __init__(self):
         self.active_issues: Dict[str, SensorIssue] = {}
         self.interaction_count: int = 0
         self.mentioned_this_conversation: set = set()
-        self.pending_issue: Optional[str] = None  # Issue being discussed
+        self.pending_issue: Optional[str] = None
 
     def process_reading(self, sensor_type: SensorType, value: float) -> Optional[SensorIssue]:
-        """Process a sensor reading and update issue tracking."""
         threshold = THRESHOLDS.get(sensor_type)
         if not threshold:
             return None
@@ -205,22 +193,19 @@ class SensorTracker:
         key = sensor_type.value
 
         if severity == IssueSeverity.OPTIMAL:
-            # Issue resolved
             if key in self.active_issues:
                 resolved = self.active_issues.pop(key)
-                return resolved  # Return for celebration
+                return resolved
             return None
 
         direction = threshold.get_direction(value)
 
         if key in self.active_issues:
-            # Update existing issue
             issue = self.active_issues[key]
             issue.current_value = value
             issue.severity = severity
             issue.direction = direction
         else:
-            # New issue
             issue = SensorIssue(
                 sensor_type=sensor_type,
                 current_value=value,
@@ -232,8 +217,6 @@ class SensorTracker:
         return issue
 
     def process_notification(self, sensor_name: str, value: float) -> Optional[SensorIssue]:
-        """Process notification from notificationTopic."""
-        # Map sensor name to type
         name_map = {
             "moisture": SensorType.MOISTURE,
             "soil_moisture": SensorType.MOISTURE,
@@ -252,11 +235,9 @@ class SensorTracker:
         return self.process_reading(sensor_type, value)
 
     def get_issues_to_mention(self) -> List[SensorIssue]:
-        """Get issues that should be mentioned this interaction."""
         self.interaction_count += 1
         to_mention = []
 
-        # Sort by severity (critical first)
         severity_order = [IssueSeverity.CRITICAL, IssueSeverity.HIGH, IssueSeverity.MEDIUM, IssueSeverity.LOW]
         sorted_issues = sorted(
             self.active_issues.values(),
@@ -267,19 +248,15 @@ class SensorTracker:
             key = issue.sensor_type.value
             frequency = MENTION_FREQUENCY[issue.severity]
 
-            # Check if should mention based on frequency
             if issue.severity == IssueSeverity.LOW:
-                # Low: only once per conversation
                 if key not in self.mentioned_this_conversation:
                     to_mention.append(issue)
             elif self.interaction_count % frequency == 0 or issue.mention_count == 0:
-                # First time or frequency match
                 to_mention.append(issue)
 
         return to_mention
 
     def record_mention(self, issue: SensorIssue, solutions: List[str] = None):
-        """Record that an issue was mentioned."""
         key = issue.sensor_type.value
         if key in self.active_issues:
             self.active_issues[key].last_mentioned = datetime.now()
@@ -290,56 +267,44 @@ class SensorTracker:
             self.pending_issue = key
 
     def record_user_response(self, response_type: UserResponseType):
-        """Record user's response to pending issue."""
         if self.pending_issue and self.pending_issue in self.active_issues:
             issue = self.active_issues[self.pending_issue]
             issue.user_response = response_type
 
-            # If user committed, mark for follow-up
             if response_type == UserResponseType.COMMITTED:
                 issue.user_committed_at = datetime.now()
                 issue.needs_follow_up = True
 
     def get_pending_issue(self) -> Optional[SensorIssue]:
-        """Get the issue currently being discussed."""
         if self.pending_issue:
             return self.active_issues.get(self.pending_issue)
         return None
 
     def clear_pending_issue(self):
-        """Clear the pending issue after it's been addressed."""
         self.pending_issue = None
 
     def get_issues_needing_follow_up(self) -> List[SensorIssue]:
-        """Get issues where user committed but we should check if they did it."""
         return [
             issue for issue in self.active_issues.values()
             if issue.should_follow_up()
         ]
 
     def mark_follow_up_done(self, sensor_type: str):
-        """Mark that we've followed up on an issue."""
         if sensor_type in self.active_issues:
             self.active_issues[sensor_type].needs_follow_up = False
 
     def record_effective_solution(self, sensor_type: str, solution: str):
-        """Record which solution was effective when an issue is resolved."""
         if sensor_type in self.active_issues:
             self.active_issues[sensor_type].effective_solution = solution
 
     def get_effective_solutions(self) -> Dict[str, str]:
-        """Get a map of sensor types to their effective solutions (from resolved issues)."""
-        # This would need to be stored persistently, for now return empty
         return {}
 
     def reset_conversation(self):
-        """Reset conversation-level tracking."""
         self.mentioned_this_conversation.clear()
         self.pending_issue = None
-        # Keep active_issues - they persist
 
     def to_state(self) -> dict:
-        """Serialize to dict for state passing."""
         return {
             "active_issues": {k: v.to_dict() for k, v in self.active_issues.items()},
             "interaction_count": self.interaction_count,
@@ -348,7 +313,6 @@ class SensorTracker:
         }
 
     def load_state(self, state: dict):
-        """Load from serialized state."""
         if not state:
             return
         self.active_issues = {

@@ -1,5 +1,3 @@
-"""Solution suggestions for sensor issues."""
-
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 from .sensor_tracker import SensorType
@@ -12,7 +10,7 @@ class Solution:
     timeframe: str
     consequence: str
     time_until_damage: str
-    complexity: int  # 1=simple, 2=moderate, 3=complex
+    complexity: int
     is_quick_fix: bool
 
 
@@ -171,14 +169,12 @@ SOLUTIONS: Dict[SensorType, Dict[str, List[Solution]]] = {
 
 
 def get_solutions(sensor_type: SensorType, direction: str, exclude: List[str] = None) -> List[Solution]:
-    """Get solutions for an issue, excluding already suggested ones."""
     exclude = exclude or []
     all_solutions = SOLUTIONS.get(sensor_type, {}).get(direction, [])
     return [s for s in all_solutions if s.description not in exclude]
 
 
 def get_quick_fix(sensor_type: SensorType, direction: str) -> Optional[Solution]:
-    """Get the simplest quick fix for an issue."""
     solutions = get_solutions(sensor_type, direction)
     for s in solutions:
         if s.is_quick_fix:

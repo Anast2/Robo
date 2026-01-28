@@ -1,5 +1,3 @@
-"""Launch file for maestro_langgraph node."""
-
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
@@ -7,9 +5,7 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    """Generate launch description for maestro_langgraph."""
 
-    # Declare arguments
     backend_arg = DeclareLaunchArgument(
         'backend',
         default_value='ollama',
@@ -28,7 +24,6 @@ def generate_launch_description():
         description='LLM server URL (auto-detected if empty: Ollama=localhost:11434, LM Studio=localhost:1234)'
     )
 
-    # Create node
     maestro_langgraph_node = Node(
         package='maestro_langgraph',
         executable='maestro_langgraph_node',
